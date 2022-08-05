@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a38910de951d11245be3ba2a1014b844, type: 3}
+  m_Name: White Chess Pieces
+  m_EditorClassIdentifier: 
+  playerColour: 0
+  king: {fileID: 940005121, guid: a6a3fad66c2a23847891b91d145eb78e, type: 3}
+  queen: {fileID: 1239945057, guid: a6a3fad66c2a23847891b91d145eb78e, type: 3}
+  rook: {fileID: 806807333, guid: a6a3fad66c2a23847891b91d145eb78e, type: 3}
+  knight: {fileID: 1820837670, guid: a6a3fad66c2a23847891b91d145eb78e, type: 3}
+  bishop: {fileID: 1890717591, guid: a6a3fad66c2a23847891b91d145eb78e, type: 3}
+  pawn: {fileID: -1033898735, guid: a6a3fad66c2a23847891b91d145eb78e, type: 3}
