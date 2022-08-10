@@ -10,10 +10,11 @@ GameObject:
   m_Component:
   - component: {fileID: 1728268118098116317}
   - component: {fileID: 541299628797981301}
+  - component: {fileID: 2250351540464457546}
   - component: {fileID: 4166348312891349739}
-  - component: {fileID: -2946188349419858198}
   - component: {fileID: 4920239636137976742}
-  m_Layer: 0
+  - component: {fileID: 7116239210219148629}
+  m_Layer: 6
   m_Name: Chess Piece
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -87,19 +88,7 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &4166348312891349739
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2336836518130984228}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4acc102e032f76d448d03a24213d1ce5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &-2946188349419858198
+--- !u!114 &2250351540464457546
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -115,6 +104,18 @@ MonoBehaviour:
   AlwaysReplicateAsRoot: 0
   DontDestroyWithOwner: 0
   AutoObjectParentSync: 1
+--- !u!114 &4166348312891349739
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2336836518130984228}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4acc102e032f76d448d03a24213d1ce5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!61 &4920239636137976742
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -141,3 +142,29 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 0.9176808, y: 0.91714287}
   m_EdgeRadius: 0
+--- !u!114 &7116239210219148629
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2336836518130984228}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SyncPositionX: 1
+  SyncPositionY: 1
+  SyncPositionZ: 0
+  SyncRotAngleX: 0
+  SyncRotAngleY: 0
+  SyncRotAngleZ: 1
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  InLocalSpace: 0
+  Interpolate: 1

@@ -1,12 +1,15 @@
+using System;
 using Unity.Netcode;
-using UnityEngine;
 using UnityEngine.Assertions;
+using Debug = UnityEngine.Debug;
 
 public class TurnSystem : NetworkBehaviour
 {
     State whiteTurn;
     State blackTurn;
     Context context;
+
+    public event Action<PlayerColour> onNextTurn;
 
     void Start()
     {
@@ -19,12 +22,28 @@ public class TurnSystem : NetworkBehaviour
 
     [ClientRpc]
     public void ChangeTurnClientRpc()
-    {
+    {  
+        if(!IsOwner)
+        {
+            return;
+        }
         context.RequestNext();
+        onNextTurn?.Invoke(context.CurrentState.PlayerColourState);
+        Debug.Log($"Change turn {GetActiveColour()}");
     }
 
-    internal bool IsTurn(PlayerColour playerColour)
+    [ServerRpc(RequireOwnership = false)]
+    public void ChangeTurnServerRpc()
     {
-        return playerColour == context.CurrentState.PlayerColourState;
+        if (!IsServer)
+        {
+            return;
+        }
+        ChangeTurnClientRpc();
+    }
+
+    public PlayerColour GetActiveColour()
+    {
+        return context.CurrentState.PlayerColourState;
     }
 }

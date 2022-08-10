@@ -1,7 +1,10 @@
+using System;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
+using static ChessPiece;
 
-public class PiecePlacementSystem : MonoBehaviour
+public class PiecePlacementSystem : NetworkBehaviour
 {
     [SerializeField]
     // starting fen -> rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
@@ -24,8 +27,57 @@ public class PiecePlacementSystem : MonoBehaviour
 
     Dictionary<char, ChessPiece> chessPiecesMapping;
 
-    void Start()
+    public static PiecePlacementSystem Singleton;
+
+    private void Awake()
     {
+       if (Singleton != null)
+        {
+            Singleton = this;
+        }
+    }
+
+
+    public Sprite GetSpriteTest(PlayerColour playerColour, ChessPieceType type)
+    {
+        if(playerColour == PlayerColour.PlayerOne)
+        {
+            return playerOnePieces.GetSprite(type);
+        }
+        return playerTwoPieces.GetSprite(type);
+    }
+
+    void OnEnable()
+    {
+        if(GameConnectionManager.Singleton != null)
+        {
+            GameConnectionManager.Singleton.OnGameReady += OnGameReady;
+        }
+
+    }
+
+    private void OnDisable()
+    {
+        if (GameConnectionManager.Singleton != null)
+        {
+            GameConnectionManager.Singleton.OnGameReady -= OnGameReady;
+        }
+    }
+
+    public Sprite GetSprite(int index)
+    {
+        return playerOnePieces.queen;
+    }
+
+    private void OnGameReady()
+    {
+        // Only the server spawns, clients will disable this component on their side
+        enabled = IsServer;
+        if (!enabled || chessPiecePrefab == null)
+        {
+            return;
+        }
+
         chessBoard = FindObjectOfType<Board>();
         startingSetup = FENReader.ReadFENInput(fenString);
         chessPiecesMapping = new Dictionary<char, ChessPiece>();
@@ -33,7 +85,20 @@ public class PiecePlacementSystem : MonoBehaviour
         CreateChessPieces(AllChessPieces);
         // Create white chess pieces with upper case
         CreateChessPieces(AllChessPieces.ToUpper());
-        PlacePiecesOnBoard();
+        PlacePiecesOnBoardServerRpc();
+        GetSpritesClientRpc();
+        chessBoard.FinishBoardSetup();
+    }
+
+    [ClientRpc]
+    public void GetSpritesClientRpc()
+    {
+        // todo is there a better way of doing this and syncing the sprites?
+        foreach(var piece in FindObjectsOfType<ChessPiece>())
+        {
+            piece.SpriteRenderer = piece.GetComponent<SpriteRenderer>();
+            piece.SpriteRenderer.sprite = GetSpriteTest(piece.PlayerColour, piece.PieceType);
+        }
     }
 
     private void CreateChessPieces(string pieces)
@@ -62,32 +127,32 @@ public class PiecePlacementSystem : MonoBehaviour
         {
             case 'R':
             {
-                chessPiece.Init(pieces, pieces.rook, ChessPiece.ChessPieceType.Rook);
+                chessPiece.Init(pieces.playerColour, pieces.rook, ChessPieceType.Rook);
                 break;
             }
             case 'N':
             {
-                chessPiece.Init(pieces, pieces.knight, ChessPiece.ChessPieceType.Knight);
+                chessPiece.Init(pieces.playerColour, pieces.knight, ChessPieceType.Knight);
                 break;
             }
             case 'B':
             {
-                chessPiece.Init(pieces, pieces.bishop, ChessPiece.ChessPieceType.Bishop);
+                chessPiece.Init(pieces.playerColour, pieces.bishop, ChessPieceType.Bishop);
                 break;
             }
             case 'K':
             {
-                chessPiece.Init(pieces, pieces.king, ChessPiece.ChessPieceType.King);
+                chessPiece.Init(pieces.playerColour, pieces.king, ChessPieceType.King);
                 break;
             }
             case 'Q':
             {
-                chessPiece.Init(pieces, pieces.queen, ChessPiece.ChessPieceType.Queen);
+                chessPiece.Init(pieces.playerColour, pieces.queen, ChessPieceType.Queen);
                 break;
             }
             case 'P':
             {
-                chessPiece.Init(pieces, pieces.pawn, ChessPiece.ChessPieceType.Pawn);
+                chessPiece.Init(pieces.playerColour, pieces.pawn, ChessPieceType.Pawn);
                 break;
             }
             default:
@@ -99,12 +164,17 @@ public class PiecePlacementSystem : MonoBehaviour
 
     }
 
-    private void PlacePiecesOnBoard()
+    [ServerRpc]
+    private void PlacePiecesOnBoardServerRpc()
     {
+        if (!IsServer)
+            return;
+
         var allPositions = chessBoard.GetAllPositions();
-        var placements = startingSetup.piecePlacement.Split(ChessNotation.delimeter);
         allPositions.MoveNext();
+        var placements = startingSetup.piecePlacement.Split(ChessNotation.delimeter);
         var currentBoardPosition = allPositions.Current;
+        uint id = 0;
         for (int i = placements.Length - 1; i >= 0; --i)
         {
             var row = placements[i];
@@ -112,9 +182,13 @@ public class PiecePlacementSystem : MonoBehaviour
             {
                 if (chessPiecesMapping.ContainsKey(item))
                 {
-                    var chessPiece = Instantiate(chessPiecesMapping[item], new Vector3(currentBoardPosition.x + chessBoard.BoardTileMap.cellSize.x  * 0.5f , currentBoardPosition.y + chessBoard.BoardTileMap.cellSize.y * 0.5f, 0), Quaternion.identity, transform);
-                    chessPiece.gameObject.SetActive(true);
-                    chessPiece.CopyBlueprint(chessPiecesMapping[item]);
+                    id++;
+                    var position = new Vector3(currentBoardPosition.x + chessBoard.BoardTileMap.cellSize.x * 0.5f, currentBoardPosition.y + chessBoard.BoardTileMap.cellSize.y * 0.5f, 0);
+                    var chessPiece = Instantiate(chessPiecePrefab, position, Quaternion.identity).GetComponent<ChessPiece>();
+                    var sprite = chessPiecesMapping[item].SpriteRenderer.sprite;
+                    chessPiece.Init(chessPiecesMapping[item].PlayerColour, chessPiecesMapping[item].SpriteRenderer.sprite, chessPiecesMapping[item].PieceType, id, currentBoardPosition);
+                    chessPiece.gameObject.GetComponent<NetworkObject>().Spawn();
+                    chessBoard.AddPieceToBoard(id, chessPiece);
                     allPositions.MoveNext();
                     currentBoardPosition = allPositions.Current;
                 }

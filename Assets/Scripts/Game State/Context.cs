@@ -1,5 +1,3 @@
-using UnityEngine;
-
 public class Context
 {
     int currentIndex;
@@ -19,6 +17,5 @@ public class Context
     public void RequestNext()
     {
         currentIndex = (currentIndex + 1) % turns.Length;
-        Debug.Log($"{CurrentState.PlayerColourState} turn now");
     }
 }
