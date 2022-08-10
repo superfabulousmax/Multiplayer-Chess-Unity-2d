@@ -18,6 +18,7 @@ public class TurnSystem : NetworkBehaviour
     {
         whiteTurn = new WhiteTurnState();
         blackTurn = new BlackTurnState();
+
         Assert.IsTrue(whiteTurn != blackTurn);
 
         context = new Context(whiteTurn, blackTurn);
