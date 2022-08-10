@@ -1,12 +1,19 @@
+using System;
+using Unity.Netcode;
+using UnityEngine;
+
+[Serializable]
 public class Context
 {
-    int currentIndex;
+    [SerializeField]
+    NetworkVariable<int> currentIndex = new(0,  writePerm : NetworkVariableWritePermission.Owner);
+
     State[] turns;
-    public State CurrentState { get => turns[currentIndex]; set => turns[currentIndex] = value; }
+    public State CurrentState { get => turns[currentIndex.Value]; set => turns[currentIndex.Value] = value; }
+    public int CurrentIndex { get => currentIndex.Value; set => currentIndex.Value = value; }
 
     public Context (params State [] states)
     {
-        currentIndex = 0;
         turns = new State[states.Length];
         for (uint i = 0; i < states.Length; ++i)
         {
@@ -14,8 +21,9 @@ public class Context
         }
     }
 
-    public void RequestNext()
+    public int RequestNext()
     {
-        currentIndex = (currentIndex + 1) % turns.Length;
+        //currentIndex.Value = (currentIndex.Value + 1) % turns.Length;
+        return (currentIndex.Value + 1) % turns.Length;
     }
 }
