@@ -17,6 +17,14 @@ public class Player : NetworkBehaviour
         playerNetworkColour = FindObjectOfType<PlayerNetworkColour>();
         GameConnectionManager.Singleton.OnGameReady += OnGameReady;
         AssignColourClientRPC(playerNetworkColour.GetColour());
+        //if(IsOwnedByServer)
+        //{
+        //    AssignColourClientRPC(PlayerColour.PlayerTwo);
+        //}
+        //else
+        //{
+        //    AssignColourClientRPC(PlayerColour.PlayerOne);
+        //}
     }
 
 
@@ -35,7 +43,7 @@ public class Player : NetworkBehaviour
     {
         // Run client-side logic here
         playerColour.Value = colour;
-        Debug.Log($"Player {NetworkObjectId} has colour {playerColour.Value}");
+        Debug.Log($"Player {OwnerClientId} has colour {playerColour.Value}");
     }
 
 }
