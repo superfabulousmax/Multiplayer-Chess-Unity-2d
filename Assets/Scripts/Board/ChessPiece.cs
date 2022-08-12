@@ -1,6 +1,5 @@
-using System;
-using Unity.Netcode;
 using UnityEngine;
+using Unity.Netcode;
 using Unity.Netcode.Components;
 
 [SelectionBase, RequireComponent(typeof(SpriteRenderer))]
@@ -14,7 +13,6 @@ public class ChessPiece : NetworkBehaviour
     NetworkVariable<ChessPieceStatus> pieceStatus = new(ChessPieceStatus.Active);
     NetworkVariable<Vector3Int> tilePosition = new(Vector3Int.zero, writePerm: NetworkVariableWritePermission.Owner);
     NetworkVariable<Vector3> piecePosition = new(Vector3.zero, writePerm: NetworkVariableWritePermission.Owner);
-    NetworkVariable<uint> id = new(0, writePerm: NetworkVariableWritePermission.Owner);
 
     NetworkTransform networkTransform;
 
@@ -25,7 +23,7 @@ public class ChessPiece : NetworkBehaviour
 
     public Vector3Int TilePosition { get => tilePosition.Value; }
     public ChessPieceType PieceType { get => pieceType.Value; }
-    public uint Id { get => id.Value; }
+
 
     [ClientRpc]
     public void SetTilePositionClientRpc(Vector3Int newTilePosition)
@@ -56,14 +54,13 @@ public class ChessPiece : NetworkBehaviour
         networkTransform = GetComponent<NetworkTransform>();
     }
 
-    internal void Init(PlayerColour colour, Sprite sprite, ChessPieceType type, uint id = default, Vector3Int tilePosition = default)
+    internal void Init(PlayerColour colour, Sprite sprite, ChessPieceType type, Vector3Int tilePosition = default)
     {
         networkTransform = GetComponent<NetworkTransform>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         spriteRenderer.sprite = sprite;
         playerColour.Value = colour;
         pieceType.Value = type;
-        this.id .Value = id;
         this.tilePosition.Value = tilePosition;
     }
 

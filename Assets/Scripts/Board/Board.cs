@@ -1,22 +1,28 @@
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using System.Collections.Generic;
+using Unity.Netcode;
 
 [RequireComponent(typeof(Tilemap))]
-public class Board : MonoBehaviour
+public class Board : NetworkBehaviour
 {
     Tilemap tilemap;
 
-    public Tilemap BoardTileMap { get => tilemap; }
-    public IReadOnlyDictionary<uint, ChessPiece> ChessPieces { get => chessPieces; }
+    [SerializeField]
+    List<ChessPiece> chessPiecesList;
 
-    Dictionary<uint, ChessPiece> chessPieces;
+    public Tilemap BoardTileMap { get => tilemap; }
+    public IReadOnlyDictionary<uint, ChessPiece> ChessPieces { get => chessPiecesMap; }
+    public IReadOnlyList<ChessPiece> ChessPiecesList { get => chessPiecesList; }
+
+    Dictionary<uint, ChessPiece> chessPiecesMap;
     public event System.Action onFinishedBoardSetup;
 
     void Awake()
     {
         tilemap = GetComponent<Tilemap>();
-        chessPieces = new Dictionary<uint, ChessPiece>();
+        chessPiecesMap = new Dictionary<uint, ChessPiece>();
+        chessPiecesList = new List<ChessPiece>(32);
     }
 
     public BoundsInt.PositionEnumerator GetAllPositions()
@@ -36,18 +42,39 @@ public class Board : MonoBehaviour
         return tilePosition;
     }
 
-    internal void AddPieceToBoard(uint id, ChessPiece chessPiece)
+    internal void AddPieceToBoard(ChessPiece chessPiece)
     {
-        chessPieces.Add(id, chessPiece);
+        chessPiecesMap.Add((uint)chessPiece.NetworkObjectId, chessPiece);
+        chessPiecesList.Add(chessPiece);
+    }
+
+    [ServerRpc]
+    public void AddChessPieceToBoardServerRpc(NetworkBehaviourReference target)
+    {
+        AddChessPieceToBoardClientRpc(target);
+    }
+
+    [ClientRpc]
+    public void AddChessPieceToBoardClientRpc(NetworkBehaviourReference target)
+    {
+        if (target.TryGet(out ChessPiece chessPieceComponent))
+        {
+            AddPieceToBoard(chessPieceComponent);
+        }
     }
 
     internal ChessPiece GetPieceFromId(uint id)
     {
-        return chessPieces[id];
+        return chessPiecesMap[id];
     }
 
     public void FinishBoardSetup()
     {
         onFinishedBoardSetup?.Invoke();
+    }
+
+    public override string ToString()
+    {
+        return $"Board has {chessPiecesList.Count} pieces";
     }
 }

@@ -23,7 +23,6 @@ public class Context
 
     public int RequestNext()
     {
-        //currentIndex.Value = (currentIndex.Value + 1) % turns.Length;
         return (currentIndex.Value + 1) % turns.Length;
     }
 }
