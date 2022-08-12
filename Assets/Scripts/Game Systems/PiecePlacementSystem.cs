@@ -93,7 +93,6 @@ public class PiecePlacementSystem : NetworkBehaviour
     {
         foreach(var piece in chessBoard.ChessPiecesList)
         {
-            piece.SpriteRenderer = piece.GetComponent<SpriteRenderer>();
             piece.SpriteRenderer.sprite = GetSpriteForPiece(piece.PlayerColour, piece.PieceType);
         }
     }
@@ -173,6 +172,7 @@ public class PiecePlacementSystem : NetworkBehaviour
         allPositions.MoveNext();
         var placements = startingSetup.piecePlacement.Split(ChessNotation.delimeter);
         var currentBoardPosition = allPositions.Current;
+
         for (int i = placements.Length - 1; i >= 0; --i)
         {
             var row = placements[i];

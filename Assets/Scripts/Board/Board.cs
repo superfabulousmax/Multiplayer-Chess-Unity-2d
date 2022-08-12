@@ -11,6 +11,8 @@ public class Board : NetworkBehaviour
     [SerializeField]
     List<ChessPiece> chessPiecesList;
 
+    private const int MaxPieces = 32;
+
     public Tilemap BoardTileMap { get => tilemap; }
     public IReadOnlyDictionary<uint, ChessPiece> ChessPieces { get => chessPiecesMap; }
     public IReadOnlyList<ChessPiece> ChessPiecesList { get => chessPiecesList; }
@@ -22,7 +24,7 @@ public class Board : NetworkBehaviour
     {
         tilemap = GetComponent<Tilemap>();
         chessPiecesMap = new Dictionary<uint, ChessPiece>();
-        chessPiecesList = new List<ChessPiece>(32);
+        chessPiecesList = new List<ChessPiece>(MaxPieces);
     }
 
     public BoundsInt.PositionEnumerator GetAllPositions()

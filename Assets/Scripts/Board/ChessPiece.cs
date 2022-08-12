@@ -19,7 +19,7 @@ public class ChessPiece : NetworkBehaviour
     SpriteRenderer spriteRenderer;
 
     public PlayerColour PlayerColour { get => playerColour.Value; private set => playerColour.Value = value; }
-    public SpriteRenderer SpriteRenderer { get => spriteRenderer; set => spriteRenderer = value; }
+    public SpriteRenderer SpriteRenderer { get => spriteRenderer;  }
 
     public Vector3Int TilePosition { get => tilePosition.Value; }
     public ChessPieceType PieceType { get => pieceType.Value; }
@@ -32,6 +32,7 @@ public class ChessPiece : NetworkBehaviour
         {
             return;
         }
+
         tilePosition.Value = newTilePosition;
         var position = new Vector3(tilePosition.Value.x + 0.5f, tilePosition.Value.y + 0.5f, 0);
         piecePosition.Value = position;
@@ -46,12 +47,14 @@ public class ChessPiece : NetworkBehaviour
         {
             return;
         }
+
         SetTilePositionClientRpc(newTilePosition);
     }
 
     public override void OnNetworkSpawn()
     {
         networkTransform = GetComponent<NetworkTransform>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
     internal void Init(PlayerColour colour, Sprite sprite, ChessPieceType type, Vector3Int tilePosition = default)
