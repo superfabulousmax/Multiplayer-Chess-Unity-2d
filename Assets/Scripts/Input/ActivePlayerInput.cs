@@ -5,13 +5,39 @@ public class ActivePlayerInput : IPlayerInput
 {
     Board board;
     ChessPiece selectedChessPiece;
-
-    public ActivePlayerInput(Board board)
+    Action onFinish;
+    public ActivePlayerInput(Board board, Action onFinish)
     {
         this.board = board;
+        this.onFinish = onFinish;
+        board.onValidateMove += OnValidateMove;
     }
 
-    public void HandleInput(int id, PlayerColour activeColour, PlayerColour currentColour, bool isOwner, Action onFinish)
+    private bool OnValidateMove(ChessPiece selectedChessPiece, bool isValid, bool isPieceTaken, Vector3Int tilePosition)
+    {
+        if (isValid)
+        {
+            if (isPieceTaken)
+            {
+                board.TakePieceServerRpc(selectedChessPiece, tilePosition);
+            }
+            else
+            {
+                selectedChessPiece.SetTilePositionServerRpc(tilePosition);
+            }
+
+            this.selectedChessPiece = null;
+            onFinish.Invoke();
+        }
+        else
+        {
+            Debug.Log("Invalid move");
+            return false;
+        }
+        return true;
+    }
+
+    public void HandleInput(int id, PlayerColour activeColour, PlayerColour currentColour, bool isOwner)
     {
         if (!isOwner || (activeColour != currentColour))
         {
@@ -44,9 +70,12 @@ public class ActivePlayerInput : IPlayerInput
             {
                 return;
             }
-            if (board.ValidateMove(activeColour, selectedChessPiece, tilePosition, out bool takenPiece))
+
+            //board.ValidateMove(activeColour, selectedChessPiece, tilePosition);
+
+            if (board.ValidateMove(activeColour, selectedChessPiece, tilePosition, out bool isPieceTaken))
             {
-                if(takenPiece)
+                if (isPieceTaken)
                 {
                     board.TakePieceServerRpc(selectedChessPiece, tilePosition);
                 }
@@ -54,9 +83,9 @@ public class ActivePlayerInput : IPlayerInput
                 {
                     selectedChessPiece.SetTilePositionServerRpc(tilePosition);
                 }
-             
+
                 this.selectedChessPiece = null;
-                onFinish?.Invoke();
+                onFinish.Invoke();
             }
             else
             {

@@ -21,7 +21,7 @@ public class InputController : NetworkBehaviour
         player = GetComponent<Player>();
         board = FindObjectOfType<Board>();
         turnSystem = FindObjectOfType<TurnSystem>();
-        activeInput = new ActivePlayerInput(board);
+        activeInput = new ActivePlayerInput(board, OnInputFinished);
         playerInput = activeInput;
         turnSystem.onNextTurn += OnNextPlayerTurn;
     }
@@ -56,7 +56,7 @@ public class InputController : NetworkBehaviour
     [ClientRpc]
     private void InputClientRpc()
     {
-        playerInput.HandleInput((int)NetworkObjectId, turnSystem.GetActiveColour(), Colour, IsOwner, OnInputFinished);
+        playerInput.HandleInput((int)NetworkObjectId, turnSystem.GetActiveColour(), Colour, IsOwner);
     }
 
     public override void OnNetworkDespawn()

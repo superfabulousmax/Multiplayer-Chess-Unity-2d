@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 using System.Collections.Generic;
 using Unity.Netcode;
+using System;
 
 [RequireComponent(typeof(Tilemap))]
 public class Board : NetworkBehaviour
@@ -17,7 +18,8 @@ public class Board : NetworkBehaviour
 
     Dictionary<uint, ChessPiece> chessPiecesMap;
 
-    public event System.Action onFinishedBoardSetup;
+    public event Action onFinishedBoardSetup;
+    public event Func<ChessPiece, bool, bool, Vector3Int, bool> onValidateMove;
 
     private const int MaxPieces = 32;
 
@@ -50,6 +52,7 @@ public class Board : NetworkBehaviour
         return selectedChessPiece.ChessRuleBehaviour.PossibleMove(activePlayer, this, selectedChessPiece, tilePosition, out takenPiece);
     }
 
+
     internal void AddPieceToBoard(ChessPiece chessPiece)
     {
         chessPiecesMap.Add((uint)chessPiece.NetworkObjectId, chessPiece);
@@ -71,11 +74,10 @@ public class Board : NetworkBehaviour
         }
         if (chessPiecesMap.TryGetValue((uint)id, out ChessPiece value))
         {
-            //value.SetCapturedServerRpc();
-            //value.DisablePieceClientRpc(); 
             chessPieceComponent.SetTilePositionServerRpc(tilePosition);
             RemoveChessPieceToBoardServerRpc(value);
             value.GetComponent<NetworkObject>().Despawn();
+            GetBoardState()[tilePosition.y, tilePosition.x] = -1;
         }
     }
 
@@ -123,7 +125,6 @@ public class Board : NetworkBehaviour
                 if(piece)
                 {
                     board[y, x] = (int)piece.NetworkObjectId;
-                    //Debug.Log($"{x} {y} {piece}");
                 }
                 else
                 {
@@ -133,6 +134,12 @@ public class Board : NetworkBehaviour
             }
         }
         return board;
+    }
+
+    public bool CheckPiece(int id, ChessPiece.ChessPieceType type)
+    {
+        var piece = GetPieceFromId((uint)id);
+        return piece != null && piece.PieceType == type;
     }
 
     public ChessPiece GetPieceAtPosition(Vector3Int position)
@@ -150,7 +157,8 @@ public class Board : NetworkBehaviour
 
     internal ChessPiece GetPieceFromId(uint id)
     {
-        return chessPiecesMap[id];
+        chessPiecesMap.TryGetValue(id, out var value);
+        return value;
     }
 
     public void FinishBoardSetup()

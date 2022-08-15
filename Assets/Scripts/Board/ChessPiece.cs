@@ -41,7 +41,7 @@ public class ChessPiece : NetworkBehaviour
         var position = new Vector3(tilePosition.Value.x + 0.5f, tilePosition.Value.y + 0.5f, 0);
         piecePosition.Value = position;
         transform.position = piecePosition.Value;
-        GetComponent<NetworkTransform>().transform.position = position;
+        networkTransform.transform.position = position;
     }
 
     [ServerRpc(RequireOwnership = false)]
@@ -55,7 +55,6 @@ public class ChessPiece : NetworkBehaviour
         SetTilePositionClientRpc(newTilePosition);
     }
 
-
     [ServerRpc(RequireOwnership = false)]
     internal void SetCapturedServerRpc()
     {
@@ -65,10 +64,8 @@ public class ChessPiece : NetworkBehaviour
     [ClientRpc]
     internal void DisablePieceClientRpc()
     {
-        Debug.Log("DisablePiece");
         gameObject.SetActive(false);
     }
-
 
     void SetCaptured()
     {
@@ -79,7 +76,28 @@ public class ChessPiece : NetworkBehaviour
     {
         networkTransform = GetComponent<NetworkTransform>();
         spriteRenderer = GetComponent<SpriteRenderer>();
-        chessRuleBehaviour = new PawnChessPiece();
+        switch (pieceType.Value)
+        {
+            case ChessPieceType.Pawn:
+                chessRuleBehaviour = new PawnChessPiece(PlayerColour, tilePosition.Value);
+                break;
+            case ChessPieceType.King:
+                chessRuleBehaviour = new KingChessPiece();
+                break;
+            case ChessPieceType.Queen:
+                chessRuleBehaviour = new QueenChessPiece();
+                break;
+            case ChessPieceType.Rook:
+                chessRuleBehaviour = new RookChessPiece();
+                break;
+            case ChessPieceType.Knight:
+                chessRuleBehaviour = new KnightChessPiece();
+                break;
+            case ChessPieceType.Bishop:
+                chessRuleBehaviour = new BishopChessPiece();
+                break;
+        }
+
     }
 
     internal void Init(PlayerColour colour, Sprite sprite, ChessPieceType type, Vector3Int tilePosition = default)
@@ -90,7 +108,6 @@ public class ChessPiece : NetworkBehaviour
         playerColour.Value = colour;
         pieceType.Value = type;
         this.tilePosition.Value = tilePosition;
-        //Debug.Log($"Init { tilePosition}");
         
     }
 
@@ -102,5 +119,22 @@ public class ChessPiece : NetworkBehaviour
     internal bool IsActive()
     {
         return pieceStatus.Value == ChessPieceStatus.Active;
+    }
+
+    [ServerRpc(RequireOwnership =false)]
+    internal void SyncDataServerRpc(int moveCount, bool isFirstMove, bool firstMoveTwo)
+    {
+        SyncDataClientRpc(moveCount, isFirstMove, firstMoveTwo);
+    }
+
+    [ClientRpc]
+    internal void SyncDataClientRpc(int moveCount, bool isFirstMove, bool firstMoveTwo)
+    {
+        if(chessRuleBehaviour is PawnChessPiece pawnChessPiece)
+        {
+            pawnChessPiece.MoveCount = moveCount;
+            pawnChessPiece.IsFirstMove = isFirstMove;
+            pawnChessPiece.FirstMoveTwo = firstMoveTwo;
+        }
     }
 }

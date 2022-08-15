@@ -183,6 +183,7 @@ public class PiecePlacementSystem : NetworkBehaviour
                     var position = new Vector3(currentBoardPosition.x + chessBoard.BoardTileMap.cellSize.x * 0.5f, currentBoardPosition.y + chessBoard.BoardTileMap.cellSize.y * 0.5f, 0);
                     var chessPiece = Instantiate(chessPiecePrefab, position, Quaternion.identity).GetComponent<ChessPiece>();
                     var sprite = chessPiecesMapping[item].SpriteRenderer.sprite;
+                    chessPiece.SetTilePositionServerRpc(currentBoardPosition);
                     chessPiece.Init(chessPiecesMapping[item].PlayerColour, chessPiecesMapping[item].SpriteRenderer.sprite, chessPiecesMapping[item].PieceType, currentBoardPosition);
                     chessPiece.gameObject.GetComponent<NetworkObject>().Spawn();
                     chessBoard.AddChessPieceToBoardServerRpc(chessPiece);

@@ -1,20 +1,37 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
 [Serializable]
 public class PawnChessPiece : IChessRule
 {
     [SerializeField]
-    bool isFirstMove;
+    NetworkVariable<bool> isFirstMove = new(true, writePerm: NetworkVariableWritePermission.Owner);
     [SerializeField]
-    bool firstMoveTwo;
+    NetworkVariable<bool> firstMoveTwo = new(false, writePerm: NetworkVariableWritePermission.Owner);
+    [SerializeField]
+    NetworkVariable<int> moveCount = new(0, writePerm: NetworkVariableWritePermission.Owner);
 
-    public PawnChessPiece(bool isFirstMove = true, bool firstMoveTwo = false)
+    PlayerColour pawnColour;
+
+    public bool IsFirstMove { get => isFirstMove.Value; set => isFirstMove.Value = value; }
+    public int MoveCount { get => moveCount.Value; set => moveCount.Value = value; }
+    public bool FirstMoveTwo { get => firstMoveTwo.Value; set => firstMoveTwo.Value = value; }
+
+    IEnPassantChessRule enPassant;
+
+
+    public PawnChessPiece(PlayerColour pawnColour, Vector3Int tilePosition, bool isFirstMove = true, bool firstMoveTwo = false)
     {
-        this.isFirstMove = isFirstMove;
-        this.firstMoveTwo = firstMoveTwo;
+        this.isFirstMove.Value = isFirstMove;
+        this.firstMoveTwo.Value = firstMoveTwo;
+        this.pawnColour = pawnColour;
+        if (isFirstMove)
+        {
+            moveCount.Value = 0;
+        }
+
+        enPassant = new EnPassant();
     }
 
     public bool PossibleMove(PlayerColour activeColour, Board board, ChessPiece piece, Vector3Int newPosition, out bool takenPiece)
@@ -26,6 +43,8 @@ public class PawnChessPiece : IChessRule
         var yDiff = Mathf.Abs(newPosition.y - y);
         if (Mathf.Abs(newPosition.x - x) > 1)
             return false;
+        if (yDiff > 2)
+            return false;
         //Debug.Log($"possible move {piece.TilePosition} to {newPosition}");
         if (activeColour == PlayerColour.PlayerOne)
         {
@@ -35,7 +54,7 @@ public class PawnChessPiece : IChessRule
             if (newPosition.x == x)
             {
 
-                if (yDiff > 2 || (!isFirstMove && yDiff == 2 ))
+                if (yDiff > 2 || (!isFirstMove.Value && yDiff == 2 ))
                 {
                     return false;
                 }
@@ -48,8 +67,11 @@ public class PawnChessPiece : IChessRule
             }
             else
             {
-                // check taking a piece
-                if (boardState[newPosition.y, newPosition.x] < 0)
+                if (enPassant.CheckEnPassant(1, pawnColour, board, piece, newPosition, out var takenPiecePosition))
+                {
+                    board.TakePieceServerRpc(piece, takenPiecePosition);
+                }
+                else if (boardState[newPosition.y, newPosition.x] < 0 || board.CheckPiece(boardState[newPosition.y, newPosition.x], ChessPiece.ChessPieceType.King))
                 {
                     return false;
                 }
@@ -66,7 +88,7 @@ public class PawnChessPiece : IChessRule
                 return false;
             if (newPosition.x == x)
             {
-                if (yDiff > 2 || (!isFirstMove && yDiff == 2))
+                if (yDiff > 2 || (!isFirstMove.Value && yDiff == 2))
                 {
                     return false;
                 }
@@ -80,8 +102,14 @@ public class PawnChessPiece : IChessRule
             else
             {
                 // check taking a piece
-                if (boardState[newPosition.y, newPosition.x] < 0)
+                if (enPassant.CheckEnPassant(-1, pawnColour, board, piece, newPosition, out var takenPiecePosition))
+                {
+                    board.TakePieceServerRpc(piece, takenPiecePosition);
+                }
+                else if (boardState[newPosition.y, newPosition.x] < 0 || board.CheckPiece(boardState[newPosition.y, newPosition.x], ChessPiece.ChessPieceType.King))
+                {
                     return false;
+                }
                 else
                 {
                     takenPiece = true;
@@ -90,11 +118,17 @@ public class PawnChessPiece : IChessRule
             }
         }
 
-        if (isFirstMove)
+        if (isFirstMove.Value && yDiff == 2)
         {
-            isFirstMove = false;
+            firstMoveTwo.Value = true;
+        }
+        if (isFirstMove.Value)
+        {
+            isFirstMove.Value = false;
         }
 
+        moveCount.Value++;
+        piece.SyncDataServerRpc(moveCount.Value, isFirstMove.Value, firstMoveTwo.Value);
         return true;
     }
 }
