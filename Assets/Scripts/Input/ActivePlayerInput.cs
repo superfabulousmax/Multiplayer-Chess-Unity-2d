@@ -23,26 +23,45 @@ public class ActivePlayerInput : IPlayerInput
             Debug.Log($"Handle input for {currentColour} active {activeColour}");
             if (GetChessPiece(out var chessPiece))
             {
-                this.selectedChessPiece = chessPiece;
-                return;
+                if(chessPiece.PlayerColour == activeColour)
+                {
+                    this.selectedChessPiece = chessPiece;
+                    Debug.Log($"selected chess piece {selectedChessPiece}");
+                    return;
+                }
             }
-            else if (this.selectedChessPiece == null)
+            if (this.selectedChessPiece == null)
             {
                 return;
             }
-            if (this.selectedChessPiece.PlayerColour != activeColour)
-            {
-                this.selectedChessPiece = null;
-                return;
-            }
+            //if (this.selectedChessPiece.PlayerColour != activeColour)
+            //{
+            //    this.selectedChessPiece = null;
+            //    return;
+            //}
             var tilePosition = board.GetTileAtMousePosition(Input.mousePosition);
             if(selectedChessPiece.TilePosition == tilePosition)
             {
                 return;
             }
-            selectedChessPiece.SetTilePositionServerRpc(tilePosition);
-            this.selectedChessPiece = null;
-            onFinish?.Invoke();
+            if (board.ValidateMove(activeColour, selectedChessPiece, tilePosition, out bool takenPiece))
+            {
+                if(takenPiece)
+                {
+                    board.TakePieceServerRpc(selectedChessPiece, tilePosition);
+                }
+                else
+                {
+                    selectedChessPiece.SetTilePositionServerRpc(tilePosition);
+                }
+             
+                this.selectedChessPiece = null;
+                onFinish?.Invoke();
+            }
+            else
+            {
+                Debug.Log("Invalid move");
+            }
         }
     }
 

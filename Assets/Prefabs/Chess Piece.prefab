@@ -102,7 +102,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   GlobalObjectIdHash: 951099334
   AlwaysReplicateAsRoot: 0
-  DontDestroyWithOwner: 0
+  DontDestroyWithOwner: 1
   AutoObjectParentSync: 1
 --- !u!114 &4166348312891349739
 MonoBehaviour:
@@ -116,6 +116,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4acc102e032f76d448d03a24213d1ce5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  pieceStatus:
+    m_InternalValue: 0
+  tilePosition:
+    m_InternalValue: {x: 0, y: 0, z: 0}
 --- !u!61 &4920239636137976742
 BoxCollider2D:
   m_ObjectHideFlags: 0

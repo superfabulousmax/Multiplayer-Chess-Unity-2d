@@ -11,20 +11,24 @@ public class Board : NetworkBehaviour
     [SerializeField]
     List<ChessPiece> chessPiecesList;
 
-    private const int MaxPieces = 32;
-
     public Tilemap BoardTileMap { get => tilemap; }
     public IReadOnlyDictionary<uint, ChessPiece> ChessPieces { get => chessPiecesMap; }
     public IReadOnlyList<ChessPiece> ChessPiecesList { get => chessPiecesList; }
 
     Dictionary<uint, ChessPiece> chessPiecesMap;
+
     public event System.Action onFinishedBoardSetup;
+
+    private const int MaxPieces = 32;
+
+    int [,] board;
 
     void Awake()
     {
         tilemap = GetComponent<Tilemap>();
         chessPiecesMap = new Dictionary<uint, ChessPiece>();
         chessPiecesList = new List<ChessPiece>(MaxPieces);
+        board = new int[8, 8];
     }
 
     public BoundsInt.PositionEnumerator GetAllPositions()
@@ -36,18 +40,43 @@ public class Board : NetworkBehaviour
     {
         var ray = Camera.main.ScreenPointToRay(mousePosition);
         var plane = new Plane(Vector3.back, Vector3.zero);
-
         plane.Raycast(ray, out var hitDist);
         var point = ray.GetPoint(hitDist);
-        var tilePosition = tilemap.WorldToCell(point);
+        return tilemap.WorldToCell(point);
+    }
 
-        return tilePosition;
+    internal bool ValidateMove(PlayerColour activePlayer, ChessPiece selectedChessPiece, Vector3Int tilePosition, out bool takenPiece)
+    {
+        return selectedChessPiece.ChessRuleBehaviour.PossibleMove(activePlayer, this, selectedChessPiece, tilePosition, out takenPiece);
     }
 
     internal void AddPieceToBoard(ChessPiece chessPiece)
     {
         chessPiecesMap.Add((uint)chessPiece.NetworkObjectId, chessPiece);
         chessPiecesList.Add(chessPiece);
+    }
+
+    internal void RemovePieceToBoard(ChessPiece chessPiece)
+    {
+        chessPiecesMap.Remove((uint)chessPiece.NetworkObjectId);
+        chessPiecesList.Remove(chessPiece);
+    }
+
+    [ServerRpc(RequireOwnership =false)]
+    internal void TakePieceServerRpc(NetworkBehaviourReference target, Vector3Int tilePosition)
+    {
+        var id = GetBoardState()[tilePosition.y, tilePosition.x];
+        if (target.TryGet(out ChessPiece chessPieceComponent))
+        {
+        }
+        if (chessPiecesMap.TryGetValue((uint)id, out ChessPiece value))
+        {
+            //value.SetCapturedServerRpc();
+            //value.DisablePieceClientRpc(); 
+            chessPieceComponent.SetTilePositionServerRpc(tilePosition);
+            RemoveChessPieceToBoardServerRpc(value);
+            value.GetComponent<NetworkObject>().Despawn();
+        }
     }
 
     [ServerRpc]
@@ -63,6 +92,60 @@ public class Board : NetworkBehaviour
         {
             AddPieceToBoard(chessPieceComponent);
         }
+    }
+
+    [ServerRpc]
+    public void RemoveChessPieceToBoardServerRpc(NetworkBehaviourReference target)
+    {
+        RemoveChessPieceToBoardClientRpc(target);
+    }
+
+    [ClientRpc]
+    public void RemoveChessPieceToBoardClientRpc(NetworkBehaviourReference target)
+    {
+        if (target.TryGet(out ChessPiece chessPieceComponent))
+        {
+            RemovePieceToBoard(chessPieceComponent);
+        }
+    }
+
+    public int [,] GetBoardState()
+    {
+        var allPositions = GetAllPositions();
+        allPositions.MoveNext();
+        var currentBoardPosition = allPositions.Current;
+        for (int y = 0; y < 8; y++)
+        {
+            for(int x = 0; x < 8; x++)
+            {
+                allPositions.MoveNext();
+                var piece = GetPieceAtPosition(currentBoardPosition);
+                if(piece)
+                {
+                    board[y, x] = (int)piece.NetworkObjectId;
+                    //Debug.Log($"{x} {y} {piece}");
+                }
+                else
+                {
+                    board[y, x] = -1;
+                }
+                currentBoardPosition = allPositions.Current;
+            }
+        }
+        return board;
+    }
+
+    public ChessPiece GetPieceAtPosition(Vector3Int position)
+    {
+        foreach(var piece in chessPiecesList)
+        {
+            if(piece.IsActive())
+            {
+                if (piece.TilePosition == position)
+                    return piece;
+            }
+        }
+        return null;
     }
 
     internal ChessPiece GetPieceFromId(uint id)
