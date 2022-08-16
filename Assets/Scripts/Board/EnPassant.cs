@@ -7,11 +7,11 @@ public class EnPassant : IEnPassantChessRule
     {
     }
 
-    public bool CheckEnPassant(int direction, PlayerColour activeColour, Board board, ChessPiece piece, Vector3Int newPosition, out Vector3Int takenPiecePosition)
+    public bool CheckEnPassant(int direction, PlayerColour activeColour, Board board, ChessPiece piece, ChessPiece lastMovedPawn, Vector3Int newPosition, out Vector3Int takenPiecePosition)
     {
         // check taking a piece
         takenPiecePosition = Vector3Int.zero;
-        var result = CheckEnPassantCapture(direction, piece, newPosition, board);
+        var result = CheckEnPassantCapture(direction, piece, lastMovedPawn, newPosition, board);
         if (result.isEnPassant)
         {
             Debug.Log("Taking new piece with en passant");
@@ -22,8 +22,20 @@ public class EnPassant : IEnPassantChessRule
         return false;
     }
 
-    public (bool isEnPassant, Vector3Int takenPosition) CheckEnPassantCapture(int direction, ChessPiece piece, Vector3Int newPosition, Board board)
+    public (bool isEnPassant, Vector3Int takenPosition) CheckEnPassantCapture(int direction, ChessPiece piece, ChessPiece lastMovedPawn, Vector3Int newPosition, Board board)
     {
+        if (lastMovedPawn == piece)
+        {
+            return (false, -Vector3Int.one);
+        } 
+
+        if (lastMovedPawn.ChessRuleBehaviour is PawnChessPiece pawn)
+        {
+            if(pawn.FirstMoveTwo != true && pawn.MoveCount != 1)
+            {
+                return (false, -Vector3Int.one);
+            }
+        }
         var boardState = board.GetBoardState();
         // check empty square
         if (boardState[newPosition.y, newPosition.x] >= 0)
@@ -38,31 +50,25 @@ public class EnPassant : IEnPassantChessRule
         {
             return (false, -Vector3Int.one);
         }
-        if (direction > 0)
+        var targetPos = lastMovedPawn.TilePosition;
+        if (newPosition.x != targetPos.x)
         {
-            if (newPosition.y < y)
+            return (false, -Vector3Int.one);
+        }
+        if(direction > 0)
+        {
+            if (newPosition.y != targetPos.y + 1)
                 return (false, -Vector3Int.one);
         }
         else
         {
-            if (newPosition.y > y)
+            if (newPosition.y != targetPos.y - 1)
                 return (false, -Vector3Int.one);
         }
-        var pawnPosition = new Vector3Int(newPosition.x, newPosition.y - direction, newPosition.z);
-        var id = boardState[pawnPosition.y, pawnPosition.x];
-        if (board.CheckPiece(id, ChessPiece.ChessPieceType.Pawn))
-        {
-            var pawn = board.GetPieceFromId((uint)id);
-            if (pawn != null)
-            {
-                var chessRule = pawn.ChessRuleBehaviour as PawnChessPiece;
-                if (chessRule.FirstMoveTwo && chessRule.MoveCount == 1)
-                {
-                    return (true, pawnPosition);
-                }
-            }
-        }
-
-        return (false, pawnPosition);
+        var comparePosition = new Vector3Int(targetPos.x, targetPos.y + direction, targetPos.z);
+        if(comparePosition != newPosition)
+            return (false, -Vector3Int.one);
+        var takenPawnPosition = new Vector3Int(newPosition.x, newPosition.y - direction, newPosition.z);
+        return (true, takenPawnPosition);
     }
 }

@@ -11,15 +11,15 @@ public class PawnChessPiece : IChessRule
     NetworkVariable<bool> firstMoveTwo = new(false, writePerm: NetworkVariableWritePermission.Owner);
     [SerializeField]
     NetworkVariable<int> moveCount = new(0, writePerm: NetworkVariableWritePermission.Owner);
-
+    public static NetworkVariable<uint> lastMovedPawnId = new(0, writePerm: NetworkVariableWritePermission.Owner);
     PlayerColour pawnColour;
 
     public bool IsFirstMove { get => isFirstMove.Value; set => isFirstMove.Value = value; }
     public int MoveCount { get => moveCount.Value; set => moveCount.Value = value; }
     public bool FirstMoveTwo { get => firstMoveTwo.Value; set => firstMoveTwo.Value = value; }
+    public uint LastMovedPawnID { get => lastMovedPawnId.Value; set => lastMovedPawnId.Value = value; }
 
     IEnPassantChessRule enPassant;
-
 
     public PawnChessPiece(PlayerColour pawnColour, Vector3Int tilePosition, bool isFirstMove = true, bool firstMoveTwo = false)
     {
@@ -43,9 +43,11 @@ public class PawnChessPiece : IChessRule
         var yDiff = Mathf.Abs(newPosition.y - y);
         if (Mathf.Abs(newPosition.x - x) > 1)
             return false;
-        if (yDiff > 2)
+        if (yDiff > 2 || yDiff < 1)
             return false;
         //Debug.Log($"possible move {piece.TilePosition} to {newPosition}");
+        ChessPiece lastMovedPawn = board.GetPieceFromId(lastMovedPawnId.Value);
+        var takenWithEnPassant = false;
         if (activeColour == PlayerColour.PlayerOne)
         {
             if (newPosition.y <= y)
@@ -67,9 +69,14 @@ public class PawnChessPiece : IChessRule
             }
             else
             {
-                if (enPassant.CheckEnPassant(1, pawnColour, board, piece, newPosition, out var takenPiecePosition))
+                if (yDiff > 1)
+                {
+                    return false;
+                }
+                if (lastMovedPawn != null && enPassant.CheckEnPassant(1, pawnColour, board, piece, lastMovedPawn, newPosition, out var takenPiecePosition))
                 {
                     board.TakePieceServerRpc(piece, takenPiecePosition);
+                    takenWithEnPassant = true;
                 }
                 else if (boardState[newPosition.y, newPosition.x] < 0 || board.CheckPiece(boardState[newPosition.y, newPosition.x], ChessPiece.ChessPieceType.King))
                 {
@@ -102,9 +109,14 @@ public class PawnChessPiece : IChessRule
             else
             {
                 // check taking a piece
-                if (enPassant.CheckEnPassant(-1, pawnColour, board, piece, newPosition, out var takenPiecePosition))
+                if (yDiff > 1)
+                {
+                    return false;
+                }
+                if (lastMovedPawn != null && enPassant.CheckEnPassant(-1, pawnColour, board, piece, lastMovedPawn, newPosition, out var takenPiecePosition))
                 {
                     board.TakePieceServerRpc(piece, takenPiecePosition);
+                    takenWithEnPassant = true;
                 }
                 else if (boardState[newPosition.y, newPosition.x] < 0 || board.CheckPiece(boardState[newPosition.y, newPosition.x], ChessPiece.ChessPieceType.King))
                 {
@@ -118,6 +130,12 @@ public class PawnChessPiece : IChessRule
             }
         }
 
+        if (!takenWithEnPassant && lastMovedPawn != null && lastMovedPawn.ChessRuleBehaviour is PawnChessPiece lastPawn)
+        {
+            lastPawn.FirstMoveTwo = false;
+            lastMovedPawn.SyncDataServerRpc(lastPawn.moveCount.Value, lastPawn.isFirstMove.Value, lastPawn.firstMoveTwo.Value, lastMovedPawnId.Value);
+        }
+
         if (isFirstMove.Value && yDiff == 2)
         {
             firstMoveTwo.Value = true;
@@ -127,8 +145,9 @@ public class PawnChessPiece : IChessRule
             isFirstMove.Value = false;
         }
 
+        lastMovedPawnId.Value = (uint)piece.NetworkObjectId;
         moveCount.Value++;
-        piece.SyncDataServerRpc(moveCount.Value, isFirstMove.Value, firstMoveTwo.Value);
+        piece.SyncDataServerRpc(moveCount.Value, isFirstMove.Value, firstMoveTwo.Value, lastMovedPawnId.Value);
         return true;
     }
 }

@@ -122,19 +122,20 @@ public class ChessPiece : NetworkBehaviour
     }
 
     [ServerRpc(RequireOwnership =false)]
-    internal void SyncDataServerRpc(int moveCount, bool isFirstMove, bool firstMoveTwo)
+    internal void SyncDataServerRpc(int moveCount, bool isFirstMove, bool firstMoveTwo, uint lastMovedPawnId)
     {
-        SyncDataClientRpc(moveCount, isFirstMove, firstMoveTwo);
+        SyncDataClientRpc(moveCount, isFirstMove, firstMoveTwo, lastMovedPawnId);
     }
 
     [ClientRpc]
-    internal void SyncDataClientRpc(int moveCount, bool isFirstMove, bool firstMoveTwo)
+    internal void SyncDataClientRpc(int moveCount, bool isFirstMove, bool firstMoveTwo, uint lastMovedPawnId)
     {
         if(chessRuleBehaviour is PawnChessPiece pawnChessPiece)
         {
             pawnChessPiece.MoveCount = moveCount;
             pawnChessPiece.IsFirstMove = isFirstMove;
             pawnChessPiece.FirstMoveTwo = firstMoveTwo;
+            pawnChessPiece.LastMovedPawnID = lastMovedPawnId;
         }
     }
 }
