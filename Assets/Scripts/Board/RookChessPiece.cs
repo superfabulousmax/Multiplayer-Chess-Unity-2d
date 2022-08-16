@@ -66,7 +66,7 @@ public class RookChessPiece : IChessRule
         }
 
 
-        if(board.CheckPiece(boardState[newPosition.y, newPosition.x], ChessPiece.ChessPieceType.King))
+        if (board.CheckPiece(boardState[newPosition.y, newPosition.x], ChessPiece.ChessPieceType.King))
         {
             return false;
         }   

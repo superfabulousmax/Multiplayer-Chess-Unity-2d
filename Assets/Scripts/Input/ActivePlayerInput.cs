@@ -60,18 +60,12 @@ public class ActivePlayerInput : IPlayerInput
             {
                 return;
             }
-            //if (this.selectedChessPiece.PlayerColour != activeColour)
-            //{
-            //    this.selectedChessPiece = null;
-            //    return;
-            //}
+
             var tilePosition = board.GetTileAtMousePosition(Input.mousePosition);
             if(selectedChessPiece.TilePosition == tilePosition)
             {
                 return;
             }
-
-            //board.ValidateMove(activeColour, selectedChessPiece, tilePosition);
 
             if (board.ValidateMove(activeColour, selectedChessPiece, tilePosition, out bool isPieceTaken))
             {
