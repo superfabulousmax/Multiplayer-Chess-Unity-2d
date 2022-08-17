@@ -1,9 +1,14 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class KnightChessPiece : IChessRule
 {
+
+    IChessRule takePieceRule;
+
+    public KnightChessPiece(IChessRule takePieceRule)
+    {
+        this.takePieceRule = takePieceRule;
+    }
     public bool PossibleMove(PlayerColour activeColour, Board board, ChessPiece piece, Vector3Int newPosition, out bool takenPiece)
     {
         takenPiece = false;
@@ -29,19 +34,7 @@ public class KnightChessPiece : IChessRule
                 return false;
         }
 
-        if (board.CheckPiece(boardState[newPosition.y, newPosition.x], ChessPiece.ChessPieceType.King))
-        {
-            return false;
-        }
-        if (boardState[newPosition.y, newPosition.x] > 0 && activeColour == board.GetPieceFromId((uint)boardState[newPosition.y, newPosition.x]).PlayerColour)
-        {
-            return false;
-        }
-        if (boardState[newPosition.y, newPosition.x] > 0)
-        {
-            takenPiece = true;
-            Debug.Log("Knight taking new piece");
-        }
+        takePieceRule.PossibleMove(activeColour, board, piece, newPosition, out takenPiece);
 
         return true;
     }

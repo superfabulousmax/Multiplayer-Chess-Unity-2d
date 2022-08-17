@@ -85,16 +85,16 @@ public class ChessPiece : NetworkBehaviour
                 chessRuleBehaviour = new KingChessPiece();
                 break;
             case ChessPieceType.Queen:
-                chessRuleBehaviour = new QueenChessPiece();
+                chessRuleBehaviour = new QueenChessPiece(new TakePieceRule(ChessPieceType.Queen));
                 break;
             case ChessPieceType.Rook:
-                chessRuleBehaviour = new RookChessPiece();
+                chessRuleBehaviour = new RookChessPiece(new TakePieceRule(ChessPieceType.Rook));
                 break;
             case ChessPieceType.Knight:
-                chessRuleBehaviour = new KnightChessPiece();
+                chessRuleBehaviour = new KnightChessPiece(new TakePieceRule(ChessPieceType.Knight));
                 break;
             case ChessPieceType.Bishop:
-                chessRuleBehaviour = new BishopChessPiece();
+                chessRuleBehaviour = new BishopChessPiece(new TakePieceRule(ChessPieceType.Bishop));
                 break;
         }
 
