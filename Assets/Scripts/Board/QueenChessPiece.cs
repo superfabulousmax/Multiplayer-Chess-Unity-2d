@@ -2,7 +2,6 @@ using UnityEngine;
 
 public class QueenChessPiece : IChessRule
 {
-
     IChessRule takePieceRule;
     IChessRule bishopChessRule;
     IChessRule rookChessRule;

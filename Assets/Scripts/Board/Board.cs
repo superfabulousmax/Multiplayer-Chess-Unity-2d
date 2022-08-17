@@ -3,6 +3,7 @@ using UnityEngine.Tilemaps;
 using System.Collections.Generic;
 using Unity.Netcode;
 using System;
+using static ChessPiece;
 
 [RequireComponent(typeof(Tilemap))]
 public class Board : NetworkBehaviour
@@ -12,9 +13,12 @@ public class Board : NetworkBehaviour
     [SerializeField]
     List<ChessPiece> chessPiecesList;
 
+    PiecePlacementSystem piecePlacementSystem;
+
     public Tilemap BoardTileMap { get => tilemap; }
     public IReadOnlyDictionary<uint, ChessPiece> ChessPieces { get => chessPiecesMap; }
     public IReadOnlyList<ChessPiece> ChessPiecesList { get => chessPiecesList; }
+    public PiecePlacementSystem PlacementSystem { get => piecePlacementSystem; set => piecePlacementSystem = value; }
 
     Dictionary<uint, ChessPiece> chessPiecesMap;
 
@@ -169,5 +173,21 @@ public class Board : NetworkBehaviour
     public override string ToString()
     {
         return $"Board has {chessPiecesList.Count} pieces";
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    internal void HandlePawnPromotionServerRpc(NetworkBehaviourReference target, ChessPieceType type)
+    {
+        HandlePawnProtionClientRpc(target, type);
+    }
+
+    [ClientRpc]
+    internal void HandlePawnProtionClientRpc(NetworkBehaviourReference target, ChessPieceType chessPieceType)
+    {
+        Debug.Log($"Promote pawn to {chessPieceType}");
+        if (target.TryGet(out ChessPiece chessPiece))
+        {
+            chessPiece.ChangePieceTo(chessPieceType, PlacementSystem);
+        }
     }
 }

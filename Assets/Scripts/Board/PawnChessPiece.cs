@@ -20,8 +20,9 @@ public class PawnChessPiece : IChessRule
     public uint LastMovedPawnID { get => lastMovedPawnId.Value; set => lastMovedPawnId.Value = value; }
 
     IEnPassantChessRule enPassant;
+    IChessRule pawnPromotion;
 
-    public PawnChessPiece(PlayerColour pawnColour, Vector3Int tilePosition, bool isFirstMove = true, bool firstMoveTwo = false)
+    public PawnChessPiece(IChessRule pawnPromotion, PlayerColour pawnColour, Vector3Int tilePosition, bool isFirstMove = true, bool firstMoveTwo = false)
     {
         this.isFirstMove.Value = isFirstMove;
         this.firstMoveTwo.Value = firstMoveTwo;
@@ -32,6 +33,7 @@ public class PawnChessPiece : IChessRule
         }
 
         enPassant = new EnPassant();
+        this.pawnPromotion = pawnPromotion;
     }
 
     public bool PossibleMove(PlayerColour activeColour, Board board, ChessPiece piece, Vector3Int newPosition, out bool takenPiece)
@@ -148,6 +150,12 @@ public class PawnChessPiece : IChessRule
         lastMovedPawnId.Value = (uint)piece.NetworkObjectId;
         moveCount.Value++;
         piece.SyncDataServerRpc(moveCount.Value, isFirstMove.Value, firstMoveTwo.Value, lastMovedPawnId.Value);
+
+        if (pawnPromotion.PossibleMove(activeColour, board, piece, newPosition, out var _))
+        {
+            board.HandlePawnPromotionServerRpc(piece, ChessPiece.ChessPieceType.Queen);
+        }
+
         return true;
     }
 }

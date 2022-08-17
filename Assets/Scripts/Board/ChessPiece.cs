@@ -1,7 +1,6 @@
 using UnityEngine;
 using Unity.Netcode;
 using Unity.Netcode.Components;
-using System;
 
 [SelectionBase, RequireComponent(typeof(SpriteRenderer))]
 public class ChessPiece : NetworkBehaviour
@@ -19,6 +18,8 @@ public class ChessPiece : NetworkBehaviour
 
     SpriteRenderer spriteRenderer;
 
+    ChessPieces chessPieces;
+
     [SerializeField]
     IChessRule chessRuleBehaviour;
 
@@ -28,6 +29,7 @@ public class ChessPiece : NetworkBehaviour
     public Vector3Int TilePosition { get => tilePosition.Value; }
     public ChessPieceType PieceType { get => pieceType.Value; }
     public IChessRule ChessRuleBehaviour { get => chessRuleBehaviour; set => chessRuleBehaviour = value; }
+    public ChessPieces ChessPieces { get => chessPieces; set => chessPieces = value; }
 
     [ClientRpc]
     public void SetTilePositionClientRpc(Vector3Int newTilePosition)
@@ -76,10 +78,15 @@ public class ChessPiece : NetworkBehaviour
     {
         networkTransform = GetComponent<NetworkTransform>();
         spriteRenderer = GetComponent<SpriteRenderer>();
-        switch (pieceType.Value)
+        AssignChessRules(pieceType.Value);
+    }
+
+    internal void AssignChessRules(ChessPieceType chessPieceType)
+    {
+        switch (chessPieceType)
         {
             case ChessPieceType.Pawn:
-                chessRuleBehaviour = new PawnChessPiece(PlayerColour, tilePosition.Value);
+                chessRuleBehaviour = new PawnChessPiece(new PawnPromotionRule(), PlayerColour, tilePosition.Value);
                 break;
             case ChessPieceType.King:
                 chessRuleBehaviour = new KingChessPiece();
@@ -97,15 +104,15 @@ public class ChessPiece : NetworkBehaviour
                 chessRuleBehaviour = new BishopChessPiece(new TakePieceRule(ChessPieceType.Bishop));
                 break;
         }
-
     }
 
-    internal void Init(PlayerColour colour, Sprite sprite, ChessPieceType type, Vector3Int tilePosition = default)
+    internal void Init(ChessPieces chessPieces, PlayerColour colour, Sprite sprite, ChessPieceType type, Vector3Int tilePosition = default)
     {
         networkTransform = GetComponent<NetworkTransform>();
         spriteRenderer = GetComponent<SpriteRenderer>();
-        spriteRenderer.sprite = sprite;
+        this.chessPieces = chessPieces;
         playerColour.Value = colour;
+        spriteRenderer.sprite = sprite;
         pieceType.Value = type;
         this.tilePosition.Value = tilePosition;
         
@@ -136,6 +143,19 @@ public class ChessPiece : NetworkBehaviour
             pawnChessPiece.IsFirstMove = isFirstMove;
             pawnChessPiece.FirstMoveTwo = firstMoveTwo;
             pawnChessPiece.LastMovedPawnID = lastMovedPawnId;
+        }
+    }
+
+    internal void ChangePieceTo(ChessPieceType chessPieceType, PiecePlacementSystem placementSystem)
+    {
+        AssignChessRules(chessPieceType);
+        if (chessPieces != null)
+        {
+            spriteRenderer.sprite = chessPieces.GetSprite(chessPieceType);
+        }
+        else
+        {
+            spriteRenderer.sprite =  placementSystem.GetSpriteForPiece(PlayerColour, chessPieceType);
         }
     }
 }
