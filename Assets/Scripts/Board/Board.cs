@@ -67,9 +67,9 @@ public class Board : NetworkBehaviour
         return tilemap.WorldToCell(point);
     }
 
-    internal bool ValidateMove(PlayerColour activePlayer, ChessPiece selectedChessPiece, Vector3Int tilePosition, out bool takenPiece, out bool checkedKing)
+    internal bool ValidateMove(PlayerColour activePlayer, ChessPiece selectedChessPiece, Vector3Int tilePosition, out bool takenPiece)
     {
-        return selectedChessPiece.ChessRuleBehaviour.PossibleMove(activePlayer, this, selectedChessPiece, tilePosition, out takenPiece, out checkedKing);
+        return selectedChessPiece.ChessRuleBehaviour.PossibleMove(activePlayer, this, selectedChessPiece, tilePosition, out takenPiece);
     }
 
 
@@ -248,7 +248,7 @@ public class Board : NetworkBehaviour
         return false;
     }
 
-    internal Vector3Int GetKingPosition(uint id, int [,] boardState)
+    internal Vector3Int GetIdPosition(uint id, int [,] boardState)
     {
         for (int y = 0; y < 8; y++)
         {

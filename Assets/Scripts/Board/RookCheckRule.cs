@@ -9,7 +9,7 @@ public class RookCheckRule : ICheckRule
 
         king = board.GetOppositeKing(rook.PlayerColour);
         var kingId = (uint)king.NetworkObjectId;
-        var kingPosition = board.GetKingPosition(kingId, boardState);
+        var kingPosition = board.GetIdPosition(kingId, boardState);
 
         if (kingPosition.y > y && kingPosition.x > x)
             return false;

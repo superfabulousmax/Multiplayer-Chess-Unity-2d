@@ -10,10 +10,9 @@ public class KnightChessPiece : IChessRule
         this.takePieceRule = takePieceRule;
         this.moveToStopCheckRule = moveToStopCheckRule;
     }
-    public bool PossibleMove(PlayerColour activeColour, Board board, ChessPiece piece, Vector3Int newPosition, out bool takenPiece, out bool checkedKing)
+    public bool PossibleMove(PlayerColour activeColour, Board board, ChessPiece piece, Vector3Int newPosition, out bool takenPiece)
     {
         takenPiece = false;
-        checkedKing = false;
 
         var y = piece.TilePosition.y;
         var x = piece.TilePosition.x;
@@ -36,19 +35,10 @@ public class KnightChessPiece : IChessRule
                 return false;
         }
 
-        takePieceRule.PossibleMove(activeColour, board, piece, newPosition, out takenPiece, out var _);
+        takePieceRule.PossibleMove(activeColour, board, piece, newPosition, out takenPiece);
 
-        // check if move piece to stop check
-        //if (!moveToStopCheckRule.PossibleMove(activeColour, board, piece, newPosition, out var _, out var isCheckedKing))
-        //{
-        //    if (isCheckedKing)
-        //    {
-        //        takenPiece = false;
-        //    }
-        //    return false;
-        //}
         // check if move piece to stop check or if moving piece causes check
-        var result = moveToStopCheckRule.PossibleMove(activeColour, board, piece, newPosition, out var _, out var _);
+        var result = moveToStopCheckRule.PossibleMove(activeColour, board, piece, newPosition, out var _);
         if (!result)
         {
             takenPiece = false;

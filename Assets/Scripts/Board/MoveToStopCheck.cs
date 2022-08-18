@@ -2,9 +2,8 @@ using UnityEngine;
 
 public class MoveToStopCheck : IChessRule
 {
-    public bool PossibleMove(PlayerColour activeColour, Board board, ChessPiece piece, Vector3Int newPosition, out bool takenPiece, out bool checkedKing)
+    public bool PossibleMove(PlayerColour activeColour, Board board, ChessPiece piece, Vector3Int newPosition, out bool takenPiece)
     {
-        checkedKing = false;
         takenPiece = false;
 
         var boardState = board.GetBoardState();
@@ -29,8 +28,6 @@ public class MoveToStopCheck : IChessRule
         {
             if (king.PlayerColour == piece.PlayerColour)
             {
-                checkedKing = true;
-         
                 if (board.IsInCheck(simulatedBoardState, out var _))
                 {
                     return false;

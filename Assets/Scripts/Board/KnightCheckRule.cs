@@ -10,8 +10,7 @@ public class KnightCheckRule : ICheckRule
         king = board.GetOppositeKing(knight.PlayerColour);
 
         var kingId = (uint)king.NetworkObjectId;
-        //var kingPosition = king.TilePosition;
-        var kingPosition = board.GetKingPosition(kingId, boardState);
+        var kingPosition = board.GetIdPosition(kingId, boardState);
 
         var deltaY = Mathf.Abs(kingPosition.y - y);
         var deltaX = Mathf.Abs(kingPosition.x - x);

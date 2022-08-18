@@ -45,7 +45,7 @@ public class ActivePlayerInput : IPlayerInput
                 return;
             }
 
-            if (board.ValidateMove(activeColour, selectedChessPiece, tilePosition, out bool isPieceTaken, out bool checkedKing))
+            if (board.ValidateMove(activeColour, selectedChessPiece, tilePosition, out bool isPieceTaken))
             {
                 if (isPieceTaken)
                 {
