@@ -9,7 +9,6 @@ public class BishopCheckRule : ICheckRule
 
         king = board.GetOppositeKing(bishop.PlayerColour);
         var kingId = (uint)king.NetworkObjectId;
-        //var kingPosition = king.TilePosition;
         var kingPosition = board.GetIdPosition(kingId, boardState);
 
         if (kingPosition.y == y)

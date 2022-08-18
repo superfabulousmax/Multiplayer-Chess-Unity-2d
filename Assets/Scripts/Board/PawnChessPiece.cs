@@ -21,8 +21,9 @@ public class PawnChessPiece : IChessRule
 
     IEnPassantChessRule enPassant;
     IChessRule pawnPromotion;
+    IChessRule moveToStopCheckRule;
 
-    public PawnChessPiece(IChessRule pawnPromotion, PlayerColour pawnColour, Vector3Int tilePosition, bool isFirstMove = true, bool firstMoveTwo = false)
+    public PawnChessPiece(IChessRule pawnPromotion, IChessRule moveToStopCheckRule, PlayerColour pawnColour, Vector3Int tilePosition, bool isFirstMove = true, bool firstMoveTwo = false)
     {
         this.isFirstMove.Value = isFirstMove;
         this.firstMoveTwo.Value = firstMoveTwo;
@@ -34,6 +35,7 @@ public class PawnChessPiece : IChessRule
 
         enPassant = new EnPassant();
         this.pawnPromotion = pawnPromotion;
+        this.moveToStopCheckRule = moveToStopCheckRule;
     }
 
     public bool PossibleMove(PlayerColour activeColour, Board board, ChessPiece piece, Vector3Int newPosition, out bool takenPiece)
@@ -151,6 +153,15 @@ public class PawnChessPiece : IChessRule
         lastMovedPawnId.Value = (uint)piece.NetworkObjectId;
         moveCount.Value++;
         piece.SyncDataServerRpc(moveCount.Value, isFirstMove.Value, firstMoveTwo.Value, lastMovedPawnId.Value);
+
+        // check if move piece to stop check or if moving piece causes check
+        var result = moveToStopCheckRule.PossibleMove(activeColour, board, piece, newPosition, out var _);
+        if (!result)
+        {
+            takenPiece = false;
+            return false;
+        }
+
 
         if (pawnPromotion.PossibleMove(activeColour, board, piece, newPosition, out var _))
         {

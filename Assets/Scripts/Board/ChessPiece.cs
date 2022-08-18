@@ -89,8 +89,8 @@ public class ChessPiece : NetworkBehaviour
         switch (chessPieceType)
         {
             case ChessPieceType.Pawn:
-                chessRuleBehaviour = new PawnChessPiece(new PawnPromotionRule(), PlayerColour, tilePosition.Value);
-                checkRuleBehaviour = null;
+                chessRuleBehaviour = new PawnChessPiece(new PawnPromotionRule(), new MoveToStopCheck(), PlayerColour, tilePosition.Value);
+                checkRuleBehaviour = new PawnCheckRule();
                 break;
             case ChessPieceType.King:
                 chessRuleBehaviour = new KingChessPiece(new MoveToStopCheck());
