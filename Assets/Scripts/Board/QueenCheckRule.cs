@@ -11,12 +11,12 @@ public class QueenCheckRule : ICheckRule
         this.bishopCheckRule = bishopCheckRule;
     }
 
-    public bool PossibleCheck(Board board, ChessPiece queen, Vector3Int position, out ChessPiece king)
+    public bool PossibleCheck(Board board, int[,] boardState, ChessPiece queen, Vector3Int position, out ChessPiece king)
     {
-        if(rookCheckRule.PossibleCheck(board, queen, position, out king))
+        if(rookCheckRule.PossibleCheck(board, boardState, queen, position, out king))
         {
             return true;
         }
-        return bishopCheckRule.PossibleCheck(board, queen, position, out king);
+        return bishopCheckRule.PossibleCheck(board, boardState,queen, position, out king);
     }
 }

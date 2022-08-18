@@ -2,14 +2,17 @@ using UnityEngine;
 
 public class KnightCheckRule : ICheckRule
 {
-    public bool PossibleCheck(Board board, ChessPiece knight, Vector3Int position, out ChessPiece king)
+    public bool PossibleCheck(Board board, int[,] boardState, ChessPiece knight, Vector3Int position, out ChessPiece king)
     {
         var y = position.y;
         var x = position.x;
 
         king = board.GetOppositeKing(knight.PlayerColour);
 
-        var kingPosition = king.TilePosition;
+        var kingId = (uint)king.NetworkObjectId;
+        //var kingPosition = king.TilePosition;
+        var kingPosition = board.GetKingPosition(kingId, boardState);
+
         var deltaY = Mathf.Abs(kingPosition.y - y);
         var deltaX = Mathf.Abs(kingPosition.x - x);
 

@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class MoveToStopCheck : IChessRule
@@ -13,15 +11,37 @@ public class MoveToStopCheck : IChessRule
 
         var y = piece.TilePosition.y;
         var x = piece.TilePosition.x;
+        
+        // simulate new move
+        var simulatedBoardState = new int[boardState.Length, boardState.Length];
+        for (int j = 0; j < 8; j++)
+        {
+            for (int i = 0; i < 8; i++)
+            {
+                simulatedBoardState[j, i] = boardState[j, i];
+            }
+        }
+
+        simulatedBoardState[y, x] = -1;
+        simulatedBoardState[newPosition.y, newPosition.x] = (int)piece.NetworkObjectId;
 
         if (board.IsInCheck(out var king))
         {
             if (king.PlayerColour == piece.PlayerColour)
             {
                 checkedKing = true;
-                boardState[y, x] = -1;
-                boardState[newPosition.y, newPosition.x] = (int)piece.NetworkObjectId;
-                if (board.IsInCheck(boardState))
+         
+                if (board.IsInCheck(simulatedBoardState, out var _))
+                {
+                    return false;
+                }
+            }
+        }
+        else
+        {
+            if (board.IsInCheck(simulatedBoardState, out var newKing))
+            {
+                if (newKing.PlayerColour == piece.PlayerColour)
                 {
                     return false;
                 }

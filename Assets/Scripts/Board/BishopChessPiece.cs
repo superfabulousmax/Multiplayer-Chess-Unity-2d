@@ -89,14 +89,11 @@ public class BishopChessPiece : IChessRule
         }
 
         takePieceRule.PossibleMove(activeColour, board, piece, newPosition, out takenPiece, out var _);
-
-        // check if move piece to stop check
-        if (!moveToStopCheckRule.PossibleMove(activeColour, board, piece, newPosition, out var _, out var isCheckedKing))
+        // check if move piece to stop check or if moving piece causes check
+        var result = moveToStopCheckRule.PossibleMove(activeColour, board, piece, newPosition, out var _, out var _);
+        if (!result)
         {
-            if (isCheckedKing)
-            {
-                takenPiece = false;
-            }
+            takenPiece = false;
             return false;
         }
 

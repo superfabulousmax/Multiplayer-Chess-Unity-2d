@@ -2,14 +2,15 @@ using UnityEngine;
 
 public class BishopCheckRule : ICheckRule
 {
-    public bool PossibleCheck(Board board, ChessPiece bishop, Vector3Int position, out ChessPiece king)
+    public bool PossibleCheck(Board board, int [,] boardState, ChessPiece bishop, Vector3Int position, out ChessPiece king)
     {
         var y = position.y;
         var x = position.x;
 
         king = board.GetOppositeKing(bishop.PlayerColour);
-
-        var kingPosition = king.TilePosition;
+        var kingId = (uint)king.NetworkObjectId;
+        //var kingPosition = king.TilePosition;
+        var kingPosition = board.GetKingPosition(kingId, boardState);
 
         if (kingPosition.y == y)
             return false;
@@ -22,9 +23,6 @@ public class BishopCheckRule : ICheckRule
         if (xDiff != yDiff)
             return false;
 
-        var boardState = board.GetBoardState();
-
-        var kingId = (uint)king.NetworkObjectId;
         var bishopId = (int)bishop.NetworkObjectId;
 
         if (kingPosition.x < x)

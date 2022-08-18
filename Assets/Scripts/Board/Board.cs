@@ -210,7 +210,7 @@ public class Board : NetworkBehaviour
                 {
                     if (piece.CheckRuleBehaviour != null)
                     {
-                        if (piece.CheckRuleBehaviour.PossibleCheck(this, piece, piece.TilePosition, out checkedKing))
+                        if (piece.CheckRuleBehaviour.PossibleCheck(this, GetBoardState(), piece, piece.TilePosition, out checkedKing))
                         {
                             Debug.Log($"{checkedKing} is in Check");
                             return true;
@@ -224,32 +224,44 @@ public class Board : NetworkBehaviour
         return false;
     }
 
-    internal bool IsInCheck(int [,] simulatedBoard)
+    internal bool IsInCheck(int [,] simulatedBoard, out ChessPiece king)
     {
-        var allPositions = GetAllPositions();
-        allPositions.MoveNext();
-        var currentBoardPosition = allPositions.Current;
         for (int y = 0; y < 8; y++)
         {
             for (int x = 0; x < 8; x++)
             {
-                allPositions.MoveNext();
                 var id = simulatedBoard[y, x];
                 var piece = GetPieceFromId((uint)id);
                 if (piece)
                 {
                     if (piece.CheckRuleBehaviour != null)
                     {
-                        if (piece.CheckRuleBehaviour.PossibleCheck(this, piece, piece.TilePosition, out var _))
+                        if (piece.CheckRuleBehaviour.PossibleCheck(this, simulatedBoard, piece, new Vector3Int(x, y, 0), out king))
                         {
                             return true;
                         }
                     }
                 }
-                currentBoardPosition = allPositions.Current;
             }
         }
+        king = null;
         return false;
+    }
+
+    internal Vector3Int GetKingPosition(uint id, int [,] boardState)
+    {
+        for (int y = 0; y < 8; y++)
+        {
+            for (int x = 0; x < 8; x++)
+            {
+                if (id == boardState[y, x])
+                {
+                    return new Vector3Int(x, y, 0);
+                }
+            }
+        }
+
+        return -Vector3Int.one;
     }
 
 

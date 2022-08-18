@@ -2,13 +2,14 @@ using UnityEngine;
 
 public class RookCheckRule : ICheckRule
 {
-    public bool PossibleCheck(Board board, ChessPiece rook, Vector3Int position, out ChessPiece king)
+    public bool PossibleCheck(Board board, int[,] boardState, ChessPiece rook, Vector3Int position, out ChessPiece king)
     {
         var y = position.y;
         var x = position.x;
 
         king = board.GetOppositeKing(rook.PlayerColour);
-        var kingPosition = king.TilePosition;
+        var kingId = (uint)king.NetworkObjectId;
+        var kingPosition = board.GetKingPosition(kingId, boardState);
 
         if (kingPosition.y > y && kingPosition.x > x)
             return false;
@@ -16,9 +17,6 @@ public class RookCheckRule : ICheckRule
             return false;
         if (kingPosition.y == y && kingPosition.x == x)
             return false;
-
-        var boardState = board.GetBoardState();
-        var kingId = (uint)king.NetworkObjectId;
 
         if (kingPosition.x == x)
         {
