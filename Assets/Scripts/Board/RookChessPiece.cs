@@ -5,6 +5,9 @@ public class RookChessPiece : IChessRule
     IChessRule takePieceRule;
     IChessRule moveToStopCheckRule;
 
+    int moveCount;
+    public int MoveCount { get => moveCount; set => moveCount = value; }
+
     public RookChessPiece(IChessRule takePieceRule, IChessRule moveToStopCheckRule)
     {
         this.takePieceRule = takePieceRule;
@@ -86,6 +89,9 @@ public class RookChessPiece : IChessRule
             return false;
         }
 
+
+        moveCount++;
+        piece.SyncDataServerRpc(moveCount, default, default, default);
         return true;
     }
 }

@@ -1,4 +1,5 @@
 using UnityEngine;
+
 using Unity.Netcode;
 using Unity.Netcode.Components;
 
@@ -93,7 +94,7 @@ public class ChessPiece : NetworkBehaviour
                 checkRuleBehaviour = new PawnCheckRule();
                 break;
             case ChessPieceType.King:
-                chessRuleBehaviour = new KingChessPiece(new MoveToStopCheck());
+                chessRuleBehaviour = new KingChessPiece(new MoveToStopCheck(), new CastleRule());
                 break;
             case ChessPieceType.Queen:
                 chessRuleBehaviour = new QueenChessPiece(new TakePieceRule(ChessPieceType.Queen));
@@ -151,6 +152,14 @@ public class ChessPiece : NetworkBehaviour
             pawnChessPiece.IsFirstMove = isFirstMove;
             pawnChessPiece.FirstMoveTwo = firstMoveTwo;
             pawnChessPiece.LastMovedPawnID = lastMovedPawnId;
+        }
+        else if(chessRuleBehaviour is RookChessPiece rookChessPiece)
+        {
+            rookChessPiece.MoveCount = moveCount;
+        }
+        else if(chessRuleBehaviour is KingChessPiece kingChessPiece)
+        {
+            kingChessPiece.MoveCount = moveCount;
         }
     }
 

@@ -58,6 +58,21 @@ public class Board : NetworkBehaviour
         return tilemap.cellBounds.allPositionsWithin;
     }
 
+    internal IReadOnlyList<ChessPiece> GetPieceWith(PlayerColour playerColour, ChessPieceType chessPieceType)
+    {
+        var result = new List<ChessPiece>();
+
+        foreach (var piece in chessPiecesList)
+        {
+            if (piece.PlayerColour == playerColour && piece.PieceType == chessPieceType)
+            {
+                result.Add(piece);
+            }
+        }
+
+        return result;
+    }
+
     public Vector3Int GetTileAtMousePosition(Vector3 mousePosition)
     {
         var ray = Camera.main.ScreenPointToRay(mousePosition);

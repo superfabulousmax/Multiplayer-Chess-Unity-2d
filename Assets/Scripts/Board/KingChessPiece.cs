@@ -3,11 +3,17 @@ using UnityEngine;
 public class KingChessPiece : IChessRule
 {
     IChessRule moveToStopCheckRule;
+    IChessRule castleRule;
 
-    public KingChessPiece(IChessRule moveToStopCheckRule)
+    int moveCount;
+    public int MoveCount { get => moveCount; set => moveCount = value; }
+
+    public KingChessPiece(IChessRule moveToStopCheckRule, IChessRule castleRule)
     {
         this.moveToStopCheckRule = moveToStopCheckRule;
+        this.castleRule = castleRule;
     }
+
 
     public bool PossibleMove(PlayerColour activeColour, Board board, ChessPiece piece, Vector3Int newPosition, out bool takenPiece)
     {
@@ -22,7 +28,7 @@ public class KingChessPiece : IChessRule
 
         if (deltaX == 0 && deltaY == 0)
             return false;
-        if (deltaX > 1)
+        if (deltaX > 2)
             return false;
         if (deltaY > 1)
             return false;
@@ -49,6 +55,17 @@ public class KingChessPiece : IChessRule
             return false;
         }
 
+        if (deltaX == 2 && moveCount == 0 && castleRule.PossibleMove(activeColour, board, piece, newPosition, out var _))
+        {
+            // check rook
+        }
+        else if (deltaX > 1)
+        {
+            return false;
+        }
+
+        moveCount++;
+        piece.SyncDataServerRpc(moveCount, default, default, default);
         return true;
     }
 }
