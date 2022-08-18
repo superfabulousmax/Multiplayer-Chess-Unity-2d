@@ -2,9 +2,18 @@ using UnityEngine;
 
 public class KingChessPiece : IChessRule
 {
-    public bool PossibleMove(PlayerColour activeColour, Board board, ChessPiece piece, Vector3Int newPosition, out bool takenPiece)
+    IChessRule moveToStopCheckRule;
+
+    public KingChessPiece(IChessRule moveToStopCheckRule)
+    {
+        this.moveToStopCheckRule = moveToStopCheckRule;
+    }
+
+    public bool PossibleMove(PlayerColour activeColour, Board board, ChessPiece piece, Vector3Int newPosition, out bool takenPiece, out bool checkedKing)
     {
         takenPiece = false;
+        checkedKing = false;
+
         var boardState = board.GetBoardState();
         var y = piece.TilePosition.y;
         var x = piece.TilePosition.x;
@@ -33,6 +42,15 @@ public class KingChessPiece : IChessRule
             Debug.Log("King taking new piece");
         }
 
+        // check if move piece to stop check
+        if (!moveToStopCheckRule.PossibleMove(activeColour, board, piece, newPosition, out var _, out var isCheckedKing))
+        {
+            if (isCheckedKing)
+            {
+                takenPiece = false;
+            }
+            return false;
+        }
         return true;
     }
 }

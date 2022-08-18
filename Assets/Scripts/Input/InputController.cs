@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class InputController : NetworkBehaviour
 {
+    private PromotionInputController promotionInputController;
+
     private IPlayerInput playerInput;
     private IPlayerInput activeInput;
 
@@ -11,19 +13,25 @@ public class InputController : NetworkBehaviour
     private Board board;
     private TurnSystem turnSystem;
 
+
     public IPlayerInput PlayerInput { get => playerInput; private set => playerInput = value; }
     public PlayerColour Colour { get => player.Colour; }
 
     public event Action<PlayerColour> onFinishInput;
+
+    private bool isWaiting;
 
     public override void OnNetworkSpawn()
     {
         player = GetComponent<Player>();
         board = FindObjectOfType<Board>();
         turnSystem = FindObjectOfType<TurnSystem>();
-        activeInput = new ActivePlayerInput(board, OnInputFinished);
+        //promotionInputController = FindObjectOfType<PromotionInputController>();
+        //promotionInputController.gameObject.SetActive(false);
+        activeInput = new ActivePlayerInput(board, OnInputFinished, OnPromotion);
         playerInput = activeInput;
         turnSystem.onNextTurn += OnNextPlayerTurn;
+        isWaiting = false;
     }
 
     private void OnNextPlayerTurn(PlayerColour currentColour)
@@ -33,6 +41,10 @@ public class InputController : NetworkBehaviour
 
     private void Update()
     {
+        if (isWaiting)
+        {
+            return;
+        }
         if (IsServer)
         {
             InputClientRpc();
@@ -64,6 +76,15 @@ public class InputController : NetworkBehaviour
         base.OnNetworkDespawn();
         turnSystem.onNextTurn -= OnNextPlayerTurn;
     }
+
+    private void OnPromotion(PlayerColour promotedColour)
+    {
+        isWaiting = true;
+        promotionInputController.gameObject.SetActive(true);
+        promotionInputController.SetButtons(promotedColour);
+    }
+
+
     private void OnInputFinished()
     {
         Debug.Log($"{turnSystem.GetActiveColour()}" +

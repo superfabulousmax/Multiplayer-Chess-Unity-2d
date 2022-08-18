@@ -23,12 +23,15 @@ public class ChessPiece : NetworkBehaviour
     [SerializeField]
     IChessRule chessRuleBehaviour;
 
+    ICheckRule checkRuleBehaviour;
+
     public PlayerColour PlayerColour { get => playerColour.Value; private set => playerColour.Value = value; }
     public SpriteRenderer SpriteRenderer { get => spriteRenderer;  }
 
     public Vector3Int TilePosition { get => tilePosition.Value; }
     public ChessPieceType PieceType { get => pieceType.Value; }
     public IChessRule ChessRuleBehaviour { get => chessRuleBehaviour; set => chessRuleBehaviour = value; }
+    public ICheckRule CheckRuleBehaviour { get => checkRuleBehaviour; set => checkRuleBehaviour = value; }
     public ChessPieces ChessPieces { get => chessPieces; set => chessPieces = value; }
 
     [ClientRpc]
@@ -87,21 +90,26 @@ public class ChessPiece : NetworkBehaviour
         {
             case ChessPieceType.Pawn:
                 chessRuleBehaviour = new PawnChessPiece(new PawnPromotionRule(), PlayerColour, tilePosition.Value);
+                checkRuleBehaviour = null;
                 break;
             case ChessPieceType.King:
-                chessRuleBehaviour = new KingChessPiece();
+                chessRuleBehaviour = new KingChessPiece(new MoveToStopCheck());
                 break;
             case ChessPieceType.Queen:
                 chessRuleBehaviour = new QueenChessPiece(new TakePieceRule(ChessPieceType.Queen));
+                checkRuleBehaviour = new QueenCheckRule(new RookCheckRule(), new BishopCheckRule());
                 break;
             case ChessPieceType.Rook:
-                chessRuleBehaviour = new RookChessPiece(new TakePieceRule(ChessPieceType.Rook));
+                chessRuleBehaviour = new RookChessPiece(new TakePieceRule(ChessPieceType.Rook), new MoveToStopCheck());
+                checkRuleBehaviour = new RookCheckRule();
                 break;
             case ChessPieceType.Knight:
-                chessRuleBehaviour = new KnightChessPiece(new TakePieceRule(ChessPieceType.Knight));
+                chessRuleBehaviour = new KnightChessPiece(new TakePieceRule(ChessPieceType.Knight), new MoveToStopCheck());
+                checkRuleBehaviour = new KnightCheckRule();
                 break;
             case ChessPieceType.Bishop:
-                chessRuleBehaviour = new BishopChessPiece(new TakePieceRule(ChessPieceType.Bishop));
+                chessRuleBehaviour = new BishopChessPiece(new TakePieceRule(ChessPieceType.Bishop), new MoveToStopCheck());
+                checkRuleBehaviour = new BishopCheckRule();
                 break;
         }
     }

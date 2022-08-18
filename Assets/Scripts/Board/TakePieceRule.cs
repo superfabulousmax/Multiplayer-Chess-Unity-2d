@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using static ChessPiece;
 
@@ -11,15 +9,14 @@ public class TakePieceRule : IChessRule
         this.chessPieceType = chessPieceType;
     }
 
-    public bool PossibleMove(PlayerColour activeColour, Board board, ChessPiece piece, Vector3Int newPosition, out bool takenPiece)
+    public bool PossibleMove(PlayerColour activeColour, Board board, ChessPiece piece, Vector3Int newPosition, out bool takenPiece, out bool checkedKing)
     {
         takenPiece = false;
+        checkedKing = false;
 
         var boardState = board.GetBoardState();
-        var y = piece.TilePosition.y;
-        var x = piece.TilePosition.x;
 
-        if (board.CheckPiece(boardState[newPosition.y, newPosition.x], ChessPiece.ChessPieceType.King))
+        if (board.CheckPiece(boardState[newPosition.y, newPosition.x], ChessPieceType.King))
         {
             return false;
         }

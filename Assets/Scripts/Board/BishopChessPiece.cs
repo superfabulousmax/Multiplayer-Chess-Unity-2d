@@ -3,17 +3,17 @@ using UnityEngine;
 public class BishopChessPiece : IChessRule
 {
     IChessRule takePieceRule;
-
-    public BishopChessPiece(IChessRule takePieceRule)
+    IChessRule moveToStopCheckRule;
+    public BishopChessPiece(IChessRule takePieceRule, IChessRule moveToStopCheckRule)
     {
         this.takePieceRule = takePieceRule;
+        this.moveToStopCheckRule = moveToStopCheckRule;
     }
 
-    public bool PossibleMove(PlayerColour activeColour, Board board, ChessPiece piece, Vector3Int newPosition, out bool takenPiece)
+    public bool PossibleMove(PlayerColour activeColour, Board board, ChessPiece piece, Vector3Int newPosition, out bool takenPiece, out bool checkedKing)
     {
         takenPiece = false;
-
-        var boardState = board.GetBoardState();
+        checkedKing = false;
 
         var y = piece.TilePosition.y;
         var x = piece.TilePosition.x;
@@ -28,6 +28,8 @@ public class BishopChessPiece : IChessRule
 
         if (xDiff != yDiff)
             return false;
+
+        var boardState = board.GetBoardState();
 
         if (newPosition.x < x)
         {
@@ -86,7 +88,17 @@ public class BishopChessPiece : IChessRule
             }
         }
 
-        takePieceRule.PossibleMove(activeColour, board, piece, newPosition, out takenPiece);
+        takePieceRule.PossibleMove(activeColour, board, piece, newPosition, out takenPiece, out var _);
+
+        // check if move piece to stop check
+        if (!moveToStopCheckRule.PossibleMove(activeColour, board, piece, newPosition, out var _, out var isCheckedKing))
+        {
+            if (isCheckedKing)
+            {
+                takenPiece = false;
+            }
+            return false;
+        }
 
         return true;
     }

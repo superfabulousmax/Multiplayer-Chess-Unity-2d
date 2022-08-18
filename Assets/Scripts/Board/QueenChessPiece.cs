@@ -9,12 +9,12 @@ public class QueenChessPiece : IChessRule
     public QueenChessPiece(IChessRule takePieceRule)
     {
         this.takePieceRule = takePieceRule;
-        bishopChessRule = new BishopChessPiece(takePieceRule);
-        rookChessRule = new RookChessPiece(takePieceRule);
+        bishopChessRule = new BishopChessPiece(takePieceRule, new MoveToStopCheck());
+        rookChessRule = new RookChessPiece(takePieceRule, new MoveToStopCheck());
     }
 
-    public bool PossibleMove(PlayerColour activeColour, Board board, ChessPiece piece, Vector3Int newPosition, out bool takenPiece)
+    public bool PossibleMove(PlayerColour activeColour, Board board, ChessPiece piece, Vector3Int newPosition, out bool takenPiece, out bool checkedKing)
     {
-        return bishopChessRule.PossibleMove(activeColour, board, piece, newPosition, out takenPiece) || rookChessRule.PossibleMove(activeColour, board, piece, newPosition, out takenPiece);
+        return bishopChessRule.PossibleMove(activeColour, board, piece, newPosition, out takenPiece, out checkedKing) || rookChessRule.PossibleMove(activeColour, board, piece, newPosition, out takenPiece, out checkedKing);
     }
 }

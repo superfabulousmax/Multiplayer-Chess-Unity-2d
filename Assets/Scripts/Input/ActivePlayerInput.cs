@@ -6,11 +6,13 @@ public class ActivePlayerInput : IPlayerInput
     Board board;
     ChessPiece selectedChessPiece;
     Action onFinish;
+    Action<PlayerColour> onPromotion;
 
-    public ActivePlayerInput(Board board, Action onFinish)
+    public ActivePlayerInput(Board board, Action onFinish, Action<PlayerColour> onPromotion)
     {
         this.board = board;
         this.onFinish = onFinish;
+        this.onPromotion = onPromotion;
     }
 
     public void HandleInput(int id, PlayerColour activeColour, PlayerColour currentColour, bool isOwner)
@@ -43,7 +45,7 @@ public class ActivePlayerInput : IPlayerInput
                 return;
             }
 
-            if (board.ValidateMove(activeColour, selectedChessPiece, tilePosition, out bool isPieceTaken))
+            if (board.ValidateMove(activeColour, selectedChessPiece, tilePosition, out bool isPieceTaken, out bool checkedKing))
             {
                 if (isPieceTaken)
                 {

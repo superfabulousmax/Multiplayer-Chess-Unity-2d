@@ -15,10 +15,25 @@ public class Board : NetworkBehaviour
 
     PiecePlacementSystem piecePlacementSystem;
 
+    ChessPiece playerOneKing;
+    ChessPiece playerTwoKing;
+
     public Tilemap BoardTileMap { get => tilemap; }
     public IReadOnlyDictionary<uint, ChessPiece> ChessPieces { get => chessPiecesMap; }
     public IReadOnlyList<ChessPiece> ChessPiecesList { get => chessPiecesList; }
     public PiecePlacementSystem PlacementSystem { get => piecePlacementSystem; set => piecePlacementSystem = value; }
+    public ChessPiece PlayerOneKing { get => playerOneKing; }
+
+    internal ChessPiece GetOppositeKing(PlayerColour activeColour)
+    {
+        if (activeColour == PlayerColour.PlayerOne)
+        {
+            return playerTwoKing;
+        }
+        return PlayerOneKing;
+    }
+
+    public ChessPiece PlayerTwoKing { get => playerTwoKing; }
 
     Dictionary<uint, ChessPiece> chessPiecesMap;
 
@@ -34,6 +49,7 @@ public class Board : NetworkBehaviour
         tilemap = GetComponent<Tilemap>();
         chessPiecesMap = new Dictionary<uint, ChessPiece>();
         chessPiecesList = new List<ChessPiece>(MaxPieces);
+
         board = new int[8, 8];
     }
 
@@ -51,14 +67,23 @@ public class Board : NetworkBehaviour
         return tilemap.WorldToCell(point);
     }
 
-    internal bool ValidateMove(PlayerColour activePlayer, ChessPiece selectedChessPiece, Vector3Int tilePosition, out bool takenPiece)
+    internal bool ValidateMove(PlayerColour activePlayer, ChessPiece selectedChessPiece, Vector3Int tilePosition, out bool takenPiece, out bool checkedKing)
     {
-        return selectedChessPiece.ChessRuleBehaviour.PossibleMove(activePlayer, this, selectedChessPiece, tilePosition, out takenPiece);
+        return selectedChessPiece.ChessRuleBehaviour.PossibleMove(activePlayer, this, selectedChessPiece, tilePosition, out takenPiece, out checkedKing);
     }
 
 
     internal void AddPieceToBoard(ChessPiece chessPiece)
     {
+        if (chessPiece.PieceType == ChessPieceType.King && chessPiece.PlayerColour == PlayerColour.PlayerOne)
+        {
+            playerOneKing = chessPiece;
+        }
+        else if (chessPiece.PieceType == ChessPieceType.King && chessPiece.PlayerColour == PlayerColour.PlayerTwo)
+        {
+            playerTwoKing = chessPiece;
+        }
+
         chessPiecesMap.Add((uint)chessPiece.NetworkObjectId, chessPiece);
         chessPiecesList.Add(chessPiece);
     }
@@ -140,10 +165,10 @@ public class Board : NetworkBehaviour
         return board;
     }
 
-    public bool CheckPiece(int id, ChessPiece.ChessPieceType type)
+    public bool CheckPiece(int id, ChessPieceType chessPieceType)
     {
         var piece = GetPieceFromId((uint)id);
-        return piece != null && piece.PieceType == type;
+        return piece != null && piece.PieceType == chessPieceType;
     }
 
     public ChessPiece GetPieceAtPosition(Vector3Int position)
@@ -170,6 +195,64 @@ public class Board : NetworkBehaviour
         onFinishedBoardSetup?.Invoke();
     }
 
+    internal bool IsInCheck(out ChessPiece checkedKing)
+    {
+        var allPositions = GetAllPositions();
+        allPositions.MoveNext();
+        var currentBoardPosition = allPositions.Current;
+        for (int y = 0; y < 8; y++)
+        {
+            for (int x = 0; x < 8; x++)
+            {
+                allPositions.MoveNext();
+                var piece = GetPieceAtPosition(currentBoardPosition);
+                if (piece)
+                {
+                    if (piece.CheckRuleBehaviour != null)
+                    {
+                        if (piece.CheckRuleBehaviour.PossibleCheck(this, piece, piece.TilePosition, out checkedKing))
+                        {
+                            Debug.Log($"{checkedKing} is in Check");
+                            return true;
+                        }
+                    }
+                }
+                currentBoardPosition = allPositions.Current;
+            }
+        }
+        checkedKing = null;
+        return false;
+    }
+
+    internal bool IsInCheck(int [,] simulatedBoard)
+    {
+        var allPositions = GetAllPositions();
+        allPositions.MoveNext();
+        var currentBoardPosition = allPositions.Current;
+        for (int y = 0; y < 8; y++)
+        {
+            for (int x = 0; x < 8; x++)
+            {
+                allPositions.MoveNext();
+                var id = simulatedBoard[y, x];
+                var piece = GetPieceFromId((uint)id);
+                if (piece)
+                {
+                    if (piece.CheckRuleBehaviour != null)
+                    {
+                        if (piece.CheckRuleBehaviour.PossibleCheck(this, piece, piece.TilePosition, out var _))
+                        {
+                            return true;
+                        }
+                    }
+                }
+                currentBoardPosition = allPositions.Current;
+            }
+        }
+        return false;
+    }
+
+
     public override string ToString()
     {
         return $"Board has {chessPiecesList.Count} pieces";
@@ -179,6 +262,7 @@ public class Board : NetworkBehaviour
     internal void HandlePawnPromotionServerRpc(NetworkBehaviourReference target, ChessPieceType type)
     {
         HandlePawnProtionClientRpc(target, type);
+
     }
 
     [ClientRpc]

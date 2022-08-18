@@ -36,9 +36,11 @@ public class PawnChessPiece : IChessRule
         this.pawnPromotion = pawnPromotion;
     }
 
-    public bool PossibleMove(PlayerColour activeColour, Board board, ChessPiece piece, Vector3Int newPosition, out bool takenPiece)
+    public bool PossibleMove(PlayerColour activeColour, Board board, ChessPiece piece, Vector3Int newPosition, out bool takenPiece, out bool checkedKing)
     {
         takenPiece = false;
+        checkedKing = false;
+
         var boardState = board.GetBoardState();
         var y = piece.TilePosition.y;
         var x = piece.TilePosition.x;
@@ -151,7 +153,7 @@ public class PawnChessPiece : IChessRule
         moveCount.Value++;
         piece.SyncDataServerRpc(moveCount.Value, isFirstMove.Value, firstMoveTwo.Value, lastMovedPawnId.Value);
 
-        if (pawnPromotion.PossibleMove(activeColour, board, piece, newPosition, out var _))
+        if (pawnPromotion.PossibleMove(activeColour, board, piece, newPosition, out var _, out var _))
         {
             board.HandlePawnPromotionServerRpc(piece, ChessPiece.ChessPieceType.Queen);
         }
