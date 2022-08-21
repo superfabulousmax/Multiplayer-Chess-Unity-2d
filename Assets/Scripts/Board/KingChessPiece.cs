@@ -61,6 +61,7 @@ public class KingChessPiece : IChessRule
         }
         else if (deltaX > 1)
         {
+            takenPiece = false;
             return false;
         }
 

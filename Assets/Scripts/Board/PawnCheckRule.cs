@@ -12,11 +12,13 @@ public class PawnCheckRule : ICheckRule
         var kingPosition = board.GetIdPosition(kingId, boardState);
 
         var yDiff = Mathf.Abs(kingPosition.y - y);
+        var xDiff = Mathf.Abs(kingPosition.x - x);
+
         if (yDiff != 1)
         {
             return false;
         }
-        if (Mathf.Abs(kingPosition.x - x) != 1)
+        if (xDiff != 1)
         {
             return false;
         }
@@ -37,6 +39,6 @@ public class PawnCheckRule : ICheckRule
             }
         }
 
-        return false;
+        return true;
     }
 }

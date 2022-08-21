@@ -263,6 +263,11 @@ public class Board : NetworkBehaviour
         return false;
     }
 
+    internal bool IsCheckMate(ChessPiece king)
+    {
+        return false;
+    }
+
     internal Vector3Int GetIdPosition(uint id, int [,] boardState)
     {
         for (int y = 0; y < 8; y++)

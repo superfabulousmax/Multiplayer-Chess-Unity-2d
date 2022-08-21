@@ -38,6 +38,10 @@ public class MoveToStopCheck : IChessRule
         {
             if (board.IsInCheck(simulatedBoardState, out var newKing))
             {
+                if (piece.PieceType == ChessPiece.ChessPieceType.King)
+                {
+                    return false;
+                }
                 if (newKing.PlayerColour == piece.PlayerColour)
                 {
                     return false;

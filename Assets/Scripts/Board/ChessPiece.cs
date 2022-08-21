@@ -95,6 +95,7 @@ public class ChessPiece : NetworkBehaviour
                 break;
             case ChessPieceType.King:
                 chessRuleBehaviour = new KingChessPiece(new MoveToStopCheck(), new CastleRule());
+                checkRuleBehaviour = new KingCheckRule();
                 break;
             case ChessPieceType.Queen:
                 chessRuleBehaviour = new QueenChessPiece(new TakePieceRule(ChessPieceType.Queen));
