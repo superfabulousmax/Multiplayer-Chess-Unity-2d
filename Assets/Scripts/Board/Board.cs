@@ -1,8 +1,8 @@
+using System;
 using UnityEngine;
+using Unity.Netcode;
 using UnityEngine.Tilemaps;
 using System.Collections.Generic;
-using Unity.Netcode;
-using System;
 using static ChessPiece;
 
 [RequireComponent(typeof(Tilemap))]
@@ -40,17 +40,15 @@ public class Board : NetworkBehaviour
     public event Action onFinishedBoardSetup;
     public event Func<ChessPiece, bool, bool, Vector3Int, bool> onValidateMove;
 
-    private const int MaxPieces = 32;
-
     int [,] board;
 
     void Awake()
     {
         tilemap = GetComponent<Tilemap>();
         chessPiecesMap = new Dictionary<uint, ChessPiece>();
-        chessPiecesList = new List<ChessPiece>(MaxPieces);
+        chessPiecesList = new List<ChessPiece>(GameConstants.MaxPieces);
 
-        board = new int[8, 8];
+        board = new int[GameConstants.BoardLengthDimension, GameConstants.BoardLengthDimension];
     }
 
     public BoundsInt.PositionEnumerator GetAllPositions()
@@ -160,9 +158,9 @@ public class Board : NetworkBehaviour
         var allPositions = GetAllPositions();
         allPositions.MoveNext();
         var currentBoardPosition = allPositions.Current;
-        for (int y = 0; y < 8; y++)
+        for (int y = 0; y < GameConstants.BoardLengthDimension; y++)
         {
-            for(int x = 0; x < 8; x++)
+            for(int x = 0; x < GameConstants.BoardLengthDimension; x++)
             {
                 allPositions.MoveNext();
                 var piece = GetPieceAtPosition(currentBoardPosition);
@@ -215,9 +213,9 @@ public class Board : NetworkBehaviour
         var allPositions = GetAllPositions();
         allPositions.MoveNext();
         var currentBoardPosition = allPositions.Current;
-        for (int y = 0; y < 8; y++)
+        for (int y = 0; y < GameConstants.BoardLengthDimension; y++)
         {
-            for (int x = 0; x < 8; x++)
+            for (int x = 0; x < GameConstants.BoardLengthDimension; x++)
             {
                 allPositions.MoveNext();
                 var piece = GetPieceAtPosition(currentBoardPosition);
@@ -241,9 +239,9 @@ public class Board : NetworkBehaviour
 
     internal bool IsInCheck(int [,] simulatedBoard, out ChessPiece king)
     {
-        for (int y = 0; y < 8; y++)
+        for (int y = 0; y < GameConstants.BoardLengthDimension; y++)
         {
-            for (int x = 0; x < 8; x++)
+            for (int x = 0; x < GameConstants.BoardLengthDimension; x++)
             {
                 var id = simulatedBoard[y, x];
                 var piece = GetPieceFromId((uint)id);
@@ -283,9 +281,9 @@ public class Board : NetworkBehaviour
 
     private bool CheckPieceCanMove(ChessPiece targetPiece, int[,] boardState)
     {
-        for (int y = 0; y < 8; y++)
+        for (int y = 0; y < GameConstants.BoardLengthDimension; y++)
         {
-            for (int x = 0; x < 8; x++)
+            for (int x = 0; x < GameConstants.BoardLengthDimension; x++)
             {
                 var id = boardState[y, x];
                 if (id < 0)
@@ -311,9 +309,9 @@ public class Board : NetworkBehaviour
 
     internal Vector3Int GetIdPosition(uint id, int [,] boardState)
     {
-        for (int y = 0; y < 8; y++)
+        for (int y = 0; y < GameConstants.BoardLengthDimension; y++)
         {
-            for (int x = 0; x < 8; x++)
+            for (int x = 0; x < GameConstants.BoardLengthDimension; x++)
             {
                 if (id == boardState[y, x])
                 {
