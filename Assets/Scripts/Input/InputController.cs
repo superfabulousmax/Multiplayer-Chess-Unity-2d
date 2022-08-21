@@ -87,6 +87,13 @@ public class InputController : NetworkBehaviour
 
     private void OnInputFinished()
     {
+        if (board.IsInCheck(out var king))
+        {
+            if (board.IsCheckMate(king.PlayerColour))
+            {
+                Debug.Log("CHECK MATE!");
+            }
+        }
         Debug.Log($"{turnSystem.GetActiveColour()}" +
             $" Turn Finished");
         turnSystem.ChangeTurnServerRpc();

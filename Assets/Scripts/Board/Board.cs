@@ -263,8 +263,49 @@ public class Board : NetworkBehaviour
         return false;
     }
 
-    internal bool IsCheckMate(ChessPiece king)
+    internal bool IsCheckMate(PlayerColour activeColour)
     {
+        var boardState = GetBoardState();
+        foreach (var piece in chessPiecesList)
+        {
+            if (piece.PlayerColour == activeColour)
+            {
+                var result = CheckPieceCanMove(piece, boardState);
+                if (result)
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    private bool CheckPieceCanMove(ChessPiece targetPiece, int[,] boardState)
+    {
+        for (int y = 0; y < 8; y++)
+        {
+            for (int x = 0; x < 8; x++)
+            {
+                var id = boardState[y, x];
+                if (id < 0)
+                {
+                    continue;
+                }
+                var piece = GetPieceFromId((uint)id);
+             
+                if (piece.PlayerColour == targetPiece.PlayerColour || id == (int)targetPiece.NetworkObjectId)
+                {
+                    continue;
+                }
+                if (targetPiece.ChessRuleBehaviour.PossibleMove(targetPiece.PlayerColour, this, targetPiece, new Vector3Int(x, y, 0), out var _))
+                {
+                    Debug.Log($"Possible for {targetPiece} to {new Vector3Int(x, y, 0)}");
+                    return true;
+                }
+            }
+        }
+
         return false;
     }
 
