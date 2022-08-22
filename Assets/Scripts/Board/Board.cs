@@ -229,7 +229,7 @@ public class Board : NetworkBehaviour
             {
                 y++;
             }
-            else if (y == 6)
+            else if (y == 5)
             {
                 y--;
             }
