@@ -365,6 +365,7 @@ public class Board : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     internal void AskPawnPromotionServerRpc(NetworkBehaviourReference target, ServerRpcParams serverRpcParams = default)
     {
+        // TODO cache this to avoid unnecessary memory alloc
         // NOTE! In case you know a list of ClientId's ahead of time, that does not need change,
         // Then please consider caching this (as a member variable), to avoid Allocating Memory every time you run this function
         var clientRpcParams = new ClientRpcParams

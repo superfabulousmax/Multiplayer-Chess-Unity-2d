@@ -27,6 +27,8 @@ public class PiecePlacementSystem : NetworkBehaviour
     private const string AllChessPieces = "rnbkqp";
 
     public FENChessNotation StartingSetup { get => startingSetup; }
+    public ChessPieces PlayerOnePieces { get => playerOnePieces; }
+    public ChessPieces PlayerTwoPieces { get => playerTwoPieces; }
 
     public Sprite GetSpriteForPiece(PlayerColour playerColour, ChessPieceType chessPieceType)
     {

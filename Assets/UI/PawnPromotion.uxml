@@ -1,6 +1,6 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
     <Style src="project://database/Assets/UI/PawnPromotion.uss?fileID=7433441132597879392&amp;guid=0a41634a9b8a04c4eb1fdc015fa17738&amp;type=3#PawnPromotion" />
-    <ui:VisualElement name="Container" class="pawn-promotion-container">
+    <ui:VisualElement name="Container" picking-mode="Ignore" class="pawn-promotion-container">
         <PawnPromotionButton view-data-key="Bishop" class="pawn-promotion-button" style="background-image: url(&apos;project://database/Assets/Spritesheets/Chess%20Pieces.png?fileID=1890717591&amp;guid=a6a3fad66c2a23847891b91d145eb78e&amp;type=3#Chess Pieces_2&apos;);" />
         <PawnPromotionButton view-data-key="Queen" class="pawn-promotion-button" style="background-image: url(&apos;project://database/Assets/Spritesheets/Chess%20Pieces.png?fileID=1239945057&amp;guid=a6a3fad66c2a23847891b91d145eb78e&amp;type=3#Chess Pieces_1&apos;);" />
         <PawnPromotionButton view-data-key="Rook" class="pawn-promotion-button" style="background-image: url(&apos;project://database/Assets/Spritesheets/Chess%20Pieces.png?fileID=806807333&amp;guid=a6a3fad66c2a23847891b91d145eb78e&amp;type=3#Chess Pieces_4&apos;);" />

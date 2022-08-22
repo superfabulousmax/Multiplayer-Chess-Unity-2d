@@ -16,11 +16,20 @@ public class PawnPromotionButton : Button
     }
 
     public event Action<ChessPieceType> onClickButton;
+    ChessPieceType chessPieceType;
 
     public PawnPromotionButton() : base ()
     {
         RegisterCallback<AttachToPanelEvent>(evt =>
         {
+            var pieces = Enum.GetValues(typeof(ChessPieceType)) as ChessPieceType[];
+            foreach (var piece in pieces)
+            {
+                if (viewDataKey == piece.ToString())
+                {
+                    chessPieceType = piece;
+                }
+            }
             clicked += OnClicked;
         });
         RegisterCallback<DetachFromPanelEvent>(evt =>
@@ -29,16 +38,14 @@ public class PawnPromotionButton : Button
         });
     }
 
+    public void SetSprite(ChessPieces pieces)
+    {
+        style.backgroundImage = new StyleBackground(pieces.GetSprite(chessPieceType));
+    }
+
     private void OnClicked()
     {
-        var pieces = Enum.GetValues(typeof(ChessPieceType)) as ChessPieceType [];
-        foreach (var piece in pieces)
-        {
-            if (viewDataKey == piece.ToString())
-            {
-                Debug.Log($"clicked on {piece}");
-                onClickButton?.Invoke(piece);
-            }
-        }
+        Debug.Log($"clicked on {chessPieceType}");
+        onClickButton?.Invoke(chessPieceType);
     }
 }

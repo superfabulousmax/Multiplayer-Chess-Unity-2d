@@ -1,14 +1,11 @@
-using System;
 using System.Linq;
 using Unity.Netcode;
-using UnityEngine;
 using UnityEngine.UIElements;
 
 public class UIDocumentController : NetworkBehaviour
 {
     UIDocument document;
     VisualElement root;
-    TurnSystem turnSystem;
     Board board;
 
     PawnPromotionButton[] pawnPromotionButtons;
@@ -25,7 +22,6 @@ public class UIDocumentController : NetworkBehaviour
             button.onClickButton += OnFinishPromotion;
         }
         root.style.display = DisplayStyle.None;
-        turnSystem = FindObjectOfType<TurnSystem>();
         board = FindObjectOfType<Board>();
         board.onPawnPromoted += OnPawnPromoted;
     }
@@ -41,10 +37,21 @@ public class UIDocumentController : NetworkBehaviour
 
     private void OnPawnPromoted(ChessPiece piece)
     {
-        //NetworkManager.ConnectedClientsList.First().
+        foreach (var button in pawnPromotionButtons)
+        {
+            if(piece.PlayerColour == PlayerColour.PlayerOne)
+            {
+                button.SetSprite(board.PlacementSystem.PlayerOnePieces);
+            }
+            else
+            {
+                button.SetSprite(board.PlacementSystem.PlayerTwoPieces);
+            }
+        }
         root.style.display = DisplayStyle.Flex;
         cachedPiece = piece;
     }
+
 
     private void OnFinishPromotion(ChessPiece.ChessPieceType chessPieceType)
     {
