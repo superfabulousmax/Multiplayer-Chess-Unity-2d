@@ -4,8 +4,6 @@ using UnityEngine;
 
 public class InputController : NetworkBehaviour
 {
-    private PromotionInputController promotionInputController;
-
     private IPlayerInput playerInput;
     private IPlayerInput activeInput;
 
@@ -26,7 +24,7 @@ public class InputController : NetworkBehaviour
         player = GetComponent<Player>();
         board = FindObjectOfType<Board>();
         turnSystem = FindObjectOfType<TurnSystem>();
-        activeInput = new ActivePlayerInput(board, OnInputFinished, OnPromotion);
+        activeInput = new ActivePlayerInput(board, OnInputFinished);
         playerInput = activeInput;
         turnSystem.onNextTurn += OnNextPlayerTurn;
         board.onFinishedBoardSetup += OnFinishedBoardSetup;
@@ -87,8 +85,6 @@ public class InputController : NetworkBehaviour
     private void OnPromotion(PlayerColour promotedColour)
     {
         isWaiting = true;
-        promotionInputController.gameObject.SetActive(true);
-        promotionInputController.SetButtons(promotedColour);
     }
 
 

@@ -6,13 +6,11 @@ public class ActivePlayerInput : IPlayerInput
     Board board;
     ChessPiece selectedChessPiece;
     Action onFinish;
-    Action<PlayerColour> onPromotion;
 
-    public ActivePlayerInput(Board board, Action onFinish, Action<PlayerColour> onPromotion)
+    public ActivePlayerInput(Board board, Action onFinish)
     {
         this.board = board;
         this.onFinish = onFinish;
-        this.onPromotion = onPromotion;
     }
 
     public void HandleInput(int id, PlayerColour activeColour, PlayerColour currentColour, bool isOwner)
