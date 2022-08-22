@@ -25,12 +25,32 @@ public class PawnChessPiece : IChessRule
 
     public PawnChessPiece(IChessRule pawnPromotion, IChessRule moveToStopCheckRule, PlayerColour pawnColour, Vector3Int tilePosition, bool isFirstMove = true, bool firstMoveTwo = false)
     {
+        if(pawnColour == PlayerColour.PlayerOne)
+        {
+            if (tilePosition.y > 1)
+            {
+                isFirstMove = false;
+            }
+        }
+        else if(pawnColour == PlayerColour.PlayerTwo)
+        {
+            if (tilePosition.y < 6)
+            {
+                isFirstMove = false;
+            }
+        }
+
         this.isFirstMove.Value = isFirstMove;
         this.firstMoveTwo.Value = firstMoveTwo;
         this.pawnColour = pawnColour;
+
         if (isFirstMove)
         {
             moveCount.Value = 0;
+        }
+        else
+        {
+            moveCount.Value = 1;
         }
 
         enPassant = new EnPassant();
@@ -46,17 +66,24 @@ public class PawnChessPiece : IChessRule
         var y = piece.TilePosition.y;
         var x = piece.TilePosition.x;
         var yDiff = Mathf.Abs(newPosition.y - y);
+
         if (Mathf.Abs(newPosition.x - x) > 1)
+        {
             return false;
+        }
         if (yDiff > 2 || yDiff < 1)
+        {
             return false;
-        //Debug.Log($"possible move {piece.TilePosition} to {newPosition}");
+        }
+
         ChessPiece lastMovedPawn = board.GetPieceFromId(lastMovedPawnId.Value);
         var takenWithEnPassant = false;
         if (activeColour == PlayerColour.PlayerOne)
         {
             if (newPosition.y <= y)
+            {
                 return false;
+            }
 
             if (newPosition.x == x)
             {
@@ -108,7 +135,9 @@ public class PawnChessPiece : IChessRule
                 for (int i = y - 1; i >= newPosition.y; i--)
                 {
                     if (boardState[i, x] >= 0)
+                    {
                         return false;
+                    }
                 }
             }
             else
@@ -161,7 +190,6 @@ public class PawnChessPiece : IChessRule
             takenPiece = false;
             return false;
         }
-
 
         if (pawnPromotion.PossibleMove(activeColour, board, piece, newPosition, out var _))
         {

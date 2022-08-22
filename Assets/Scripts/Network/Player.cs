@@ -19,10 +19,10 @@ public class Player : NetworkBehaviour
         //AssignColourClientRPC(playerNetworkColour.GetColour());
         if (IsOwnedByServer)
         {
-            AssignColourClientRPC(PlayerColour.PlayerTwo);
+            AssignColourClientRPC(PlayerColour.PlayerOne);
         }
         else {
-            AssignColourClientRPC(PlayerColour.PlayerOne);
+            AssignColourClientRPC(PlayerColour.PlayerTwo);
         }
     }
 

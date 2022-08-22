@@ -1,10 +1,12 @@
 /// <summary>
 /// FEN for placing pieces on board and tracking turns, castling rights, en passant and draw conditions
 /// <see cref="https://www.chess.com/terms/fen-chess#what-is-fen"/>
+/// <seealso cref="https://lichess.org/editor"/>
 /// </summary>
 public struct FENChessNotation
 {
     public const char delimeter = '/';
+    public const char nothing = '-';
     // String sequence describing position of pieces
     // e.g. the sequence "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
     // describes the piece placement field of the starting position of a game of chess.

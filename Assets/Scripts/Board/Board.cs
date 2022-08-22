@@ -214,7 +214,31 @@ public class Board : NetworkBehaviour
 
     public void FinishBoardSetup()
     {
+        SetStartingEnPassantTarget();
         onFinishedBoardSetup?.Invoke();
+    }
+
+    private void SetStartingEnPassantTarget()
+    {
+        var target = PlacementSystem.StartingSetup.enPassantTargets;
+        if (target.Length == 2)
+        {
+            var x = char.ToUpper(target[0]) - 'A';
+            var y = (target[1] - '0') - 1;
+            if (y == 3)
+            {
+                y++;
+            }
+            else if (y == 6)
+            {
+                y--;
+            }
+            var pawn = GetPieceAtPosition(new Vector3Int(x, y, 0));
+            if (pawn)
+            {
+                pawn.SyncDataServerRpc(1, false, true, (uint)pawn.NetworkObjectId);
+            }
+        }
     }
 
     internal bool IsInCheck(out ChessPiece checkedKing)

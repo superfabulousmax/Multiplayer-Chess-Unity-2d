@@ -1,5 +1,4 @@
 using UnityEngine;
-
 using Unity.Netcode;
 using Unity.Netcode.Components;
 
@@ -127,7 +126,7 @@ public class ChessPiece : NetworkBehaviour
     }
 
     [ClientRpc]
-    internal void SyncDataClientRpc(int moveCount, bool isFirstMove, bool firstMoveTwo, uint lastMovedPawnId)
+    private void SyncDataClientRpc(int moveCount, bool isFirstMove, bool firstMoveTwo, uint lastMovedPawnId)
     {
         if(chessRuleBehaviour is PawnChessPiece pawnChessPiece)
         {
