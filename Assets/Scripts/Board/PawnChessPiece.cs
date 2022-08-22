@@ -193,7 +193,7 @@ public class PawnChessPiece : IChessRule
 
         if (pawnPromotion.PossibleMove(activeColour, board, piece, newPosition, out var _))
         {
-            board.HandlePawnPromotionServerRpc(piece, ChessPiece.ChessPieceType.Queen);
+            board.AskPawnPromotionServerRpc(piece);
         }
 
         return true;

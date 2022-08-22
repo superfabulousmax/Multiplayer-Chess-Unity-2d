@@ -20,7 +20,6 @@ public class ChessPiece : NetworkBehaviour
 
     ChessPieces chessPieces;
 
-    [SerializeField]
     IChessRule chessRuleBehaviour;
 
     ICheckRule checkRuleBehaviour;

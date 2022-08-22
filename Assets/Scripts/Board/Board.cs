@@ -47,7 +47,8 @@ public class Board : NetworkBehaviour
     Dictionary<uint, ChessPiece> chessPiecesMap;
 
     public event Action onFinishedBoardSetup;
-    public event Func<ChessPiece, bool, bool, Vector3Int, bool> onValidateMove;
+
+    public event Action<ChessPiece> onPawnPromoted;
 
     int [,] board;
 
@@ -93,7 +94,6 @@ public class Board : NetworkBehaviour
     {
         return selectedChessPiece.ChessRuleBehaviour.PossibleMove(activePlayer, this, selectedChessPiece, tilePosition, out takenPiece);
     }
-
 
     internal void AddPieceToBoard(ChessPiece chessPiece)
     {
@@ -363,10 +363,33 @@ public class Board : NetworkBehaviour
     }
 
     [ServerRpc(RequireOwnership = false)]
+    internal void AskPawnPromotionServerRpc(NetworkBehaviourReference target, ServerRpcParams serverRpcParams = default)
+    {
+        // NOTE! In case you know a list of ClientId's ahead of time, that does not need change,
+        // Then please consider caching this (as a member variable), to avoid Allocating Memory every time you run this function
+        var clientRpcParams = new ClientRpcParams
+        {
+            Send = new ClientRpcSendParams
+            {
+                TargetClientIds = new ulong[] { serverRpcParams.Receive.SenderClientId }
+            }
+        };
+        AskPawnProtionClientRpc(target, clientRpcParams);
+    }
+
+    [ClientRpc]
+    internal void AskPawnProtionClientRpc(NetworkBehaviourReference target, ClientRpcParams clientRpcParams)
+    {
+        if (target.TryGet(out ChessPiece chessPiece))
+        {
+            onPawnPromoted?.Invoke(chessPiece);
+        }
+    }
+
+    [ServerRpc(RequireOwnership = false)]
     internal void HandlePawnPromotionServerRpc(NetworkBehaviourReference target, ChessPieceType type)
     {
         HandlePawnProtionClientRpc(target, type);
-
     }
 
     [ClientRpc]
