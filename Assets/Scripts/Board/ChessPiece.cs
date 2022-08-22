@@ -61,28 +61,16 @@ public class ChessPiece : NetworkBehaviour
         SetTilePositionClientRpc(newTilePosition);
     }
 
-    [ServerRpc(RequireOwnership = false)]
-    internal void SetCapturedServerRpc()
-    {
-        SetCaptured();
-    }
-
-    [ClientRpc]
-    internal void DisablePieceClientRpc()
-    {
-        gameObject.SetActive(false);
-    }
-
-    void SetCaptured()
-    {
-        pieceStatus.Value = ChessPieceStatus.Captured;
-    }
-
     public override void OnNetworkSpawn()
     {
         networkTransform = GetComponent<NetworkTransform>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         AssignChessRules(pieceType.Value);
+    }
+
+    public override string ToString()
+    {
+        return $"{playerColour.Value} {pieceType.Value} {pieceStatus.Value} {tilePosition.Value}";
     }
 
     internal void AssignChessRules(ChessPieceType chessPieceType)
@@ -125,12 +113,6 @@ public class ChessPiece : NetworkBehaviour
         spriteRenderer.sprite = sprite;
         pieceType.Value = type;
         this.tilePosition.Value = tilePosition;
-        
-    }
-
-    public override string ToString()
-    {
-        return $"{playerColour.Value} {pieceType.Value} {pieceStatus.Value} {tilePosition.Value}";
     }
 
     internal bool IsActive()

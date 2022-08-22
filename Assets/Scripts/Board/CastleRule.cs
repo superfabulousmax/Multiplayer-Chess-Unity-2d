@@ -5,7 +5,16 @@ public class CastleRule : IChessRule
 {
     public bool PossibleMove(PlayerColour activeColour, Board board, ChessPiece piece, Vector3Int newPosition, out bool takenPiece)
     {
+
         takenPiece = false;
+
+        if (piece.ChessRuleBehaviour is ICastleEntity castleRule)
+        {
+            if(!castleRule.CanCastle(board, piece))
+            {
+                return false;
+            }
+        }
 
         var boardState = board.GetBoardState();
         var y = piece.TilePosition.y;
@@ -78,17 +87,22 @@ public class CastleRule : IChessRule
             // todo improve this
             if (rook.ChessRuleBehaviour is RookChessPiece rookPiece)
             {
+                var castleEntity = rookPiece as ICastleEntity;
+                if (castleEntity.CanCastle(board, rook) == false)
+                {
+                    continue;
+                }
                 var rookDeltaX = Mathf.Abs (newPosition.x - rook.TilePosition.x);
                 var distToKing = Mathf.Abs(piece.TilePosition.x - rook.TilePosition.x);
 
-                if (rookPiece.MoveCount == 0 && (rookDeltaX == 1 && distToKing == 3))
+                if (rookDeltaX == 1 && distToKing == 3)
                 {
                     rook.SyncDataServerRpc(rookPiece.MoveCount + 1, default, default, default);
                     var newRookPosition = new Vector3Int(newPosition.x - 1, newPosition.y, 0);
                     rook.SetTilePositionServerRpc(newRookPosition);
                     return true;
                 }
-                if (rookPiece.MoveCount == 0 && (rookDeltaX == 2 && distToKing == 4))
+                if (rookDeltaX == 2 && distToKing == 4)
                 {
                     rook.SyncDataServerRpc(rookPiece.MoveCount + 1, default, default, default);
                     var newRookPosition = new Vector3Int(newPosition.x + 1, newPosition.y, 0);

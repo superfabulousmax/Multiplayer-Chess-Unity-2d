@@ -2,7 +2,7 @@
 /// FEN for placing pieces on board and tracking turns, castling rights, en passant and draw conditions
 /// <see cref="https://www.chess.com/terms/fen-chess#what-is-fen"/>
 /// </summary>
-public struct ChessNotation
+public struct FENChessNotation
 {
     public const char delimeter = '/';
     // String sequence describing position of pieces
@@ -39,5 +39,4 @@ public struct ChessNotation
     // The sixth and last field of the FEN code shows the number of completed turns in the game.
     // This number is incremented by one every time Black moves. Chess programmers call this a fullmove.
     public int fullMoveNumber;
-
 }

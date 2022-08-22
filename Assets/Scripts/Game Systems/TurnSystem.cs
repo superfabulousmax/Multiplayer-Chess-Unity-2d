@@ -24,6 +24,14 @@ public class TurnSystem : NetworkBehaviour
         context = new Context(whiteTurn, blackTurn);
     }
 
+    [ServerRpc(RequireOwnership = false)]
+    public void ChangeTurnServerRpc()
+    {
+        var next = context.RequestNext();
+        context.CurrentIndex = next;
+        ChangeTurnClientRpc(next);
+    }
+
     [ClientRpc]
     public void ChangeTurnClientRpc(int currentIndex)
     {  
@@ -37,16 +45,36 @@ public class TurnSystem : NetworkBehaviour
         Debug.Log($"Change turn {GetActiveColour()}");
     }
 
-    [ServerRpc(RequireOwnership = false)]
-    public void ChangeTurnServerRpc()
-    {
-        var next = context.RequestNext();
-        context.CurrentIndex = next;
-        ChangeTurnClientRpc(next);
-    }
-
     public PlayerColour GetActiveColour()
     {
         return context.CurrentState.PlayerColourState;
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void ChangeContextConfigurationServerRpc()
+    {
+        ChangeContextConfigurationClientRpc();
+    }
+
+    [ClientRpc]
+    private void ChangeContextConfigurationClientRpc()
+    {
+        context = new Context(blackTurn, whiteTurn);
+    }
+
+    internal void SetTurn(char turn)
+    {
+        if (turn == 'w')
+        {
+            return;
+        }
+        else if (turn == 'b')
+        {
+            ChangeContextConfigurationServerRpc();
+        }
+        else
+        {
+            Debug.LogError($"Unknown character {turn}, cannot set turn");
+        }
     }
 }

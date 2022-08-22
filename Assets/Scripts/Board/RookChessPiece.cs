@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class RookChessPiece : IChessRule
+public class RookChessPiece : IChessRule, ICastleEntity
 {
     IChessRule takePieceRule;
     IChessRule moveToStopCheckRule;
@@ -14,6 +14,63 @@ public class RookChessPiece : IChessRule
         this.moveToStopCheckRule = moveToStopCheckRule;
     }
 
+    public bool CanCastle(Board board, ChessPiece rook)
+    {
+        if (moveCount > 0)
+        {
+            return false;
+        }
+
+        var castlingRights = board.PlacementSystem.StartingSetup.castlingRights;
+        var king = board.GetKingForColour(rook.PlayerColour);
+        var kingCastleEntity = king.ChessRuleBehaviour as ICastleEntity;
+
+        if (kingCastleEntity == null)
+        {
+            return false;
+        }
+
+        if (!kingCastleEntity.CanCastle(board, king))
+        {
+            return false;
+        }
+
+        var distToKing = Mathf.Abs(king.TilePosition.x - rook.TilePosition.x);
+
+        foreach(var letter in castlingRights)
+        {
+            if (rook.PlayerColour == PlayerColour.PlayerOne)
+            {
+                if(char.IsUpper(letter))
+                {
+                    if (distToKing == 3 && letter == 'K')
+                    {
+                        return true;
+                    }
+                    else if(distToKing == 4 && letter == 'Q')
+                    {
+                        return true;
+                    }
+                }
+            }
+            if (rook.PlayerColour == PlayerColour.PlayerTwo)
+            {
+                if (char.IsLower(letter))
+                {
+                    if (distToKing == 3 && letter == 'k')
+                    {
+                        return true;
+                    }
+                    else if (distToKing == 4 && letter == 'q')
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
 
     public bool PossibleMove(PlayerColour activeColour, Board board, ChessPiece piece, Vector3Int newPosition, out bool takenPiece)
     {

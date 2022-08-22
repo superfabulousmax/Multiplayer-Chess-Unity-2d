@@ -26,17 +26,30 @@ public class InputController : NetworkBehaviour
         player = GetComponent<Player>();
         board = FindObjectOfType<Board>();
         turnSystem = FindObjectOfType<TurnSystem>();
-        //promotionInputController = FindObjectOfType<PromotionInputController>();
-        //promotionInputController.gameObject.SetActive(false);
         activeInput = new ActivePlayerInput(board, OnInputFinished, OnPromotion);
         playerInput = activeInput;
         turnSystem.onNextTurn += OnNextPlayerTurn;
+        board.onFinishedBoardSetup += OnFinishedBoardSetup;
         isWaiting = false;
+    }
+
+    public override void OnNetworkDespawn()
+    {
+        base.OnNetworkDespawn();
+        turnSystem.onNextTurn -= OnNextPlayerTurn;
+        board.onFinishedBoardSetup -= OnFinishedBoardSetup;
     }
 
     private void OnNextPlayerTurn(PlayerColour currentColour)
     {
         Debug.Log($"{currentColour} turn");
+    }
+
+    private void OnFinishedBoardSetup()
+    {
+        var turn = board.PlacementSystem.StartingSetup.activeColour;
+        Debug.Log($"Setting player turn to {turn}");
+        turnSystem.SetTurn(turn);
     }
 
     private void Update()
@@ -69,12 +82,6 @@ public class InputController : NetworkBehaviour
     private void InputClientRpc()
     {
         playerInput.HandleInput((int)NetworkObjectId, turnSystem.GetActiveColour(), Colour, IsOwner);
-    }
-
-    public override void OnNetworkDespawn()
-    {
-        base.OnNetworkDespawn();
-        turnSystem.onNextTurn -= OnNextPlayerTurn;
     }
 
     private void OnPromotion(PlayerColour promotedColour)

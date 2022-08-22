@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class KingChessPiece : IChessRule
+public class KingChessPiece : IChessRule, ICastleEntity
 {
     IChessRule moveToStopCheckRule;
     IChessRule castleRule;
@@ -12,6 +12,11 @@ public class KingChessPiece : IChessRule
     {
         this.moveToStopCheckRule = moveToStopCheckRule;
         this.castleRule = castleRule;
+    }
+
+    public bool CanCastle(Board board, ChessPiece kingPiece)
+    {
+        return moveCount == 0;
     }
 
 
@@ -55,7 +60,7 @@ public class KingChessPiece : IChessRule
             return false;
         }
 
-        if (deltaX == 2 && moveCount == 0 && castleRule.PossibleMove(activeColour, board, piece, newPosition, out var _))
+        if (deltaX == 2 && castleRule.PossibleMove(activeColour, board, piece, newPosition, out var _))
         {
             // check rook
         }

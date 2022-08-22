@@ -1,12 +1,12 @@
 using UnityEngine.Assertions;
 
 /// <summary>
-/// Reads FEN from a file or string and populates <seealso cref="ChessNotation"/>
+/// Reads FEN from a file or string and populates <seealso cref="FENChessNotation"/>
 /// </summary>
 public class FENReader
 {
     private const int FenArgsNumber = 6;
-    public static ChessNotation ReadFENInput(string input)
+    public static FENChessNotation ReadFENInput(string input)
     {
         if(string.IsNullOrEmpty(input))
         {
@@ -16,7 +16,7 @@ public class FENReader
 
         Assert.IsTrue(args.Length == FenArgsNumber);
 
-        var fen = new ChessNotation
+        var fen = new FENChessNotation
         {
             piecePlacement = args[0],
             activeColour = args[1][0],

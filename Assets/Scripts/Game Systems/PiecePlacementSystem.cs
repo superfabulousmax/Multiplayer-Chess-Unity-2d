@@ -20,11 +20,13 @@ public class PiecePlacementSystem : NetworkBehaviour
 
     Board chessBoard;
 
-    ChessNotation startingSetup;
+    FENChessNotation startingSetup;
+
+    Dictionary<char, ChessPiece> chessPiecesMapping;
 
     private const string AllChessPieces = "rnbkqp";
 
-    Dictionary<char, ChessPiece> chessPiecesMapping;
+    public FENChessNotation StartingSetup { get => startingSetup; }
 
     public Sprite GetSpriteForPiece(PlayerColour playerColour, ChessPieceType chessPieceType)
     {
@@ -63,7 +65,6 @@ public class PiecePlacementSystem : NetworkBehaviour
         chessBoard = FindObjectOfType<Board>();
         AssignBoardComponentClientRpc(chessBoard);
         AssignPlacementComponentClientRpc(this);
-        startingSetup = FENReader.ReadFENInput(fenString);
         chessPiecesMapping = new Dictionary<char, ChessPiece>();
         // Create black chess pieces with lower case
         CreateChessPieces(AllChessPieces);
@@ -77,11 +78,7 @@ public class PiecePlacementSystem : NetworkBehaviour
     [ClientRpc]
     private void AssignPlacementComponentClientRpc(NetworkBehaviourReference target)
     {
-        if (IsServer)
-        {
-            return;
-        }
-
+        startingSetup = FENReader.ReadFENInput(fenString);
         if (target.TryGet(out PiecePlacementSystem piecePlacementSystem))
         {
             chessBoard.PlacementSystem = piecePlacementSystem;
@@ -184,7 +181,7 @@ public class PiecePlacementSystem : NetworkBehaviour
 
         var allPositions = chessBoard.GetAllPositions();
         allPositions.MoveNext();
-        var placements = startingSetup.piecePlacement.Split(ChessNotation.delimeter);
+        var placements = startingSetup.piecePlacement.Split(FENChessNotation.delimeter);
         var currentBoardPosition = allPositions.Current;
 
         for (int i = placements.Length - 1; i >= 0; --i)

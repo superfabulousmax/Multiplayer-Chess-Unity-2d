@@ -23,17 +23,26 @@ public class Board : NetworkBehaviour
     public IReadOnlyList<ChessPiece> ChessPiecesList { get => chessPiecesList; }
     public PiecePlacementSystem PlacementSystem { get => piecePlacementSystem; set => piecePlacementSystem = value; }
     public ChessPiece PlayerOneKing { get => playerOneKing; }
+    public ChessPiece PlayerTwoKing { get => playerTwoKing; }
 
     internal ChessPiece GetOppositeKing(PlayerColour activeColour)
     {
         if (activeColour == PlayerColour.PlayerOne)
         {
-            return playerTwoKing;
+            return GetKingForColour(PlayerColour.PlayerTwo);
         }
-        return PlayerOneKing;
+        return GetKingForColour(PlayerColour.PlayerOne);
     }
 
-    public ChessPiece PlayerTwoKing { get => playerTwoKing; }
+    internal ChessPiece GetKingForColour(PlayerColour colour)
+    {
+        if (colour == PlayerColour.PlayerOne)
+        {
+            return PlayerOneKing;
+        }
+        return playerTwoKing;
+    }
+
 
     Dictionary<uint, ChessPiece> chessPiecesMap;
 
