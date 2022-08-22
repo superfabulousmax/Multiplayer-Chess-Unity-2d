@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 55b69678f65f1ea468781cf999dd89b5, type: 3}
   m_Name: Wooden
   m_EditorClassIdentifier: 
-  first: {fileID: 21300000, guid: 69da78334163ddc45828c245a7bb23d3, type: 3}
-  second: {fileID: 21300000, guid: bb0139e81f9048e4f8fed1cee40f36e9, type: 3}
+  first: {fileID: 21300000, guid: bb0139e81f9048e4f8fed1cee40f36e9, type: 3}
+  second: {fileID: 21300000, guid: 69da78334163ddc45828c245a7bb23d3, type: 3}
