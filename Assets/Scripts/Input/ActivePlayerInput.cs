@@ -4,12 +4,14 @@ using UnityEngine;
 public class ActivePlayerInput : IPlayerInput
 {
     Board board;
+    BoardTileHighlighter tileHighlighter;
     ChessPiece selectedChessPiece;
     Action onFinish;
 
     public ActivePlayerInput(Board board, Action onFinish)
     {
         this.board = board;
+        this.tileHighlighter = board.GetComponent<BoardTileHighlighter>();
         this.onFinish = onFinish;
     }
 
@@ -27,12 +29,17 @@ public class ActivePlayerInput : IPlayerInput
             {
                 if(chessPiece.PlayerColour == activeColour)
                 {
-                    this.selectedChessPiece = chessPiece;
+                    if (selectedChessPiece != null)
+                    {
+                        tileHighlighter.SetTileColour(selectedChessPiece.TilePosition, Color.white);
+                    }
+                    selectedChessPiece = chessPiece;
+                    tileHighlighter.SetTileColour(chessPiece.TilePosition, Color.blue);
                     Debug.Log($"selected chess piece {selectedChessPiece}");
                     return;
                 }
             }
-            if (this.selectedChessPiece == null)
+            if (selectedChessPiece == null)
             {
                 return;
             }
@@ -45,6 +52,9 @@ public class ActivePlayerInput : IPlayerInput
 
             if (board.ValidateMove(activeColour, selectedChessPiece, tilePosition, out bool isPieceTaken))
             {
+                tileHighlighter.SetTileColour(tilePosition, Color.blue);
+                tileHighlighter.StartWaitThenSetColour(tilePosition, Color.white);
+                tileHighlighter.StartWaitThenSetColour(selectedChessPiece.TilePosition, Color.white);
                 if (isPieceTaken)
                 {
                     board.TakePieceServerRpc(selectedChessPiece, tilePosition);
@@ -54,11 +64,15 @@ public class ActivePlayerInput : IPlayerInput
                     selectedChessPiece.SetTilePositionServerRpc(tilePosition);
                 }
 
-                this.selectedChessPiece = null;
+                selectedChessPiece = null;
+
                 onFinish.Invoke();
             }
             else
             {
+                tileHighlighter.SetTileColour(tilePosition, Color.white);
+                tileHighlighter.SetTileColour(selectedChessPiece.TilePosition, Color.white);
+                selectedChessPiece = null;
                 Debug.Log("Invalid move");
             }
         }
