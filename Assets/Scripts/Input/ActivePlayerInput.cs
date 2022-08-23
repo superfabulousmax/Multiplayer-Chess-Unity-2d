@@ -8,11 +8,17 @@ public class ActivePlayerInput : IPlayerInput
     ChessPiece selectedChessPiece;
     Action onFinish;
 
+    private Color highlightColour;
+    private Color clearColour;
+
     public ActivePlayerInput(Board board, Action onFinish)
     {
         this.board = board;
-        this.tileHighlighter = board.GetComponent<BoardTileHighlighter>();
+        this.tileHighlighter = board.TileHighlighter;
         this.onFinish = onFinish;
+        // perwinkle color!
+        this.highlightColour = new Color(204 / 255.0f, 204 / 255.0f, 255 / 255.0f, 200 / 255.0f);
+        this.clearColour = Color.clear;
     }
 
     public void HandleInput(int id, PlayerColour activeColour, PlayerColour currentColour, bool isOwner)
@@ -31,10 +37,10 @@ public class ActivePlayerInput : IPlayerInput
                 {
                     if (selectedChessPiece != null)
                     {
-                        tileHighlighter.SetTileColour(selectedChessPiece.TilePosition, Color.white);
+                        tileHighlighter.SetTileColour(selectedChessPiece.TilePosition, clearColour);
                     }
                     selectedChessPiece = chessPiece;
-                    tileHighlighter.SetTileColour(chessPiece.TilePosition, Color.blue);
+                    tileHighlighter.SetTileColour(chessPiece.TilePosition, highlightColour);
                     Debug.Log($"selected chess piece {selectedChessPiece}");
                     return;
                 }
@@ -52,9 +58,9 @@ public class ActivePlayerInput : IPlayerInput
 
             if (board.ValidateMove(activeColour, selectedChessPiece, tilePosition, out bool isPieceTaken))
             {
-                tileHighlighter.SetTileColour(tilePosition, Color.blue);
-                tileHighlighter.StartWaitThenSetColour(tilePosition, Color.white);
-                tileHighlighter.StartWaitThenSetColour(selectedChessPiece.TilePosition, Color.white);
+                tileHighlighter.SetTileColour(tilePosition, highlightColour);
+                tileHighlighter.StartWaitThenSetColour(tilePosition, clearColour);
+                tileHighlighter.StartWaitThenSetColour(selectedChessPiece.TilePosition, clearColour);
                 if (isPieceTaken)
                 {
                     board.TakePieceServerRpc(selectedChessPiece, tilePosition);
@@ -70,8 +76,8 @@ public class ActivePlayerInput : IPlayerInput
             }
             else
             {
-                tileHighlighter.SetTileColour(tilePosition, Color.white);
-                tileHighlighter.SetTileColour(selectedChessPiece.TilePosition, Color.white);
+                tileHighlighter.SetTileColour(tilePosition, clearColour);
+                tileHighlighter.SetTileColour(selectedChessPiece.TilePosition, clearColour);
                 selectedChessPiece = null;
                 Debug.Log("Invalid move");
             }

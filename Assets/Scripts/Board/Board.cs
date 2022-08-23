@@ -8,6 +8,9 @@ using static ChessPiece;
 [RequireComponent(typeof(Tilemap))]
 public class Board : NetworkBehaviour
 {
+    [SerializeField]
+    BoardTileHighlighter tileHighlighter;
+
     Tilemap tilemap;
 
     [SerializeField]
@@ -24,6 +27,7 @@ public class Board : NetworkBehaviour
     public PiecePlacementSystem PlacementSystem { get => piecePlacementSystem; set => piecePlacementSystem = value; }
     public ChessPiece PlayerOneKing { get => playerOneKing; }
     public ChessPiece PlayerTwoKing { get => playerTwoKing; }
+    public BoardTileHighlighter TileHighlighter { get => tileHighlighter; }
 
     internal ChessPiece GetOppositeKing(PlayerColour activeColour)
     {
