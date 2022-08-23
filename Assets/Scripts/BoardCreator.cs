@@ -34,5 +34,7 @@ public class BoardCreator : MonoBehaviour
             currentSprite = prevSprite;
             prevSprite = temp;
         }
+
+        tilemap.RefreshAllTiles();
     }
 }

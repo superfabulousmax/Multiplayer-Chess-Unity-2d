@@ -340,8 +340,8 @@ Camera:
   m_GameObject: {fileID: 963194225}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_ClearFlags: 2
+  m_BackGroundColor: {r: 0.501513, g: 0.6286045, b: 0.6603774, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -448,6 +448,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: Piece Placement System
       objectReference: {fileID: 0}
+    - target: {fileID: 340879509110424983, guid: 26d191cc9129e2b469611256ae1131dd, type: 3}
+      propertyPath: playerOnePieces
+      value: 
+      objectReference: {fileID: 11400000, guid: ec15f297126003c44b70d4b91b25d27f, type: 2}
+    - target: {fileID: 340879509110424983, guid: 26d191cc9129e2b469611256ae1131dd, type: 3}
+      propertyPath: playerTwoPieces
+      value: 
+      objectReference: {fileID: 11400000, guid: cd564f19cd9f416409013f43e08ca05e, type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 26d191cc9129e2b469611256ae1131dd, type: 3}
 --- !u!1001 &4664905655874459177
@@ -683,6 +691,18 @@ PrefabInstance:
     - target: {fileID: 5374150967812224935, guid: 8e53896f92347b0479c039578a48ff0d, type: 3}
       propertyPath: m_Name
       value: Grid
+      objectReference: {fileID: 0}
+    - target: {fileID: 5794513980828992777, guid: 8e53896f92347b0479c039578a48ff0d, type: 3}
+      propertyPath: tiles
+      value: 
+      objectReference: {fileID: 11400000, guid: e3e74a78d2efad14a8b8c013821b837b, type: 2}
+    - target: {fileID: 5794513980828992777, guid: 8e53896f92347b0479c039578a48ff0d, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5802606523833585076, guid: 8e53896f92347b0479c039578a48ff0d, type: 3}
+      propertyPath: GlobalObjectIdHash
+      value: 2737311950
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 8e53896f92347b0479c039578a48ff0d, type: 3}
