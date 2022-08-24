@@ -11,6 +11,7 @@ public class ActivePlayerInput : IPlayerInput
 
     private Color highlightColour;
     private Color clearColour;
+    private Color checkedColour;
 
     public ActivePlayerInput(Board board, Action onFinish)
     {
@@ -20,6 +21,7 @@ public class ActivePlayerInput : IPlayerInput
         // perwinkle color!
         this.highlightColour = new Color(204 / 255.0f, 204 / 255.0f, 255 / 255.0f, 200 / 255.0f);
         this.clearColour = Color.clear;
+        this.checkedColour = Color.red;
     }
 
     public void HandleInput(int id, PlayerColour activeColour, PlayerColour currentColour, bool isOwner)
@@ -40,8 +42,13 @@ public class ActivePlayerInput : IPlayerInput
                     {
                         tileHighlighter.SetTileColour(selectedChessPiece.TilePosition, clearColour);
                     }
+
                     selectedChessPiece = chessPiece;
                     tileHighlighter.SetTileColour(chessPiece.TilePosition, highlightColour);
+                    if (selectedChessPiece.TilePosition != board.CheckedPos)
+                    {
+                        tileHighlighter.SetTileColour(board.CheckedPos, checkedColour);
+                    }
                     Debug.Log($"selected chess piece {selectedChessPiece}");
                     return;
                 }
@@ -80,11 +87,13 @@ public class ActivePlayerInput : IPlayerInput
                 selectedChessPiece = null;
 
                 onFinish.Invoke();
+
             }
             else
             {
                 tileHighlighter.SetTileColour(tilePosition, clearColour);
                 tileHighlighter.SetTileColour(selectedChessPiece.TilePosition, clearColour);
+                tileHighlighter.SetTileColour(board.CheckedPos, checkedColour);
                 selectedChessPiece = null;
                 Debug.Log("Invalid move");
             }
@@ -93,8 +102,8 @@ public class ActivePlayerInput : IPlayerInput
 
     public bool GetChessPiece(out ChessPiece chessPiece)
     {
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        RaycastHit2D hit = Physics2D.GetRayIntersection(ray, Mathf.Infinity);
+        var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        var hit = Physics2D.GetRayIntersection(ray, Mathf.Infinity);
 
         if (hit.collider != null) 
         {

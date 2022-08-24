@@ -12,13 +12,10 @@ public class ChessPiece : NetworkBehaviour
     NetworkVariable<ChessPieceType> pieceType = new(ChessPieceType.Pawn);
     public NetworkVariable<ChessPieceStatus> pieceStatus = new(ChessPieceStatus.Active, writePerm: NetworkVariableWritePermission.Server);
     public NetworkVariable<Vector3Int> tilePosition = new(Vector3Int.zero, writePerm: NetworkVariableWritePermission.Owner);
-    NetworkVariable<Vector3> piecePosition = new(Vector3.zero, writePerm: NetworkVariableWritePermission.Owner);
 
     NetworkTransform networkTransform;
 
     SpriteRenderer spriteRenderer;
-
-    ChessPieces chessPieces;
 
     IChessRule chessRuleBehaviour;
 
@@ -27,26 +24,10 @@ public class ChessPiece : NetworkBehaviour
     public PlayerColour PlayerColour { get => playerColour.Value; private set => playerColour.Value = value; }
     public SpriteRenderer SpriteRenderer { get => spriteRenderer;  }
 
-    public Vector3Int TilePosition { get => tilePosition.Value; }
+    public Vector3Int TilePosition { get => tilePosition.Value; set => tilePosition.Value = value; }
     public ChessPieceType PieceType { get => pieceType.Value; }
     public IChessRule ChessRuleBehaviour { get => chessRuleBehaviour; set => chessRuleBehaviour = value; }
     public ICheckRule CheckRuleBehaviour { get => checkRuleBehaviour; set => checkRuleBehaviour = value; }
-    public ChessPieces ChessPieces { get => chessPieces; set => chessPieces = value; }
-
-    [ClientRpc]
-    public void SetTilePositionClientRpc(Vector3Int newTilePosition)
-    {
-        if (!IsOwner)
-        {
-            return;
-        }
-
-        tilePosition.Value = newTilePosition;
-        var position = new Vector3(tilePosition.Value.x + 0.5f, tilePosition.Value.y + 0.5f, 0);
-        piecePosition.Value = position;
-        transform.position = piecePosition.Value;
-        networkTransform.transform.position = position;
-    }
 
     [ServerRpc(RequireOwnership = false)]
     public void SetTilePositionServerRpc(Vector3Int newTilePosition)
@@ -57,6 +38,19 @@ public class ChessPiece : NetworkBehaviour
         }
 
         SetTilePositionClientRpc(newTilePosition);
+    }
+
+    [ClientRpc]
+    private void SetTilePositionClientRpc(Vector3Int newTilePosition)
+    {
+        if (!IsOwner)
+        {
+            return;
+        }
+
+        tilePosition.Value = newTilePosition;
+        var position = new Vector3(tilePosition.Value.x + 0.5f, tilePosition.Value.y + 0.5f, 0);
+        networkTransform.transform.position = position;
     }
 
     public override void OnNetworkSpawn()
@@ -102,11 +96,10 @@ public class ChessPiece : NetworkBehaviour
         }
     }
 
-    internal void Init(ChessPieces chessPieces, PlayerColour colour, Sprite sprite, ChessPieceType type, Vector3Int tilePosition = default)
+    internal void Init(PlayerColour colour, Sprite sprite, ChessPieceType type, Vector3Int tilePosition = default)
     {
         networkTransform = GetComponent<NetworkTransform>();
         spriteRenderer = GetComponent<SpriteRenderer>();
-        this.chessPieces = chessPieces;
         playerColour.Value = colour;
         spriteRenderer.sprite = sprite;
         pieceType.Value = type;
@@ -147,13 +140,7 @@ public class ChessPiece : NetworkBehaviour
     internal void ChangePieceTo(ChessPieceType chessPieceType, PiecePlacementSystem placementSystem)
     {
         AssignChessRules(chessPieceType);
-        if (chessPieces != null)
-        {
-            spriteRenderer.sprite = chessPieces.GetSprite(chessPieceType);
-        }
-        else
-        {
-            spriteRenderer.sprite =  placementSystem.GetSpriteForPiece(PlayerColour, chessPieceType);
-        }
+
+        spriteRenderer.sprite = placementSystem.GetSpriteForPiece(PlayerColour, chessPieceType);
     }
 }

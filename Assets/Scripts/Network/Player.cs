@@ -16,7 +16,16 @@ public class Player : NetworkBehaviour
     {
         playerNetworkColour = FindObjectOfType<PlayerNetworkColour>();
         GameConnectionManager.Singleton.OnGameReady += OnGameReady;
-        //AssignColourClientRPC(playerNetworkColour.GetColour());
+#if TestingBlack
+        if (IsOwnedByServer)
+        {
+            AssignColourClientRPC(PlayerColour.PlayerTwo);
+        }
+        else
+        {
+            AssignColourClientRPC(PlayerColour.PlayerOne);
+        }
+#elif TestingWhite
         if (IsOwnedByServer)
         {
             AssignColourClientRPC(PlayerColour.PlayerOne);
@@ -25,6 +34,9 @@ public class Player : NetworkBehaviour
         {
             AssignColourClientRPC(PlayerColour.PlayerTwo);
         }
+#else
+        AssignColourClientRPC(playerNetworkColour.GetColour());
+#endif
     }
 
     public override void OnNetworkDespawn()

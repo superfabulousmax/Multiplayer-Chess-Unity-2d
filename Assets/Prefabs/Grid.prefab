@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 2545654173609913558}
   - component: {fileID: 4645018061735921815}
   - component: {fileID: 2340456734203848651}
+  - component: {fileID: 5613506587369528165}
   m_Layer: 0
   m_Name: Selection Tilemap
   m_TagString: Untagged
@@ -134,6 +135,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   whiteSquare: {fileID: 7482667652216324306, guid: df94aec6c8999c34f83523a5bf98b538, type: 3}
+--- !u!114 &5613506587369528165
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 164326889882116578}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 951099334
+  AlwaysReplicateAsRoot: 0
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
 --- !u!1 &5374150967812224935
 GameObject:
   m_ObjectHideFlags: 0

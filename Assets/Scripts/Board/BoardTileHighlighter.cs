@@ -1,9 +1,10 @@
 using System.Collections;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
 [RequireComponent(typeof(Tilemap))]
-public class BoardTileHighlighter : MonoBehaviour
+public class BoardTileHighlighter : NetworkBehaviour
 {
     [SerializeField]
     Sprite whiteSquare;
@@ -51,5 +52,17 @@ public class BoardTileHighlighter : MonoBehaviour
             tilemap.SetTileFlags(position, TileFlags.None);
             tilemap.SetColor(position, colour);
         }
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    public void SetTileColourServerRpc(Vector3Int position, Color colour)
+    {
+        SetTileColourClientRpc(position, colour);
+    }
+
+    [ClientRpc]
+    private void SetTileColourClientRpc(Vector3Int position, Color colour)
+    {
+        SetTileColour(position, colour);
     }
 }

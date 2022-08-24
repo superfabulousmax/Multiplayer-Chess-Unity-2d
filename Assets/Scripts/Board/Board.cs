@@ -22,6 +22,12 @@ public class Board : NetworkBehaviour
     ChessPiece playerOneKing;
     ChessPiece playerTwoKing;
 
+    Dictionary<uint, ChessPiece> chessPiecesMap;
+
+    int [,] boardState;
+
+    public NetworkVariable<Vector3Int> checkedPos = new(-Vector3Int.one, writePerm: NetworkVariableWritePermission.Server);
+
     public Tilemap BoardTileMap { get => tilemap; }
     public IReadOnlyDictionary<uint, ChessPiece> ChessPieces { get => chessPiecesMap; }
     public IReadOnlyList<ChessPiece> ChessPiecesList { get => chessPiecesList; }
@@ -29,6 +35,11 @@ public class Board : NetworkBehaviour
     public ChessPiece PlayerOneKing { get => playerOneKing; }
     public ChessPiece PlayerTwoKing { get => playerTwoKing; }
     public BoardTileHighlighter TileHighlighter { get => tileHighlighter; }
+    public int[,] BoardState { get => boardState; }
+    public Vector3Int CheckedPos { get => checkedPos.Value; }
+
+    public event Action onFinishedBoardSetup;
+    public event Action<ChessPiece> onPawnPromoted;
 
     internal ChessPiece GetOppositeKing(PlayerColour activeColour)
     {
@@ -49,21 +60,13 @@ public class Board : NetworkBehaviour
     }
 
 
-    Dictionary<uint, ChessPiece> chessPiecesMap;
-
-    public event Action onFinishedBoardSetup;
-
-    public event Action<ChessPiece> onPawnPromoted;
-
-    int [,] board;
-
     void Awake()
     {
         tilemap = GetComponent<Tilemap>();
         chessPiecesMap = new Dictionary<uint, ChessPiece>();
         chessPiecesList = new List<ChessPiece>(GameConstants.MaxPieces);
 
-        board = new int[GameConstants.BoardLengthDimension, GameConstants.BoardLengthDimension];
+        boardState = new int[GameConstants.BoardLengthDimension, GameConstants.BoardLengthDimension];
     }
 
     public BoundsInt.PositionEnumerator GetAllPositions()
@@ -124,16 +127,16 @@ public class Board : NetworkBehaviour
     [ServerRpc(RequireOwnership =false)]
     internal void TakePieceServerRpc(NetworkBehaviourReference target, Vector3Int tilePosition)
     {
-        var id = GetBoardState()[tilePosition.y, tilePosition.x];
-        if (target.TryGet(out ChessPiece chessPieceComponent))
+        if (!target.TryGet(out ChessPiece chessPieceComponent))
         {
+            return;
         }
-        if (chessPiecesMap.TryGetValue((uint)id, out ChessPiece value))
+        var id = GetBoardState()[tilePosition.y, tilePosition.x];
+        if (chessPiecesMap.TryGetValue((uint)id, out ChessPiece takenPiece))
         {
             chessPieceComponent.SetTilePositionServerRpc(tilePosition);
-            RemoveChessPieceToBoardServerRpc(value);
-            value.GetComponent<NetworkObject>().Despawn();
-            GetBoardState()[tilePosition.y, tilePosition.x] = -1;
+            RemoveChessPieceToBoardServerRpc(takenPiece);
+            takenPiece.GetComponent<NetworkObject>().Despawn();
         }
     }
 
@@ -180,16 +183,16 @@ public class Board : NetworkBehaviour
                 var piece = GetPieceAtPosition(currentBoardPosition);
                 if(piece)
                 {
-                    board[y, x] = (int)piece.NetworkObjectId;
+                    boardState[y, x] = (int)piece.NetworkObjectId;
                 }
                 else
                 {
-                    board[y, x] = -1;
+                    boardState[y, x] = -1;
                 }
                 currentBoardPosition = allPositions.Current;
             }
         }
-        return board;
+        return boardState;
     }
 
     public bool CheckPiece(int id, ChessPieceType chessPieceType)
@@ -248,27 +251,25 @@ public class Board : NetworkBehaviour
 
     internal bool IsInCheck(out ChessPiece checkedKing)
     {
-        var allPositions = GetAllPositions();
-        allPositions.MoveNext();
-        var currentBoardPosition = allPositions.Current;
+        var boardState = GetBoardState();
         for (int y = 0; y < GameConstants.BoardLengthDimension; y++)
         {
             for (int x = 0; x < GameConstants.BoardLengthDimension; x++)
             {
-                allPositions.MoveNext();
-                var piece = GetPieceAtPosition(currentBoardPosition);
-                if (piece)
+                var id = boardState[y, x];
+                if (id < 0)
                 {
-                    if (piece.CheckRuleBehaviour != null)
+                    continue;
+                }
+                var piece = GetPieceFromId((uint)id);
+                if (piece.CheckRuleBehaviour != null)
+                {
+                    if (piece.CheckRuleBehaviour.PossibleCheck(this, boardState, piece, piece.TilePosition, out checkedKing))
                     {
-                        if (piece.CheckRuleBehaviour.PossibleCheck(this, GetBoardState(), piece, piece.TilePosition, out checkedKing))
-                        {
-                            Debug.Log($"{checkedKing} is in Check");
-                            return true;
-                        }
+                        Debug.Log($"{checkedKing} is in Check");
+                        return true;
                     }
                 }
-                currentBoardPosition = allPositions.Current;
             }
         }
         checkedKing = null;
@@ -317,6 +318,31 @@ public class Board : NetworkBehaviour
         return true;
     }
 
+
+    [ServerRpc(RequireOwnership = false)]
+    public void DetectCheckServerRpc()
+    {
+        Debug.Log("Detect Check");
+        if (IsInCheck(out var king))
+        {
+            checkedPos.Value = king.TilePosition;
+            if (IsCheckMate(king.PlayerColour))
+            {
+                Debug.Log("CHECK MATE!");
+            }
+            else
+            {
+                TileHighlighter.SetTileColourServerRpc(king.TilePosition, Color.red);
+            }
+        }
+        else
+        {
+            tileHighlighter.SetTileColourServerRpc(checkedPos.Value, Color.clear);
+            checkedPos.Value = -Vector3Int.one;
+        }
+    }
+
+
     private bool CheckPieceCanMove(ChessPiece targetPiece, int[,] boardState)
     {
         for (int y = 0; y < GameConstants.BoardLengthDimension; y++)
@@ -324,16 +350,16 @@ public class Board : NetworkBehaviour
             for (int x = 0; x < GameConstants.BoardLengthDimension; x++)
             {
                 var id = boardState[y, x];
-                if (id < 0)
+                if (id >= 0)
                 {
-                    continue;
+                    var piece = GetPieceFromId((uint)id);
+
+                    if (piece.PlayerColour == targetPiece.PlayerColour || id == (int)targetPiece.NetworkObjectId)
+                    {
+                        continue;
+                    }
                 }
-                var piece = GetPieceFromId((uint)id);
-             
-                if (piece.PlayerColour == targetPiece.PlayerColour || id == (int)targetPiece.NetworkObjectId)
-                {
-                    continue;
-                }
+
                 if (targetPiece.ChessRuleBehaviour.PossibleMove(targetPiece.PlayerColour, this, targetPiece, new Vector3Int(x, y, 0), out var _))
                 {
                     Debug.Log($"Possible for {targetPiece} to {new Vector3Int(x, y, 0)}");

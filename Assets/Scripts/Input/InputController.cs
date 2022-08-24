@@ -90,15 +90,21 @@ public class InputController : NetworkBehaviour
 
     private void OnInputFinished()
     {
-        if (board.IsInCheck(out var king))
-        {
-            if (board.IsCheckMate(king.PlayerColour))
-            {
-                Debug.Log("CHECK MATE!");
-            }
-        }
         Debug.Log($"{turnSystem.GetActiveColour()}" +
-            $" Turn Finished");
+            $" Input Finished");
+        board.DetectCheckServerRpc();
         turnSystem.ChangeTurnServerRpc();
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void HighlightKingServerRpc(int x, int y, int z = 0)
+    {
+        HighlightKingClientRpc(x, y, z);
+    }
+
+    [ClientRpc]
+    private void HighlightKingClientRpc(int x, int y, int z = 0)
+    {
+        board.TileHighlighter.SetTileColour(new Vector3Int(x, y, z), Color.red);
     }
 }
