@@ -6,6 +6,7 @@ public class ActivePlayerInput : IPlayerInput
     Board board;
     BoardTileHighlighter tileHighlighter;
     ChessPiece selectedChessPiece;
+    ChessPiece lastMovedPiece;
     Action onFinish;
 
     private Color highlightColour;
@@ -70,6 +71,12 @@ public class ActivePlayerInput : IPlayerInput
                     selectedChessPiece.SetTilePositionServerRpc(tilePosition);
                 }
 
+                if (lastMovedPiece != null)
+                {
+                    tileHighlighter.SetTileColour(lastMovedPiece.TilePosition, clearColour);
+                }
+
+                lastMovedPiece = selectedChessPiece;
                 selectedChessPiece = null;
 
                 onFinish.Invoke();

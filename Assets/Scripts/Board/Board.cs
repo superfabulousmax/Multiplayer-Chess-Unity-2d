@@ -4,6 +4,7 @@ using Unity.Netcode;
 using UnityEngine.Tilemaps;
 using System.Collections.Generic;
 using static ChessPiece;
+using System.Text;
 
 [RequireComponent(typeof(Tilemap))]
 public class Board : NetworkBehaviour
@@ -405,5 +406,30 @@ public class Board : NetworkBehaviour
         {
             chessPiece.ChangePieceTo(chessPieceType, PlacementSystem);
         }
+    }
+
+    public void PrintOutBoardState(int[,] boardState)
+    {
+        var sbResult = new StringBuilder();
+        var padding = "     ";
+        for (int y = 0; y < GameConstants.BoardLengthDimension; y++)
+        {
+            for (int x = 0; x < GameConstants.BoardLengthDimension; x++)
+            {
+                if(boardState[y, x] == -1)
+                {
+                    var result = String.Format("{0,5:00}", 0);
+                    sbResult.Append($"{result}{padding}");
+                }
+                else
+                {
+                    var result = String.Format("{0,5:00}", boardState[y, x]);
+                    //{boardState[y, x].ToString("00")}
+                    sbResult.Append($"{result}{padding}");
+                }
+            }
+            sbResult.Append($"\n");
+        }
+        Debug.Log(sbResult.ToString());
     }
 }

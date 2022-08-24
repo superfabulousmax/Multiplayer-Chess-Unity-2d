@@ -63,7 +63,7 @@ public class RookCheckRule : ICheckRule
             {
                 // moving left
 
-                for (int i = kingPosition.x + 1 ; i < x; i++)
+                for (int i = kingPosition.x + 1 ; i <= x; i++)
                 {
                     if (boardState[y, i] != (int)rook.NetworkObjectId && boardState[y, i] >= 0)
                     {
