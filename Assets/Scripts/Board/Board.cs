@@ -35,7 +35,7 @@ public class Board : NetworkBehaviour
     public ChessPiece PlayerOneKing { get => playerOneKing; }
     public ChessPiece PlayerTwoKing { get => playerTwoKing; }
     public BoardTileHighlighter TileHighlighter { get => tileHighlighter; }
-    public int[,] BoardState { get => boardState; }
+    public int [,] BoardState { get => boardState; }
     public Vector3Int CheckedPos { get => checkedPos.Value; }
 
     public event Action onFinishedBoardSetup;
@@ -65,7 +65,6 @@ public class Board : NetworkBehaviour
         tilemap = GetComponent<Tilemap>();
         chessPiecesMap = new Dictionary<uint, ChessPiece>();
         chessPiecesList = new List<ChessPiece>(GameConstants.MaxPieces);
-
         boardState = new int[GameConstants.BoardLengthDimension, GameConstants.BoardLengthDimension];
     }
 
@@ -447,7 +446,7 @@ public class Board : NetworkBehaviour
         }
     }
 
-    public void PrintOutBoardState(int[,] boardState)
+    public string PrintOutBoardState(int[,] boardState)
     {
         var sbResult = new StringBuilder();
         var padding = "     ";
@@ -457,17 +456,80 @@ public class Board : NetworkBehaviour
             {
                 if(boardState[y, x] == -1)
                 {
-                    var result = String.Format("{0,5:00}", 0);
+                    var result = string.Format("{0,5:00}", 0);
                     sbResult.Append($"{result}{padding}");
                 }
                 else
                 {
-                    var result = String.Format("{0,5:00}", boardState[y, x]);
+                    var result = string.Format("{0,5:00}", boardState[y, x]);
                     sbResult.Append($"{result}{padding}");
                 }
             }
             sbResult.Append($"\n");
         }
         Debug.Log(sbResult.ToString());
+        return sbResult.ToString();
+    }
+
+    public string GetBoardStateString()
+    {
+        var sbResult = new StringBuilder();
+        var padding = "     ";
+        for (int y = 0; y < GameConstants.BoardLengthDimension; y++)
+        {
+            for (int x = 0; x < GameConstants.BoardLengthDimension; x++)
+            {
+                var piece = GetPieceFromId((uint)boardState[y, x]);
+                if (piece)
+                {
+                    var result = string.Format("{0,5}", GetEncoding(piece.PlayerColour, piece.PieceType));
+                    sbResult.Append($"{result}{padding}");
+                }
+                else
+                {
+                    var result = string.Format("{0,5}", "--");
+                    sbResult.Append($"{result}{padding}");
+                }
+            }
+            sbResult.Append($"\n");
+        }
+        return sbResult.ToString();
+    }
+
+    private string GetEncoding(PlayerColour colour, ChessPieceType chessPieceType)
+    {
+        var sb = new StringBuilder(2);
+        switch (colour)
+        {
+            case PlayerColour.PlayerOne:
+                sb.Append("w");
+                break;
+            case PlayerColour.PlayerTwo:
+                sb.Append("b");
+                break;
+        }
+        switch (chessPieceType)
+        {
+            case ChessPieceType.Pawn:
+                sb.Append("p");
+                break;
+            case ChessPieceType.King:
+                sb.Append("k");
+                break;
+            case ChessPieceType.Queen:
+                sb.Append("r");
+                break;
+            case ChessPieceType.Rook:
+                sb.Append("r");
+                break;
+            case ChessPieceType.Knight:
+                sb.Append("n");
+                break;
+            case ChessPieceType.Bishop:
+                sb.Append("b");
+                break;
+        }
+
+        return sb.ToString();
     }
 }
