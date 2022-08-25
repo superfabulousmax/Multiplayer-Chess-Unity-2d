@@ -13,8 +13,8 @@ public class QueenChessPiece : IChessRule
         rookChessRule = new RookChessPiece(takePieceRule, new MoveToStopCheck());
     }
 
-    public bool PossibleMove(PlayerColour activeColour, Board board, ChessPiece piece, Vector3Int newPosition, out bool takenPiece)
+    public bool PossibleMove(PlayerColour activeColour, Board board, ChessPiece piece, Vector3Int newPosition, out bool takenPiece, bool isSimulation = false)
     {
-        return bishopChessRule.PossibleMove(activeColour, board, piece, newPosition, out takenPiece) || rookChessRule.PossibleMove(activeColour, board, piece, newPosition, out takenPiece);
+        return bishopChessRule.PossibleMove(activeColour, board, piece, newPosition, out takenPiece, isSimulation) || rookChessRule.PossibleMove(activeColour, board, piece, newPosition, out takenPiece, isSimulation);
     }
 }

@@ -66,7 +66,7 @@ public class InputController : NetworkBehaviour
         }
     }
 
-    [ServerRpc(Delivery = RpcDelivery.Reliable, RequireOwnership = false)]
+    [ServerRpc(RequireOwnership = false)]
     private void RequestInputServerRpc()
     {
         if (!IsServer)

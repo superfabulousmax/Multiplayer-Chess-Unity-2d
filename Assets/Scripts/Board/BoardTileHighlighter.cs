@@ -49,6 +49,7 @@ public class BoardTileHighlighter : NetworkBehaviour
         var tile = tilemap.GetTile(position);
         if (tile)
         {
+            Debug.Log($"Set tile {position} {colour} on client {OwnerClientId}");
             tilemap.SetTileFlags(position, TileFlags.None);
             tilemap.SetColor(position, colour);
         }

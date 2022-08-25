@@ -5,23 +5,25 @@ using UnityEngine;
 [Serializable]
 public class PawnChessPiece : IChessRule
 {
-    [SerializeField]
-    NetworkVariable<bool> isFirstMove = new(true, writePerm: NetworkVariableWritePermission.Owner);
-    [SerializeField]
-    NetworkVariable<bool> firstMoveTwo = new(false, writePerm: NetworkVariableWritePermission.Owner);
-    [SerializeField]
-    NetworkVariable<int> moveCount = new(0, writePerm: NetworkVariableWritePermission.Owner);
-    public static NetworkVariable<uint> lastMovedPawnId = new(0, writePerm: NetworkVariableWritePermission.Owner);
     PlayerColour pawnColour;
 
-    public bool IsFirstMove { get => isFirstMove.Value; set => isFirstMove.Value = value; }
-    public int MoveCount { get => moveCount.Value; set => moveCount.Value = value; }
-    public bool FirstMoveTwo { get => firstMoveTwo.Value; set => firstMoveTwo.Value = value; }
-    public uint LastMovedPawnID { get => lastMovedPawnId.Value; set => lastMovedPawnId.Value = value; }
+    int moveCount;
+    bool isFirstMove;
+    bool firstMoveTwo;
+    public static uint lastMovedPawnId;
+    public int MoveCount { get => moveCount; set => moveCount = value; }
+    public bool IsFirstMove { get => isFirstMove; set {
+            Debug.Log($"Setting pawn at {tilePosition} to {value}");
+            isFirstMove = value; 
+        
+        } }
+    public bool FirstMoveTwo { get => firstMoveTwo; set => firstMoveTwo = value; }
+    public uint LastMovedPawnID { get => lastMovedPawnId; set => lastMovedPawnId = value; }
 
     IEnPassantChessRule enPassant;
     IChessRule pawnPromotion;
     IChessRule moveToStopCheckRule;
+    Vector3Int tilePosition;
 
     public PawnChessPiece(IChessRule pawnPromotion, IChessRule moveToStopCheckRule, PlayerColour pawnColour, Vector3Int tilePosition, bool isFirstMove = true, bool firstMoveTwo = false)
     {
@@ -40,17 +42,18 @@ public class PawnChessPiece : IChessRule
             }
         }
 
-        this.isFirstMove.Value = isFirstMove;
-        this.firstMoveTwo.Value = firstMoveTwo;
+        this.isFirstMove = isFirstMove;
+        this.firstMoveTwo = firstMoveTwo;
         this.pawnColour = pawnColour;
+        this.tilePosition = tilePosition;
 
         if (isFirstMove)
         {
-            moveCount.Value = 0;
+            moveCount = 0;
         }
         else
         {
-            moveCount.Value = 1;
+            moveCount = 1;
         }
 
         enPassant = new EnPassant();
@@ -58,7 +61,7 @@ public class PawnChessPiece : IChessRule
         this.moveToStopCheckRule = moveToStopCheckRule;
     }
 
-    public bool PossibleMove(PlayerColour activeColour, Board board, ChessPiece piece, Vector3Int newPosition, out bool takenPiece)
+    public bool PossibleMove(PlayerColour activeColour, Board board, ChessPiece piece, Vector3Int newPosition, out bool takenPiece, bool isSimulation = false)
     {
         takenPiece = false;
 
@@ -76,7 +79,7 @@ public class PawnChessPiece : IChessRule
             return false;
         }
 
-        ChessPiece lastMovedPawn = board.GetPieceFromId(lastMovedPawnId.Value);
+        ChessPiece lastMovedPawn = board.GetPieceFromId(lastMovedPawnId);
         var takenWithEnPassant = false;
         if (activeColour == PlayerColour.PlayerOne)
         {
@@ -88,7 +91,7 @@ public class PawnChessPiece : IChessRule
             if (newPosition.x == x)
             {
 
-                if (yDiff > 2 || (!isFirstMove.Value && yDiff == 2 ))
+                if (yDiff > 2 || (!isFirstMove && yDiff == 2 ))
                 {
                     return false;
                 }
@@ -127,7 +130,8 @@ public class PawnChessPiece : IChessRule
                 return false;
             if (newPosition.x == x)
             {
-                if (yDiff > 2 || (!isFirstMove.Value && yDiff == 2))
+                // TODO bug with isfirstmove is false
+                if (yDiff > 2 || (!isFirstMove && yDiff == 2))
                 {
                     return false;
                 }
@@ -167,22 +171,21 @@ public class PawnChessPiece : IChessRule
         if (!takenWithEnPassant && lastMovedPawn != null && lastMovedPawn.ChessRuleBehaviour is PawnChessPiece lastPawn)
         {
             lastPawn.FirstMoveTwo = false;
-            lastMovedPawn.SyncDataServerRpc(lastPawn.moveCount.Value, lastPawn.isFirstMove.Value, lastPawn.firstMoveTwo.Value, lastMovedPawnId.Value);
+            lastMovedPawn.SyncDataServerRpc(lastPawn.moveCount, lastPawn.isFirstMove, lastPawn.firstMoveTwo, lastMovedPawnId);
         }
 
-        if (isFirstMove.Value && yDiff == 2)
+        if (!isSimulation)
         {
-            firstMoveTwo.Value = true;
+            if (isFirstMove && yDiff == 2)
+            {
+                firstMoveTwo = true;
+            }
+            if (isFirstMove)
+            {
+                Debug.Log($"Setting pawn at {tilePosition} to {false} {isSimulation}");
+                isFirstMove = false;
+            }
         }
-        if (isFirstMove.Value)
-        {
-            isFirstMove.Value = false;
-        }
-
-        lastMovedPawnId.Value = (uint)piece.NetworkObjectId;
-        moveCount.Value++;
-        piece.SyncDataServerRpc(moveCount.Value, isFirstMove.Value, firstMoveTwo.Value, lastMovedPawnId.Value);
-
         // check if move piece to stop check or if moving piece causes check
         var result = moveToStopCheckRule.PossibleMove(activeColour, board, piece, newPosition, out var _);
         if (!result)
@@ -194,6 +197,13 @@ public class PawnChessPiece : IChessRule
         if (pawnPromotion.PossibleMove(activeColour, board, piece, newPosition, out var _))
         {
             board.AskPawnPromotionServerRpc(piece);
+        }
+
+        if(!isSimulation)
+        {
+            lastMovedPawnId = (uint)piece.NetworkObjectId;
+            moveCount++;
+            piece.SyncDataServerRpc(moveCount, isFirstMove, firstMoveTwo, lastMovedPawnId);
         }
 
         return true;

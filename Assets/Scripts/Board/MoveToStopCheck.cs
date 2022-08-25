@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class MoveToStopCheck : IChessRule
 {
-    public bool PossibleMove(PlayerColour activeColour, Board board, ChessPiece piece, Vector3Int newPosition, out bool takenPiece)
+    public bool PossibleMove(PlayerColour activeColour, Board board, ChessPiece piece, Vector3Int newPosition, out bool takenPiece, bool isSimulation = false)
     {
         takenPiece = false;
 
@@ -24,7 +24,7 @@ public class MoveToStopCheck : IChessRule
         simulatedBoardState[y, x] = -1;
         simulatedBoardState[newPosition.y, newPosition.x] = (int)piece.NetworkObjectId;
 
-        board.PrintOutBoardState(simulatedBoardState);
+        //board.PrintOutBoardState(simulatedBoardState);
 
         if (board.IsInCheck(out var king))
         {

@@ -360,7 +360,9 @@ public class Board : NetworkBehaviour
                     }
                 }
 
-                if (targetPiece.ChessRuleBehaviour.PossibleMove(targetPiece.PlayerColour, this, targetPiece, new Vector3Int(x, y, 0), out var _))
+                // TODO bug if it increments counters in rule behaviour when it is just a simulation
+
+                if (targetPiece.ChessRuleBehaviour.PossibleMove(targetPiece.PlayerColour, this, targetPiece, new Vector3Int(x, y, 0), out var _, true))
                 {
                     Debug.Log($"Possible for {targetPiece} to {new Vector3Int(x, y, 0)}");
                     return true;

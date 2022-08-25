@@ -20,7 +20,7 @@ public class KingChessPiece : IChessRule, ICastleEntity
     }
 
 
-    public bool PossibleMove(PlayerColour activeColour, Board board, ChessPiece piece, Vector3Int newPosition, out bool takenPiece)
+    public bool PossibleMove(PlayerColour activeColour, Board board, ChessPiece piece, Vector3Int newPosition, out bool takenPiece, bool isSimulation = false)
     {
         takenPiece = false;
 
@@ -72,8 +72,12 @@ public class KingChessPiece : IChessRule, ICastleEntity
             return false;
         }
 
-        moveCount++;
-        piece.SyncDataServerRpc(moveCount, default, default, default);
+        if(!isSimulation)
+        {
+            moveCount++;
+            piece.SyncDataServerRpc(moveCount, default, default, default);
+        }
+
         return true;
     }
 }

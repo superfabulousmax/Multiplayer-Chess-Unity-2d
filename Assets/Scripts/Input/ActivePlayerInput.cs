@@ -91,6 +91,7 @@ public class ActivePlayerInput : IPlayerInput
             }
             else
             {
+                board.PrintOutBoardState(board.GetBoardState());
                 tileHighlighter.SetTileColour(tilePosition, clearColour);
                 tileHighlighter.SetTileColour(selectedChessPiece.TilePosition, clearColour);
                 tileHighlighter.SetTileColour(board.CheckedPos, checkedColour);
