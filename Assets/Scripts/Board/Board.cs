@@ -287,6 +287,7 @@ public class Board : NetworkBehaviour
                 }
             }
         }
+
         checkedKing = null;
         return false;
     }
@@ -299,18 +300,16 @@ public class Board : NetworkBehaviour
             {
                 var id = simulatedBoard[y, x];
                 var piece = GetPieceFromId((uint)id);
-                if (piece)
+                if (piece && piece.CheckRuleBehaviour != null)
                 {
-                    if (piece.CheckRuleBehaviour != null)
+                    if (piece.CheckRuleBehaviour.PossibleCheck(this, simulatedBoard, piece, new Vector3Int(x, y, 0), out king))
                     {
-                        if (piece.CheckRuleBehaviour.PossibleCheck(this, simulatedBoard, piece, new Vector3Int(x, y, 0), out king))
-                        {
-                            return true;
-                        }
+                        return true;
                     }
                 }
             }
         }
+
         king = null;
         return false;
     }
@@ -332,7 +331,6 @@ public class Board : NetworkBehaviour
 
         return true;
     }
-
 
     [ServerRpc(RequireOwnership = false)]
     public void DetectCheckServerRpc()

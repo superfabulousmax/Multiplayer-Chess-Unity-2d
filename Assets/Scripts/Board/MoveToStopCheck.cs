@@ -13,9 +13,9 @@ public class MoveToStopCheck : IChessRule
         
         // simulate new move
         var simulatedBoardState = new int[boardState.Length, boardState.Length];
-        for (int j = 0; j < 8; j++)
+        for (int j = 0; j < GameConstants.BoardLengthDimension; j++)
         {
-            for (int i = 0; i < 8; i++)
+            for (int i = 0; i < GameConstants.BoardLengthDimension; i++)
             {
                 simulatedBoardState[j, i] = boardState[j, i];
             }
@@ -24,7 +24,9 @@ public class MoveToStopCheck : IChessRule
         simulatedBoardState[y, x] = -1;
         simulatedBoardState[newPosition.y, newPosition.x] = (int)piece.NetworkObjectId;
 
-        //board.PrintOutBoardState(simulatedBoardState);
+
+        Debug.Log("SIMULATE MOVE TO STOP CHECK");
+        board.PrintOutBoardState(simulatedBoardState);
 
         if (board.IsInCheck(out var king))
         {

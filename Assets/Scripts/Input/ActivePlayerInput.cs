@@ -69,6 +69,7 @@ public class ActivePlayerInput : IPlayerInput
                 tileHighlighter.SetTileColour(tilePosition, highlightColour);
                 tileHighlighter.StartWaitThenSetColour(tilePosition, clearColour);
                 tileHighlighter.StartWaitThenSetColour(selectedChessPiece.TilePosition, clearColour);
+
                 if (isPieceTaken)
                 {
                     board.TakePieceServerRpc(selectedChessPiece, tilePosition);

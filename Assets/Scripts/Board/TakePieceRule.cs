@@ -4,6 +4,7 @@ using static ChessPiece;
 public class TakePieceRule : IChessRule
 {
     ChessPieceType chessPieceType;
+
     public TakePieceRule(ChessPieceType chessPieceType)
     {
         this.chessPieceType = chessPieceType;
