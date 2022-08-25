@@ -5,7 +5,6 @@ public class CastleRule : IChessRule
 {
     public bool PossibleMove(PlayerColour activeColour, Board board, ChessPiece piece, Vector3Int newPosition, out bool takenPiece, bool isSimulation = false)
     {
-
         takenPiece = false;
 
         if (piece.ChessRuleBehaviour is ICastleEntity castleRule)
@@ -76,6 +75,26 @@ public class CastleRule : IChessRule
             }
         }
 
+        var smallestX = Mathf.Min(newPosition.x, x);
+        var biggestX = Mathf.Max(newPosition.x, x);
+        for (int i = smallestX; i <= biggestX; ++i)
+        {
+            if (i == x)
+            {
+                continue;
+            }
+            var attacked = board.CheckSpaceAttacked(activeColour, new Vector3Int(i, y, 0));
+            if (attacked)
+            {
+                return false;
+            }
+        }
+
+        return MoveRooks(board, piece, newPosition);
+    }
+
+    public bool MoveRooks(Board board, ChessPiece piece, Vector3Int newPosition)
+    {
         var rooks = board.GetPieceWith(piece.PlayerColour, ChessPieceType.Rook);
         if (rooks.Count == 0)
         {
@@ -84,7 +103,6 @@ public class CastleRule : IChessRule
 
         foreach (var rook in rooks)
         {
-            // todo improve this
             if (rook.ChessRuleBehaviour is RookChessPiece rookPiece)
             {
                 var castleEntity = rookPiece as ICastleEntity;
@@ -92,7 +110,7 @@ public class CastleRule : IChessRule
                 {
                     continue;
                 }
-                var rookDeltaX = Mathf.Abs (newPosition.x - rook.TilePosition.x);
+                var rookDeltaX = Mathf.Abs(newPosition.x - rook.TilePosition.x);
                 var distToKing = Mathf.Abs(piece.TilePosition.x - rook.TilePosition.x);
 
                 if (rookDeltaX == 1 && distToKing == 3)

@@ -62,8 +62,6 @@ public class KingChessPiece : IChessRule, ICastleEntity
 
         if (deltaX == 2 && castleRule.PossibleMove(activeColour, board, piece, newPosition, out var _))
         {
-            // check rook
-            // todo
             takenPiece = false;
         }
         else if (deltaX > 1)

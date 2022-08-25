@@ -89,6 +89,21 @@ public class Board : NetworkBehaviour
         return result;
     }
 
+    internal bool CheckSpaceAttacked(PlayerColour activeColour, Vector3Int position)
+    {
+        foreach (var piece in chessPiecesList)
+        {
+            if(piece.PlayerColour != activeColour)
+            {
+                if (piece.ChessRuleBehaviour.PossibleMove(piece.PlayerColour, this, piece, position, out var _, true))
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public Vector3Int GetTileAtMousePosition(Vector3 mousePosition)
     {
         var ray = Camera.main.ScreenPointToRay(mousePosition);
@@ -360,8 +375,6 @@ public class Board : NetworkBehaviour
                     }
                 }
 
-                // TODO bug if it increments counters in rule behaviour when it is just a simulation
-
                 if (targetPiece.ChessRuleBehaviour.PossibleMove(targetPiece.PlayerColour, this, targetPiece, new Vector3Int(x, y, 0), out var _, true))
                 {
                     Debug.Log($"Possible for {targetPiece} to {new Vector3Int(x, y, 0)}");
@@ -452,7 +465,6 @@ public class Board : NetworkBehaviour
                 else
                 {
                     var result = String.Format("{0,5:00}", boardState[y, x]);
-                    //{boardState[y, x].ToString("00")}
                     sbResult.Append($"{result}{padding}");
                 }
             }
