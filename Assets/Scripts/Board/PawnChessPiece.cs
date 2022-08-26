@@ -257,6 +257,10 @@ public class PawnChessPiece : IChessRule, IMoveList
                     result.Add(position);
                     continue;
                 }
+                else
+                {
+                    continue;
+                }
             }
 
             if (!canMove)
@@ -302,6 +306,7 @@ public class PawnChessPiece : IChessRule, IMoveList
         var possibleEnpassants = new List<Vector3Int>();
         possibleEnpassants.Add(new Vector3Int(x + 1, y + (direction * 1)));
         possibleEnpassants.Add(new Vector3Int(x - 1, y + (direction * 1)));
+
         var lastMovedPawn = board.GetPieceFromId(lastMovedPawnId);
 
         foreach (var position in possibleEnpassants)
@@ -310,8 +315,8 @@ public class PawnChessPiece : IChessRule, IMoveList
             {
                 continue;
             }
-            var canMove = moveToStopCheckRule.PossibleMove(activeColour, board, piece, position, out var _);
 
+            var canMove = moveToStopCheckRule.PossibleMove(activeColour, board, piece, position, out var _);
             if (!canMove)
             {
                 continue;
