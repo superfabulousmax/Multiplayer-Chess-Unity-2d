@@ -92,6 +92,7 @@ public class ChessPiece : NetworkBehaviour
                 break;
             case ChessPieceType.Knight:
                 chessRuleBehaviour = new KnightChessPiece(new TakePieceRule(ChessPieceType.Knight), new MoveToStopCheck());
+                moveList = chessRuleBehaviour as IMoveList;
                 checkRuleBehaviour = new KnightCheckRule();
                 break;
             case ChessPieceType.Bishop:
