@@ -3,35 +3,30 @@ using static ChessPiece;
 
 public class CastleRule : IChessRule
 {
-    public bool PossibleMove(PlayerColour activeColour, Board board, ChessPiece piece, Vector3Int newPosition, out bool takenPiece, bool isSimulation = false)
+    public bool PossibleMove(PlayerColour activeColour, Board board, ChessPiece kingPiece, Vector3Int newPosition, out bool takenPiece, bool isSimulation = false)
     {
         takenPiece = false;
 
-        if (piece.ChessRuleBehaviour is ICastleEntity castleRule)
+        if (kingPiece.ChessRuleBehaviour is ICastleEntity castleRule)
         {
-            if(!castleRule.CanCastle(board, piece))
+            if(!castleRule.CanCastle(board, kingPiece))
             {
                 return false;
             }
         }
 
         var boardState = board.GetBoardState();
-        var y = piece.TilePosition.y;
-        var x = piece.TilePosition.x;
+        var y = kingPiece.TilePosition.y;
+        var x = kingPiece.TilePosition.x;
 
-        var deltaY = Mathf.Abs(newPosition.y - y);
-        var deltaX = Mathf.Abs(newPosition.x - x);
-
-        if (deltaX != 2)
-        {
-            return false;
-        }
-        if (deltaY != 0)
+        var dy = Mathf.Abs(newPosition.y - y);
+        var dx = Mathf.Abs(newPosition.x - x);
+        if (dx != 2 || dy != 0)
         {
             return false;
         }
 
-        if (piece.PlayerColour == PlayerColour.PlayerOne)
+        if (kingPiece.PlayerColour == PlayerColour.PlayerOne)
         {
             if (y != GameConstants.PlayerOneKingStartY)
             {
@@ -69,7 +64,7 @@ public class CastleRule : IChessRule
 
         if (board.IsInCheck(out var checkedKing))
         {
-            if (piece == checkedKing)
+            if (kingPiece == checkedKing)
             {
                 return false;
             }
@@ -90,17 +85,12 @@ public class CastleRule : IChessRule
             }
         }
 
-        return MoveRooks(board, piece, newPosition);
+        return MoveRooks(board, kingPiece, newPosition, isSimulation);
     }
 
-    public bool MoveRooks(Board board, ChessPiece piece, Vector3Int newPosition)
+    public bool MoveRooks(Board board, ChessPiece piece, Vector3Int newPosition, bool isSimulation = false)
     {
         var rooks = board.GetPieceWith(piece.PlayerColour, ChessPieceType.Rook);
-        if (rooks.Count == 0)
-        {
-            return false;
-        }
-
         foreach (var rook in rooks)
         {
             if (rook.ChessRuleBehaviour is RookChessPiece rookPiece)
@@ -115,16 +105,22 @@ public class CastleRule : IChessRule
 
                 if (rookDeltaX == 1 && distToKing == 3)
                 {
-                    rook.SyncDataServerRpc(rookPiece.MoveCount + 1, default, default, default);
-                    var newRookPosition = new Vector3Int(newPosition.x - 1, newPosition.y, 0);
-                    rook.SetTilePositionServerRpc(newRookPosition);
+                    if(!isSimulation)
+                    {
+                        rook.SyncDataServerRpc(rookPiece.MoveCount + 1, default, default, default);
+                        var newRookPosition = new Vector3Int(newPosition.x - 1, newPosition.y, 0);
+                        rook.SetTilePositionServerRpc(newRookPosition);
+                    }
                     return true;
                 }
                 if (rookDeltaX == 2 && distToKing == 4)
                 {
-                    rook.SyncDataServerRpc(rookPiece.MoveCount + 1, default, default, default);
-                    var newRookPosition = new Vector3Int(newPosition.x + 1, newPosition.y, 0);
-                    rook.SetTilePositionServerRpc(newRookPosition);
+                    if(!isSimulation)
+                    {
+                        rook.SyncDataServerRpc(rookPiece.MoveCount + 1, default, default, default);
+                        var newRookPosition = new Vector3Int(newPosition.x + 1, newPosition.y, 0);
+                        rook.SetTilePositionServerRpc(newRookPosition);
+                    }
                     return true;
                 }
             }

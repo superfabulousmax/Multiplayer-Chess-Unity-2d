@@ -123,6 +123,10 @@ public class KingChessPiece : IChessRule, ICastleEntity, IMoveList
         possiblePositions.Add(new Vector3Int(x, y + 1));
         // down
         possiblePositions.Add(new Vector3Int(x, y - 1));
+        // castle left
+        possiblePositions.Add(new Vector3Int(x - 2, y));
+        // castle right
+        possiblePositions.Add(new Vector3Int(x + 2, y));
 
         foreach (var position in possiblePositions)
         {
@@ -135,10 +139,26 @@ public class KingChessPiece : IChessRule, ICastleEntity, IMoveList
             {
                 continue;
             }
+
+            var dx = Mathf.Abs(x - position.x);
+            var dy = Mathf.Abs(y - position.y);
+            var canCastle = castleRule.PossibleMove(activeColour, board, piece, position, out var _, true);
+            if (canCastle)
+            {
+                result.Add(position);
+                continue;
+            }
+            else
+            {
+                if(dx == 2 && dy == 0)
+                {
+                    continue;
+                }
+            }
             if (boardState[position.y, position.x] >= 0)
             {
-                var takenPiece = TakePiece(activeColour, board, boardState, position);
-                if (takenPiece)
+                var couldTakePiece = TakePiece(activeColour, board, boardState, position);
+                if (couldTakePiece)
                 {
                     result.Add(position);
                 }
