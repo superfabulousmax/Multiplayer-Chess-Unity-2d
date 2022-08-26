@@ -21,6 +21,8 @@ public class ChessPiece : NetworkBehaviour
 
     ICheckRule checkRuleBehaviour;
 
+    IMoveList moveList;
+
     public PlayerColour PlayerColour { get => playerColour.Value; private set => playerColour.Value = value; }
     public SpriteRenderer SpriteRenderer { get => spriteRenderer;  }
 
@@ -28,6 +30,7 @@ public class ChessPiece : NetworkBehaviour
     public ChessPieceType PieceType { get => pieceType.Value; }
     public IChessRule ChessRuleBehaviour { get => chessRuleBehaviour; set => chessRuleBehaviour = value; }
     public ICheckRule CheckRuleBehaviour { get => checkRuleBehaviour; set => checkRuleBehaviour = value; }
+    public IMoveList MoveListGenerator { get => moveList; set => moveList = value; }
 
     [ServerRpc(RequireOwnership = false)]
     public void SetTilePositionServerRpc(Vector3Int newTilePosition)
@@ -79,10 +82,12 @@ public class ChessPiece : NetworkBehaviour
                 break;
             case ChessPieceType.Queen:
                 chessRuleBehaviour = new QueenChessPiece(new TakePieceRule(ChessPieceType.Queen));
+                moveList = chessRuleBehaviour as IMoveList;
                 checkRuleBehaviour = new QueenCheckRule(new RookCheckRule(), new BishopCheckRule());
                 break;
             case ChessPieceType.Rook:
                 chessRuleBehaviour = new RookChessPiece(new TakePieceRule(ChessPieceType.Rook), new MoveToStopCheck());
+                moveList = chessRuleBehaviour as IMoveList;
                 checkRuleBehaviour = new RookCheckRule();
                 break;
             case ChessPieceType.Knight:
@@ -91,6 +96,7 @@ public class ChessPiece : NetworkBehaviour
                 break;
             case ChessPieceType.Bishop:
                 chessRuleBehaviour = new BishopChessPiece(new TakePieceRule(ChessPieceType.Bishop), new MoveToStopCheck());
+                moveList = chessRuleBehaviour as IMoveList;
                 checkRuleBehaviour = new BishopCheckRule();
                 break;
         }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class ActivePlayerInput : IPlayerInput
@@ -12,6 +13,9 @@ public class ActivePlayerInput : IPlayerInput
     private Color highlightColour;
     private Color clearColour;
     private Color checkedColour;
+    private Color possibleMoveColour;
+
+    IReadOnlyList<Vector3Int> possibleMoves;
 
     public ActivePlayerInput(Board board, Action onFinish)
     {
@@ -20,8 +24,11 @@ public class ActivePlayerInput : IPlayerInput
         this.onFinish = onFinish;
         // perwinkle color!
         this.highlightColour = new Color(204 / 255.0f, 204 / 255.0f, 255 / 255.0f, 200 / 255.0f);
+        //rgb(152, 251, 152) mint
+        this.possibleMoveColour = new Color(152 / 255.0f, 251 / 255.0f, 152 / 255.0f, 200 / 255.0f);
         this.clearColour = Color.clear;
         this.checkedColour = Color.red;
+        possibleMoves = new List<Vector3Int>();
     }
 
     public void HandleInput(int id, PlayerColour activeColour, PlayerColour currentColour, bool isOwner)
@@ -41,6 +48,7 @@ public class ActivePlayerInput : IPlayerInput
                     if (selectedChessPiece != null)
                     {
                         tileHighlighter.SetTileColour(selectedChessPiece.TilePosition, clearColour);
+                        TogglePossibleMoves(clearColour);
                     }
 
                     selectedChessPiece = chessPiece;
@@ -50,6 +58,13 @@ public class ActivePlayerInput : IPlayerInput
                         tileHighlighter.SetTileColour(board.CheckedPos, checkedColour);
                     }
                     Debug.Log($"selected chess piece {selectedChessPiece}");
+
+                    if (selectedChessPiece?.MoveListGenerator != null)
+                    {
+                        possibleMoves = selectedChessPiece.MoveListGenerator.GetPossibleMoves(activeColour, board, selectedChessPiece);
+                        TogglePossibleMoves(possibleMoveColour);
+                    }
+
                     return;
                 }
             }
@@ -86,7 +101,7 @@ public class ActivePlayerInput : IPlayerInput
 
                 lastMovedPiece = selectedChessPiece;
                 selectedChessPiece = null;
-
+                TogglePossibleMoves(clearColour);
                 onFinish.Invoke();
 
             }
@@ -96,9 +111,18 @@ public class ActivePlayerInput : IPlayerInput
                 tileHighlighter.SetTileColour(tilePosition, clearColour);
                 tileHighlighter.SetTileColour(selectedChessPiece.TilePosition, clearColour);
                 tileHighlighter.SetTileColour(board.CheckedPos, checkedColour);
+                TogglePossibleMoves(clearColour);
                 selectedChessPiece = null;
                 Debug.Log("Invalid move");
             }
+        }
+    }
+
+    public void TogglePossibleMoves(Color colour)
+    {
+        foreach (var move in possibleMoves)
+        {
+            tileHighlighter.SetTileColour(move, colour);
         }
     }
 

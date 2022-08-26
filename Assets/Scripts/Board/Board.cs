@@ -138,6 +138,12 @@ public class Board : NetworkBehaviour
         chessPiecesList.Remove(chessPiece);
     }
 
+    internal bool IsValidPosition(Vector3Int position)
+    {
+        var tile = tilemap.GetTile(position);
+        return tile != null;
+    }
+
     [ServerRpc(RequireOwnership =false)]
     internal void TakePieceServerRpc(NetworkBehaviourReference target, Vector3Int tilePosition)
     {

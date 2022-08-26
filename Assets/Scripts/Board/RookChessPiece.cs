@@ -1,6 +1,7 @@
+using System.Collections.Generic;
 using UnityEngine;
 
-public class RookChessPiece : IChessRule, ICastleEntity
+public class RookChessPiece : IChessRule, ICastleEntity, IMoveList
 {
     IChessRule takePieceRule;
     IChessRule moveToStopCheckRule;
@@ -153,5 +154,126 @@ public class RookChessPiece : IChessRule, ICastleEntity
         }
 
         return true;
+    }
+
+    public IReadOnlyList<Vector3Int> GetPossibleMoves(PlayerColour activeColour, Board board, ChessPiece piece)
+    {
+        var result = new List<Vector3Int>();
+        var y = piece.TilePosition.y;
+        var x = piece.TilePosition.x;
+
+        var boardState = board.GetBoardState();
+        int i, j;
+        Vector3Int boardPosition;
+
+        // left
+        i = x - 1;
+        j = y;
+        boardPosition = new Vector3Int(i, j);
+        while (board.IsValidPosition(boardPosition))
+        {
+            var canMove = moveToStopCheckRule.PossibleMove(activeColour, board, piece, boardPosition, out var _);
+            if (!canMove)
+            {
+                break;
+            }
+            if (boardState[j, i] >= 0)
+            {
+                var takenPiece = takePieceRule.PossibleMove(activeColour, board, piece, boardPosition, out var _);
+                if (takenPiece)
+                {
+                    result.Add(boardPosition);
+                }
+                break;
+            }
+            else
+            {
+                result.Add(boardPosition);
+            }
+            i--;
+            boardPosition = new Vector3Int(i, j);
+        }
+        // right
+        i = x + 1;
+        j = y;
+        boardPosition = new Vector3Int(i, j);
+        while (board.IsValidPosition(boardPosition))
+        {
+            var canMove = moveToStopCheckRule.PossibleMove(activeColour, board, piece, boardPosition, out var _);
+            if (!canMove)
+            {
+                break;
+            }
+            if (boardState[j, i] >= 0)
+            {
+                var takenPiece = takePieceRule.PossibleMove(activeColour, board, piece, boardPosition, out var _);
+                if (takenPiece)
+                {
+                    result.Add(boardPosition);
+                }
+                break;
+            }
+            else
+            {
+                result.Add(boardPosition);
+            }
+            i++;
+            boardPosition = new Vector3Int(i, j);
+        }
+        // up
+        i = x;
+        j = y + 1;
+        boardPosition = new Vector3Int(i, j);
+        while (board.IsValidPosition(boardPosition))
+        {
+            var canMove = moveToStopCheckRule.PossibleMove(activeColour, board, piece, boardPosition, out var _);
+            if (!canMove)
+            {
+                break;
+            }
+            if (boardState[j, i] >= 0)
+            {
+                var takenPiece = takePieceRule.PossibleMove(activeColour, board, piece, boardPosition, out var _);
+                if (takenPiece)
+                {
+                    result.Add(boardPosition);
+                }
+                break;
+            }
+            else
+            {
+                result.Add(boardPosition);
+            }
+            j++;
+            boardPosition = new Vector3Int(i, j);
+        }
+        // down
+        i = x;
+        j = y - 1;
+        boardPosition = new Vector3Int(i, j);
+        while (board.IsValidPosition(boardPosition))
+        {
+            var canMove = moveToStopCheckRule.PossibleMove(activeColour, board, piece, boardPosition, out var _);
+            if (!canMove)
+            {
+                break;
+            }
+            if (boardState[j, i] >= 0)
+            {
+                var takenPiece = takePieceRule.PossibleMove(activeColour, board, piece, boardPosition, out var _);
+                if (takenPiece)
+                {
+                    result.Add(boardPosition);
+                }
+                break;
+            }
+            else
+            {
+                result.Add(boardPosition);
+            }
+            j--;
+            boardPosition = new Vector3Int(i, j);
+        }
+        return result;
     }
 }
