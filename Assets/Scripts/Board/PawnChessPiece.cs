@@ -1,9 +1,9 @@
 using System;
-using Unity.Netcode;
+using System.Collections.Generic;
 using UnityEngine;
 
 [Serializable]
-public class PawnChessPiece : IChessRule
+public class PawnChessPiece : IChessRule, IMoveList
 {
     PlayerColour pawnColour;
 
@@ -130,7 +130,6 @@ public class PawnChessPiece : IChessRule
                 return false;
             if (newPosition.x == x)
             {
-                // TODO bug with isfirstmove is false
                 if (yDiff > 2 || (!isFirstMove && yDiff == 2))
                 {
                     return false;
@@ -207,5 +206,123 @@ public class PawnChessPiece : IChessRule
         }
 
         return true;
+    }
+
+    public IReadOnlyList<Vector3Int> GetPossibleMoves(PlayerColour activeColour, Board board, ChessPiece piece)
+    {
+        var result = new List<Vector3Int>();
+
+        var y = piece.TilePosition.y;
+        var x = piece.TilePosition.x;
+
+        var boardState = board.GetBoardState();
+
+        List<Vector3Int> possiblePositions = new List<Vector3Int>();
+        var direction = -1;
+        if (activeColour == PlayerColour.PlayerOne)
+        {
+            direction = 1;
+        }
+
+        // up one
+        possiblePositions.Add(new Vector3Int(x, y + (direction * 1)));
+        if (isFirstMove)
+        {
+            // up 2
+            possiblePositions.Add(new Vector3Int(x, y + (direction * 2)));
+        }
+        // take left
+        possiblePositions.Add(new Vector3Int(x - 1, y + (direction * 1)));
+        // take right
+        possiblePositions.Add(new Vector3Int(x + 1, y + (direction * 1)));
+
+        foreach (var position in possiblePositions)
+        {
+            if (!board.IsValidPosition(position))
+            {
+                continue;
+            }
+            var dx = Mathf.Abs(x - position.x);
+            var dy = Mathf.Abs(y - position.y);
+            var canMove = moveToStopCheckRule.PossibleMove(activeColour, board, piece, position, out var _);
+            // check take piece
+            if (dx == 1 && dy == 1)
+            {
+                if (boardState[position.y, position.x] < 0 || board.CheckPiece(boardState[position.y, position.x], ChessPiece.ChessPieceType.King))
+                {
+                    continue;
+                }
+                if (canMove && boardState[position.y, position.x] >= 0 && activeColour != board.GetPieceFromId((uint)boardState[position.y, position.x]).PlayerColour)
+                {
+                    result.Add(position);
+                    continue;
+                }
+            }
+
+            if (!canMove)
+            {
+                continue;
+            }
+
+            if (dy == 2)
+            {
+                if (activeColour == PlayerColour.PlayerOne)
+                {
+                    for (int i = y + 1; i <= position.y; i++)
+                    {
+                        if (boardState[i, x] >= 0)
+                        {
+                            continue;
+                        }
+                    }
+                }
+                else
+                {
+                    for (int i = y - 1; i >= position.y; i--)
+                    {
+                        if (boardState[i, x] >= 0)
+                        {
+                            continue;
+                        }
+                    }
+                }
+
+            }
+            if (boardState[position.y, position.x] >= 0)
+            {
+                continue;
+            }
+            else
+            {
+                result.Add(position);
+            }
+        }
+
+        // check en passant
+        var possibleEnpassants = new List<Vector3Int>();
+        possibleEnpassants.Add(new Vector3Int(x + 1, y + (direction * 1)));
+        possibleEnpassants.Add(new Vector3Int(x - 1, y + (direction * 1)));
+        var lastMovedPawn = board.GetPieceFromId(lastMovedPawnId);
+
+        foreach (var position in possibleEnpassants)
+        {
+            if (!board.IsValidPosition(position))
+            {
+                continue;
+            }
+            var canMove = moveToStopCheckRule.PossibleMove(activeColour, board, piece, position, out var _);
+
+            if (!canMove)
+            {
+                continue;
+            }
+
+            if (lastMovedPawn != null && enPassant.CheckEnPassant(direction, pawnColour, board, piece, lastMovedPawn, position, out var _))
+            {
+                result.Add(position);
+            }
+        }
+
+        return result;
     }
 }
