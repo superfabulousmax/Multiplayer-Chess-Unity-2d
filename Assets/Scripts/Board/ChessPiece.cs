@@ -78,6 +78,7 @@ public class ChessPiece : NetworkBehaviour
                 break;
             case ChessPieceType.King:
                 chessRuleBehaviour = new KingChessPiece(new MoveToStopCheck(), new CastleRule());
+                moveList = chessRuleBehaviour as IMoveList;
                 checkRuleBehaviour = new KingCheckRule();
                 break;
             case ChessPieceType.Queen:
