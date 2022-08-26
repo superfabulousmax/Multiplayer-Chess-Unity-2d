@@ -217,13 +217,13 @@ public class PawnChessPiece : IChessRule, IMoveList
 
         var boardState = board.GetBoardState();
 
-        List<Vector3Int> possiblePositions = new List<Vector3Int>();
         var direction = -1;
         if (activeColour == PlayerColour.PlayerOne)
         {
             direction = 1;
         }
 
+        var possiblePositions = new List<Vector3Int>();
         // up one
         possiblePositions.Add(new Vector3Int(x, y + (direction * 1)));
         if (isFirstMove)
