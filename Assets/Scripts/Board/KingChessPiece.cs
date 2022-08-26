@@ -54,14 +54,14 @@ public class KingChessPiece : IChessRule, ICastleEntity, IMoveList
         }
 
         // check if move piece to stop check or if moving piece causes check
-        var result = moveToStopCheckRule.PossibleMove(activeColour, board, piece, newPosition, out var _);
+        var result = moveToStopCheckRule.PossibleMove(activeColour, board, piece, newPosition, out var _, isSimulation);
         if (!result)
         {
             takenPiece = false;
             return false;
         }
 
-        if (deltaX == 2 && castleRule.PossibleMove(activeColour, board, piece, newPosition, out var _))
+        if (deltaX == 2 && castleRule.PossibleMove(activeColour, board, piece, newPosition, out var _, isSimulation))
         {
             takenPiece = false;
         }

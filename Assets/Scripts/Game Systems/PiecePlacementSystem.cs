@@ -25,6 +25,7 @@ public class PiecePlacementSystem : NetworkBehaviour
     Dictionary<char, ChessPiece> chessPiecesMapping;
 
     private const string AllChessPieces = "rnbkqp";
+    private const string StartingFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
     public FENChessNotation StartingSetup { get => startingSetup; }
     public ChessPieces PlayerOnePieces { get => playerOnePieces; }
@@ -66,7 +67,28 @@ public class PiecePlacementSystem : NetworkBehaviour
 
         chessBoard = FindObjectOfType<Board>();
         AssignBoardComponentClientRpc(chessBoard);
-        AssignPlacementComponentClientRpc(this);
+        AssignPlacementComponentClientRpc(this, fenString);
+        chessPiecesMapping = new Dictionary<char, ChessPiece>();
+        // Create black chess pieces with lower case
+        CreateChessPieces(AllChessPieces);
+        // Create white chess pieces with upper case
+        CreateChessPieces(AllChessPieces.ToUpper());
+        PlacePiecesOnBoardServerRpc();
+        GetSpritesClientRpc();
+        chessBoard.FinishBoardSetup();
+    }
+
+    public void ResetGame()
+    {
+        enabled = IsServer;
+        if (!enabled || chessPiecePrefab == null)
+        {
+            return;
+        }
+
+        chessBoard = FindObjectOfType<Board>();
+        AssignBoardComponentClientRpc(chessBoard);
+        AssignPlacementComponentClientRpc(this, StartingFen);
         chessPiecesMapping = new Dictionary<char, ChessPiece>();
         // Create black chess pieces with lower case
         CreateChessPieces(AllChessPieces);
@@ -78,7 +100,7 @@ public class PiecePlacementSystem : NetworkBehaviour
     }
 
     [ClientRpc]
-    private void AssignPlacementComponentClientRpc(NetworkBehaviourReference target)
+    private void AssignPlacementComponentClientRpc(NetworkBehaviourReference target, string fenString)
     {
         startingSetup = FENReader.ReadFENInput(fenString);
         if (target.TryGet(out PiecePlacementSystem piecePlacementSystem))

@@ -52,9 +52,17 @@ public class GameConnectionManager : MonoBehaviour
         Debug.Log($"Client id {clientId} is connected");
         OnClientConnectionNotification?.Invoke(clientId, ConnectionStatus.Connected);
         connectedClients++;
-        if(connectedClients == NumberAllowedConnections)
+        if(IsGameReady())
         {
             Debug.Log($"{NumberAllowedConnections} clients are now connected, ready to start.");
+            OnGameReady?.Invoke();
+        }
+    }
+
+    public void ResetGame()
+    {
+        if(IsGameReady())
+        {
             OnGameReady?.Invoke();
         }
     }
@@ -64,5 +72,10 @@ public class GameConnectionManager : MonoBehaviour
         Debug.Log($"Client id {clientId} is disconnected");
         OnClientConnectionNotification?.Invoke(clientId, ConnectionStatus.Disconnected);
         connectedClients--;
+    }
+
+    public bool IsGameReady()
+    {
+        return connectedClients == NumberAllowedConnections;
     }
 }

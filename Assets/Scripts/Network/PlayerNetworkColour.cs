@@ -1,7 +1,7 @@
 using Unity.Netcode;
 using UnityEngine;
 
-public enum PlayerColour { PlayerOne = 0, PlayerTwo = 1, Unassigned  = 3, Assigned = 4}
+public enum PlayerColour { PlayerOne = 0, PlayerTwo = 1, Unassigned  = 3,  Assigned = 4}
 
 public class PlayerNetworkColour: NetworkBehaviour
 {

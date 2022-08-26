@@ -40,6 +40,7 @@ public class Board : NetworkBehaviour
 
     public event Action onFinishedBoardSetup;
     public event Action<ChessPiece> onPawnPromoted;
+    public event Action<ChessPiece> onCheckMate;
 
     internal ChessPiece GetOppositeKing(PlayerColour activeColour)
     {
@@ -68,6 +69,37 @@ public class Board : NetworkBehaviour
         boardState = new int[GameConstants.BoardLengthDimension, GameConstants.BoardLengthDimension];
     }
 
+    public void Reset()
+    {
+        ResetBoardServerRpc();
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void ResetBoardServerRpc()
+    {
+        for(int i = 0; i < chessPiecesList.Count; i++)
+        {
+            var piece = chessPiecesList[i];
+            if (piece == null)
+            {
+                continue;
+            }
+            piece.GetComponent<NetworkObject>().Despawn();
+        }
+        ResetBoardClientRpc();
+        checkedPos.Value = -Vector3Int.one;
+        //PlacementSystem.ResetGame();
+    }
+
+    [ClientRpc]
+    private void ResetBoardClientRpc()
+    {
+        chessPiecesList.Clear();
+        chessPiecesMap.Clear();
+        playerOneKing = null;
+        playerTwoKing = null;
+    }
+
     public BoundsInt.PositionEnumerator GetAllPositions()
     {
         return tilemap.cellBounds.allPositionsWithin;
@@ -77,9 +109,10 @@ public class Board : NetworkBehaviour
     {
         var result = new List<ChessPiece>();
 
-        foreach (var piece in chessPiecesList)
+        for (int i = 0; i < chessPiecesList.Count; i++)
         {
-            if (piece.PlayerColour == playerColour && piece.PieceType == chessPieceType)
+            var piece = chessPiecesList[i];
+            if (piece != null && piece.PlayerColour == playerColour && piece.PieceType == chessPieceType)
             {
                 result.Add(piece);
             }
@@ -90,9 +123,10 @@ public class Board : NetworkBehaviour
 
     internal bool CheckSpaceAttacked(PlayerColour activeColour, Vector3Int position)
     {
-        foreach (var piece in chessPiecesList)
+        for (int i = 0; i < chessPiecesList.Count; i++)
         {
-            if(piece.PlayerColour != activeColour)
+            var piece = chessPiecesList[i];
+            if (piece != null && piece.PlayerColour != activeColour)
             {
                 if (piece.ChessRuleBehaviour.PossibleMove(piece.PlayerColour, this, piece, position, out var _, true))
                 {
@@ -223,9 +257,10 @@ public class Board : NetworkBehaviour
 
     public ChessPiece GetPieceAtPosition(Vector3Int position)
     {
-        foreach(var piece in chessPiecesList)
+        for (int i = 0; i < chessPiecesList.Count; i++)
         {
-            if(piece.IsActive())
+            var piece = chessPiecesList[i];
+            if (piece)
             {
                 if (piece.TilePosition == position)
                     return piece;
@@ -322,9 +357,10 @@ public class Board : NetworkBehaviour
     internal bool IsCheckMate(PlayerColour activeColour)
     {
         var boardState = GetBoardState();
-        foreach (var piece in chessPiecesList)
+        for (int i = 0; i < chessPiecesList.Count; i++)
         {
-            if (piece.PlayerColour == activeColour)
+            var piece = chessPiecesList[i];
+            if (piece != null && piece.PlayerColour == activeColour)
             {
                 var result = CheckPieceCanMove(piece, boardState);
                 if (result)
@@ -340,13 +376,12 @@ public class Board : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     public void DetectCheckServerRpc()
     {
-        Debug.Log("Detect Check");
         if (IsInCheck(out var king))
         {
             checkedPos.Value = king.TilePosition;
             if (IsCheckMate(king.PlayerColour))
             {
-                Debug.Log("CHECK MATE!");
+                onCheckMate?.Invoke(GetOppositeKing(king.PlayerColour));
             }
             else
             {
