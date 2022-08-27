@@ -46,9 +46,10 @@ public class KingChessPiece : IChessRule, ICastleEntity, IMoveList
             takenPiece = true;
             Debug.Log("King taking new piece");
         }
-
+        var canCastle = castleRule.PossibleMove(activeColour, board, piece, newPosition, out var _, isSimulation);
         if (!isSimulation)
         {
+            
             moveCount++;
             piece.SyncDataServerRpc(moveCount, default, default, default);
         }
