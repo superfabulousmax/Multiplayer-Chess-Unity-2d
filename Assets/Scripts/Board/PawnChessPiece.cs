@@ -1,17 +1,24 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
+using System.Collections.Generic;
 using UnityEngine;
 
 [Serializable]
 public class PawnChessPiece : IChessRule, IMoveList
 {
     PlayerColour pawnColour;
-
+    Vector3Int tilePosition;
     int moveCount;
     bool isFirstMove;
     bool firstMoveTwo;
     public static uint lastMovedPawnId;
+
+    // Rules
+    IEnPassantChessRule enPassant;
+    IChessRule pawnPromotion;
+    IChessRule moveToStopCheckRule;
+    IChessRule takePieceRule;
+
     public int MoveCount { get => moveCount; set => moveCount = value; }
     public bool IsFirstMove { get => isFirstMove; set {
             Debug.Log($"Setting pawn at {tilePosition} to {value}");
@@ -20,12 +27,6 @@ public class PawnChessPiece : IChessRule, IMoveList
         } }
     public bool FirstMoveTwo { get => firstMoveTwo; set => firstMoveTwo = value; }
     public uint LastMovedPawnID { get => lastMovedPawnId; set => lastMovedPawnId = value; }
-
-    IEnPassantChessRule enPassant;
-    IChessRule pawnPromotion;
-    IChessRule moveToStopCheckRule;
-    IChessRule takePieceRule;
-    Vector3Int tilePosition;
 
     public PawnChessPiece(IChessRule pawnPromotion, IChessRule moveToStopCheckRule, IChessRule takePieceRule, PlayerColour pawnColour, Vector3Int tilePosition, bool isFirstMove = true, bool firstMoveTwo = false)
     {
@@ -67,15 +68,11 @@ public class PawnChessPiece : IChessRule, IMoveList
     public bool PossibleMove(PlayerColour activeColour, Board board, ChessPiece piece, Vector3Int newPosition, out bool takenPiece, bool isSimulation = false)
     {
         takenPiece = false;
-        var y = piece.TilePosition.y;
-        var dy = Mathf.Abs(newPosition.y - y);
-
         var possibleMoves = GetPossibleMoves(activeColour, board, piece);
         if (!possibleMoves.Contains(newPosition))
         {
             return false;
         }
-
         var direction = -1;
         if (activeColour == PlayerColour.PlayerOne)
         {
@@ -108,6 +105,8 @@ public class PawnChessPiece : IChessRule, IMoveList
 
         if(!isSimulation)
         {
+            var y = piece.TilePosition.y;
+            var dy = Mathf.Abs(newPosition.y - y);
             if (isFirstMove && dy == 2)
             {
                 firstMoveTwo = true;
