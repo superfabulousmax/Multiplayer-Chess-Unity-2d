@@ -22,9 +22,9 @@ public class ActivePlayerInput : IPlayerInput
         this.board = board;
         this.tileHighlighter = board.TileHighlighter;
         this.onFinish = onFinish;
-        // perwinkle color!
+        // perwinkle
         this.highlightColour = new Color(204 / 255.0f, 204 / 255.0f, 255 / 255.0f, 200 / 255.0f);
-        //rgb(152, 251, 152) mint
+        // mint
         this.possibleMoveColour = new Color(152 / 255.0f, 251 / 255.0f, 152 / 255.0f, 200 / 255.0f);
         this.clearColour = Color.clear;
         this.checkedColour = Color.red;

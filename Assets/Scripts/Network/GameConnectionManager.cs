@@ -17,6 +17,7 @@ public class GameConnectionManager : MonoBehaviour
     public event Action<ulong, ConnectionStatus> OnClientConnectionNotification;
 
     public event Action OnGameReady;
+    public event Action OnResetGame;
 
     private void Awake()
     {
@@ -63,7 +64,7 @@ public class GameConnectionManager : MonoBehaviour
     {
         if(IsGameReady())
         {
-            OnGameReady?.Invoke();
+            OnResetGame?.Invoke();
         }
     }
 

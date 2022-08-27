@@ -4,6 +4,7 @@ using UnityEngine;
 public class GameView : NetworkBehaviour
 {
     Player player;
+
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
@@ -38,7 +39,6 @@ public class GameView : NetworkBehaviour
         {
             return;
         }
-
         if (player.Colour == PlayerColour.PlayerTwo)
         {
             foreach (var piece in FindObjectsOfType<ChessPiece>())

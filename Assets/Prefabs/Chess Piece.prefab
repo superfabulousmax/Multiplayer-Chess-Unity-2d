@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 2250351540464457546}
   - component: {fileID: 4166348312891349739}
   - component: {fileID: 4920239636137976742}
+  - component: {fileID: 1876149651101438052}
   - component: {fileID: 7116239210219148629}
   m_Layer: 6
   m_Name: Chess Piece
@@ -146,6 +147,27 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 0.9176808, y: 0.91714287}
   m_EdgeRadius: 0
+--- !u!50 &1876149651101438052
+Rigidbody2D:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2336836518130984228}
+  m_BodyType: 1
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDrag: 0
+  m_AngularDrag: 0.05
+  m_GravityScale: 1
+  m_Material: {fileID: 0}
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 1
+  m_Constraints: 0
 --- !u!114 &7116239210219148629
 MonoBehaviour:
   m_ObjectHideFlags: 0

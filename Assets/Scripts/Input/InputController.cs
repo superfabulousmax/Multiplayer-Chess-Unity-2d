@@ -10,14 +10,12 @@ public class InputController : NetworkBehaviour
     private Player player;
     private Board board;
     private TurnSystem turnSystem;
-
-
-    public IPlayerInput PlayerInput { get => playerInput; private set => playerInput = value; }
-    public PlayerColour Colour { get => player.Colour; }
+    private bool isWaiting;
 
     public event Action<PlayerColour> onFinishInput;
 
-    private bool isWaiting;
+    public IPlayerInput PlayerInput { get => playerInput; private set => playerInput = value; }
+    public PlayerColour Colour { get => player.Colour; }
 
     public override void OnNetworkSpawn()
     {
@@ -40,13 +38,12 @@ public class InputController : NetworkBehaviour
 
     private void OnNextPlayerTurn(PlayerColour currentColour)
     {
-        Debug.Log($"{currentColour} turn");
+
     }
 
     private void OnFinishedBoardSetup()
     {
         var turn = board.PlacementSystem.StartingSetup.activeColour;
-        Debug.Log($"Setting player turn to {turn}");
         turnSystem.SetTurn(turn);
     }
 
@@ -82,29 +79,11 @@ public class InputController : NetworkBehaviour
         playerInput.HandleInput((int)NetworkObjectId, turnSystem.GetActiveColour(), Colour, IsOwner);
     }
 
-    private void OnPromotion(PlayerColour promotedColour)
-    {
-        isWaiting = true;
-    }
-
-
     private void OnInputFinished()
     {
         Debug.Log($"{turnSystem.GetActiveColour()}" +
             $" Input Finished");
         board.DetectCheckServerRpc();
         turnSystem.ChangeTurnServerRpc();
-    }
-
-    [ServerRpc(RequireOwnership = false)]
-    private void HighlightKingServerRpc(int x, int y, int z = 0)
-    {
-        HighlightKingClientRpc(x, y, z);
-    }
-
-    [ClientRpc]
-    private void HighlightKingClientRpc(int x, int y, int z = 0)
-    {
-        board.TileHighlighter.SetTileColour(new Vector3Int(x, y, z), Color.red);
     }
 }

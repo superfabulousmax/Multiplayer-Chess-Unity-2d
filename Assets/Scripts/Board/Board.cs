@@ -88,7 +88,7 @@ public class Board : NetworkBehaviour
         }
         ResetBoardClientRpc();
         checkedPos.Value = -Vector3Int.one;
-        //PlacementSystem.ResetGame();
+        PlacementSystem.ResetGame();
     }
 
     [ClientRpc]
@@ -472,9 +472,9 @@ public class Board : NetworkBehaviour
     }
 
     [ServerRpc(RequireOwnership = false)]
-    internal void HandlePawnPromotionServerRpc(NetworkBehaviourReference target, ChessPieceType type)
+    internal void HandlePawnPromotionServerRpc(NetworkBehaviourReference target, ChessPieceType chessPieceType)
     {
-        HandlePawnProtionClientRpc(target, type);
+        HandlePawnProtionClientRpc(target, chessPieceType);
     }
 
     [ClientRpc]
@@ -484,6 +484,7 @@ public class Board : NetworkBehaviour
         if (target.TryGet(out ChessPiece chessPiece))
         {
             chessPiece.ChangePieceTo(chessPieceType, PlacementSystem);
+            DetectCheckServerRpc();
         }
     }
 
