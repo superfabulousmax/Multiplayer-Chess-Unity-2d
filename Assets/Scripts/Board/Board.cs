@@ -413,6 +413,7 @@ public class Board : NetworkBehaviour
                     }
                 }
 
+                // todo use possible moves instead to avoid checking every tile for every piece
                 if (targetPiece.ChessRuleBehaviour.PossibleMove(targetPiece.PlayerColour, this, targetPiece, new Vector3Int(x, y, 0), out var _, true))
                 {
                     Debug.Log($"Possible for {targetPiece} to {new Vector3Int(x, y, 0)}");
@@ -524,7 +525,7 @@ public class Board : NetworkBehaviour
                 var piece = GetPieceFromId((uint)boardState[y, x]);
                 if (piece)
                 {
-                    var result = string.Format("{0,5}", GetEncoding(piece.PlayerColour, piece.PieceType));
+                    var result = string.Format("{0,5}", DebugUtils.GetEncoding(piece.PlayerColour, piece.PieceType));
                     sbResult.Append($"{result}{padding}");
                 }
                 else
@@ -538,40 +539,4 @@ public class Board : NetworkBehaviour
         return sbResult.ToString();
     }
 
-    private string GetEncoding(PlayerColour colour, ChessPieceType chessPieceType)
-    {
-        var sb = new StringBuilder(2);
-        switch (colour)
-        {
-            case PlayerColour.PlayerOne:
-                sb.Append("w");
-                break;
-            case PlayerColour.PlayerTwo:
-                sb.Append("b");
-                break;
-        }
-        switch (chessPieceType)
-        {
-            case ChessPieceType.Pawn:
-                sb.Append("p");
-                break;
-            case ChessPieceType.King:
-                sb.Append("k");
-                break;
-            case ChessPieceType.Queen:
-                sb.Append("r");
-                break;
-            case ChessPieceType.Rook:
-                sb.Append("r");
-                break;
-            case ChessPieceType.Knight:
-                sb.Append("n");
-                break;
-            case ChessPieceType.Bishop:
-                sb.Append("b");
-                break;
-        }
-
-        return sb.ToString();
-    }
 }
