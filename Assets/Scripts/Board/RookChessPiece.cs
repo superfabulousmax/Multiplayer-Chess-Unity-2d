@@ -76,16 +76,14 @@ public class RookChessPiece : IChessRule, ICastleEntity, IMoveList
 
     public bool PossibleMove(PlayerColour activeColour, Board board, ChessPiece piece, Vector3Int newPosition, out bool takenPiece, bool isSimulation = false)
     {
-        takePieceRule.PossibleMove(activeColour, board, piece, newPosition, out takenPiece);
-
         var possibleMoves = GetPossibleMoves(activeColour, board, piece);
         if (!possibleMoves.Contains(newPosition))
         {
             takenPiece = false;
             return false;
         }
-
-        if(!isSimulation)
+        takePieceRule.PossibleMove(activeColour, board, piece, newPosition, out takenPiece);
+        if (!isSimulation)
         {
             moveCount++;
             piece.SyncDataServerRpc(moveCount, default, default, default);

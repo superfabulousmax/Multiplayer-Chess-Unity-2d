@@ -15,13 +15,13 @@ public class KnightChessPiece : IChessRule, IMoveList
 
     public bool PossibleMove(PlayerColour activeColour, Board board, ChessPiece piece, Vector3Int newPosition, out bool takenPiece, bool isSimulation = false)
     {
-        takePieceRule.PossibleMove(activeColour, board, piece, newPosition, out takenPiece);
         var possibleMoves = GetPossibleMoves(activeColour, board, piece);
         if (!possibleMoves.Contains(newPosition))
         {
             takenPiece = false;
             return false;
         }
+        takePieceRule.PossibleMove(activeColour, board, piece, newPosition, out takenPiece);
         return true;
     }
 
