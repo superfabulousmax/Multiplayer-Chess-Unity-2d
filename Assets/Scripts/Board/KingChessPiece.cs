@@ -136,12 +136,6 @@ public class KingChessPiece : IChessRule, ICastleEntity, IMoveList
 
     public bool CastleWithKing(PlayerColour activeColour, Board board, ChessPiece kingPiece, Vector3Int position)
     {
-        //var possibleMoves = GetCastleMoves(activeColour, board, kingPiece);
-        //if (!possibleMoves.Contains(position))
-        //{
-        //    return false;
-        //}
-        //kingPiece.SetTilePositionServerRpc(position);
-        return true;
+        return false;
     }
 }

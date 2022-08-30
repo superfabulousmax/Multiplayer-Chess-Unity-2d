@@ -182,7 +182,7 @@ public class PawnChessPiece : IChessRule, IMoveList
             {
                 continue;
             }
-
+            var pieceInWay = false;
             if (dy == 2)
             {
                 if (activeColour == PlayerColour.PlayerOne)
@@ -191,7 +191,8 @@ public class PawnChessPiece : IChessRule, IMoveList
                     {
                         if (boardState[i, x] >= 0)
                         {
-                            continue;
+                            pieceInWay = true;
+                            break;
                         }
                     }
                 }
@@ -201,7 +202,8 @@ public class PawnChessPiece : IChessRule, IMoveList
                     {
                         if (boardState[i, x] >= 0)
                         {
-                            continue;
+                            pieceInWay = true;
+                            break;
                         }
                     }
                 }
@@ -211,7 +213,7 @@ public class PawnChessPiece : IChessRule, IMoveList
             {
                 continue;
             }
-            else
+            else if(!pieceInWay)
             {
                 result.Add(position);
             }
