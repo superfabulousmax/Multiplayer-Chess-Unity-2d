@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class ActivePlayerInput : IPlayerInput
@@ -15,7 +16,7 @@ public class ActivePlayerInput : IPlayerInput
     private Color checkedColour;
     private Color possibleMoveColour;
 
-    IReadOnlyList<Vector3Int> possibleMoves;
+    List<Vector3Int> possibleMoves;
 
     public ActivePlayerInput(Board board, Action onFinish)
     {
@@ -61,7 +62,12 @@ public class ActivePlayerInput : IPlayerInput
 
                     if (selectedChessPiece?.MoveListGenerator != null)
                     {
-                        possibleMoves = selectedChessPiece.MoveListGenerator.GetPossibleMoves(activeColour, board, selectedChessPiece);
+                        possibleMoves = selectedChessPiece.MoveListGenerator.GetPossibleMoves(activeColour, board, selectedChessPiece).ToList();
+                        if (selectedChessPiece.PieceType == ChessPiece.ChessPieceType.King && selectedChessPiece.ChessRuleBehaviour is ICastleEntity castleInfo)
+                        {
+                            var castleMoves = castleInfo.GetCastleMoves(activeColour, board, selectedChessPiece);
+                            possibleMoves.AddRange(castleMoves);
+                        }
                         TogglePossibleMoves(possibleMoveColour);
                     }
 
@@ -79,7 +85,9 @@ public class ActivePlayerInput : IPlayerInput
                 return;
             }
 
-            if (board.ValidateMove(activeColour, selectedChessPiece, tilePosition, out bool isPieceTaken))
+            var validateMove = board.ValidateMove(activeColour, selectedChessPiece, tilePosition, out bool isPieceTaken);
+            var validateCastle = ValidateCastle(activeColour, selectedChessPiece, tilePosition);
+            if (validateMove || validateCastle)
             {
                 tileHighlighter.SetTileColour(tilePosition, highlightColour);
                 tileHighlighter.StartWaitThenSetColour(tilePosition, clearColour);
@@ -91,7 +99,25 @@ public class ActivePlayerInput : IPlayerInput
                 }
                 else
                 {
+                    var oldX = selectedChessPiece.TilePosition.x;
                     selectedChessPiece.SetTilePositionServerRpc(tilePosition);
+                    if (validateCastle)
+                    {
+                        // move rook too
+                        ChessPiece rook;
+                        if (tilePosition.x > oldX)
+                        { 
+                            rook = board.GetPieceAtPosition(new Vector3Int(tilePosition.x + 1, tilePosition.y));
+                        }
+                        else
+                        {
+                            rook = board.GetPieceAtPosition(new Vector3Int(tilePosition.x - 2, tilePosition.y));
+                        }
+                        if (rook && rook.ChessRuleBehaviour is ICastleEntity rookCastleInfo)
+                        {
+                            rookCastleInfo.CastleWithKing(activeColour, board, rook, tilePosition);
+                        }
+                    }
                 }
 
                 if (lastMovedPiece != null)
@@ -107,7 +133,6 @@ public class ActivePlayerInput : IPlayerInput
             }
             else
             {
-                board.PrintOutBoardState(board.GetBoardState());
                 tileHighlighter.SetTileColour(tilePosition, clearColour);
                 tileHighlighter.SetTileColour(selectedChessPiece.TilePosition, clearColour);
                 tileHighlighter.SetTileColour(board.CheckedPos, checkedColour);
@@ -116,6 +141,19 @@ public class ActivePlayerInput : IPlayerInput
                 Debug.Log("Invalid move");
             }
         }
+    }
+
+    private bool ValidateCastle(PlayerColour activeColour, ChessPiece selectedChessPiece, Vector3Int tilePosition)
+    {
+        if (selectedChessPiece.PieceType == ChessPiece.ChessPieceType.King && selectedChessPiece.ChessRuleBehaviour is ICastleEntity castleInfo)
+        {
+            var castleMoves = castleInfo.GetCastleMoves(activeColour, board, selectedChessPiece);
+            if (castleMoves.Contains(tilePosition))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void TogglePossibleMoves(Color colour)

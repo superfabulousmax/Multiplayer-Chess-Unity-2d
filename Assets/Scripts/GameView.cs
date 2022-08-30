@@ -4,11 +4,12 @@ using UnityEngine;
 public class GameView : NetworkBehaviour
 {
     Player player;
+    Quaternion playerTwoRotation;
 
     public override void OnNetworkSpawn()
     {
-        base.OnNetworkSpawn();
         player = GetComponent<Player>();
+        playerTwoRotation = Quaternion.Euler(0, 0, 180);
         GameConnectionManager.Singleton.OnGameReady += OnGameReady;
     }
 
@@ -21,21 +22,20 @@ public class GameView : NetworkBehaviour
     [ClientRpc]
     void ChangeCameraViewClientRpc()
     {
-        if (!IsOwner)
+        if (!IsLocalPlayer)
         {
             return;
         }
-
         if (player.Colour == PlayerColour.PlayerTwo)
         {
-            Camera.main.transform.rotation = Quaternion.Euler(0, 0, 180);
+            Camera.main.transform.rotation = playerTwoRotation;
         }
     }
 
     [ClientRpc]
     void ChangePieceOrientationClientRpc()
     {
-        if (!IsOwner)
+        if (!IsLocalPlayer)
         {
             return;
         }
@@ -43,8 +43,9 @@ public class GameView : NetworkBehaviour
         {
             foreach (var piece in FindObjectsOfType<ChessPiece>())
             {
-                piece.transform.rotation = Quaternion.Euler(0, 0, 180);
+                piece.transform.rotation = playerTwoRotation;
             }
         }
+
     }
 }

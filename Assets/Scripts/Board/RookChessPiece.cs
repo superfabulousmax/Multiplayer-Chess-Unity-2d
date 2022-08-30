@@ -74,6 +74,27 @@ public class RookChessPiece : IChessRule, ICastleEntity, IMoveList
         return false;
     }
 
+    public bool CanCastleWithKing(Board board, ChessPiece rook, ChessPiece king, Vector3Int newPosition)
+    {
+        if(!CanCastle(board, rook))
+        {
+            return false;
+        }
+        var rookDeltaX = Mathf.Abs(newPosition.x - rook.TilePosition.x);
+        var distToKing = Mathf.Abs(king.TilePosition.x - rook.TilePosition.x);
+
+        if (rookDeltaX == 1 && distToKing == 3)
+        {
+            return true;
+        }
+        if (rookDeltaX == 2 && distToKing == 4)
+        {
+            return true;
+        }
+        return false;
+    }
+
+
     public bool PossibleMove(PlayerColour activeColour, Board board, ChessPiece piece, Vector3Int newPosition, out bool takenPiece, bool isSimulation = false)
     {
         var possibleMoves = GetPossibleMoves(activeColour, board, piece);
@@ -212,4 +233,28 @@ public class RookChessPiece : IChessRule, ICastleEntity, IMoveList
         }
         return result;
     }
+
+    IReadOnlyList<Vector3Int> ICastleEntity.GetCastleMoves(PlayerColour activeColour, Board board, ChessPiece kingPiece)
+    {
+        return new List<Vector3Int>();
+    }
+
+    public bool CastleWithKing(PlayerColour activeColour, Board board, ChessPiece rook, Vector3Int newKingPosition)
+    {
+        var rookDeltaX = Mathf.Abs(newKingPosition.x - rook.TilePosition.x);
+        if(rookDeltaX == 1)
+        {
+            rook.SyncDataServerRpc(MoveCount + 1, default, default, default);
+            var newRookPosition = new Vector3Int(newKingPosition.x - 1, newKingPosition.y, 0);
+            rook.SetTilePositionServerRpc(newRookPosition);
+        }
+        else if (rookDeltaX == 2)
+        {
+            rook.SyncDataServerRpc(MoveCount + 1, default, default, default);
+            var newRookPosition = new Vector3Int(newKingPosition.x + 1, newKingPosition.y, 0);
+            rook.SetTilePositionServerRpc(newRookPosition);
+        }
+        return false;
+    }
+
 }

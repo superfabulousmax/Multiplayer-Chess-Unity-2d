@@ -78,7 +78,7 @@ public class ChessPiece : NetworkBehaviour
                 checkRuleBehaviour = new PawnCheckRule();
                 break;
             case ChessPieceType.King:
-                chessRuleBehaviour = new KingChessPiece(new MoveToStopCheck(), new CastleRule());
+                chessRuleBehaviour = new KingChessPiece(new MoveToStopCheck(), new CastleMoves());
                 moveList = chessRuleBehaviour as IMoveList;
                 checkRuleBehaviour = new KingCheckRule();
                 break;

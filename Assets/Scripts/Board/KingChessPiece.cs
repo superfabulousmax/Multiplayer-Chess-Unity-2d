@@ -5,12 +5,13 @@ using UnityEngine;
 public class KingChessPiece : IChessRule, ICastleEntity, IMoveList
 {
     IChessRule moveToStopCheckRule;
-    IChessRule castleRule;
+    IMoveList castleRule;
 
     int moveCount;
     public int MoveCount { get => moveCount; set => moveCount = value; }
 
-    public KingChessPiece(IChessRule moveToStopCheckRule, IChessRule castleRule)
+
+    public KingChessPiece(IChessRule moveToStopCheckRule, IMoveList castleRule)
     {
         this.moveToStopCheckRule = moveToStopCheckRule;
         this.castleRule = castleRule;
@@ -44,12 +45,10 @@ public class KingChessPiece : IChessRule, ICastleEntity, IMoveList
         if (boardState[newPosition.y, newPosition.x] > 0)
         {
             takenPiece = true;
-            Debug.Log("King taking new piece");
         }
-        var canCastle = castleRule.PossibleMove(activeColour, board, piece, newPosition, out var _, isSimulation);
+
         if (!isSimulation)
         {
-            
             moveCount++;
             piece.SyncDataServerRpc(moveCount, default, default, default);
         }
@@ -81,8 +80,6 @@ public class KingChessPiece : IChessRule, ICastleEntity, IMoveList
         var y = piece.TilePosition.y;
         var x = piece.TilePosition.x;
 
-        var boardState = board.GetBoardState();
-
         var possiblePositions = new List<Vector3Int>();
         // left 1 up 1
         possiblePositions.Add(new Vector3Int(x - 1, y + 1));
@@ -100,10 +97,8 @@ public class KingChessPiece : IChessRule, ICastleEntity, IMoveList
         possiblePositions.Add(new Vector3Int(x, y + 1));
         // down
         possiblePositions.Add(new Vector3Int(x, y - 1));
-        // castle left
-        possiblePositions.Add(new Vector3Int(x - 2, y));
-        // castle right
-        possiblePositions.Add(new Vector3Int(x + 2, y));
+
+        var boardState = board.GetBoardState();
 
         foreach (var position in possiblePositions)
         {
@@ -116,21 +111,7 @@ public class KingChessPiece : IChessRule, ICastleEntity, IMoveList
             {
                 continue;
             }
-            var canCastle = castleRule.PossibleMove(activeColour, board, piece, position, out var _, true);
-            if (canCastle)
-            {
-                result.Add(position);
-                continue;
-            }
-            else
-            {
-                var dx = Mathf.Abs(x - position.x);
-                var dy = Mathf.Abs(y - position.y);
-                if (dx == 2 && dy == 0)
-                {
-                    continue;
-                }
-            }
+
             if (boardState[position.y, position.x] >= 0)
             {
                 var couldTakePiece = TakePiece(activeColour, board, boardState, position);
@@ -146,5 +127,21 @@ public class KingChessPiece : IChessRule, ICastleEntity, IMoveList
             }
         }
         return result;
+    }
+
+    public IReadOnlyList<Vector3Int> GetCastleMoves(PlayerColour activeColour, Board board, ChessPiece kingPiece)
+    {
+        return castleRule.GetPossibleMoves(activeColour, board, kingPiece);
+    }
+
+    public bool CastleWithKing(PlayerColour activeColour, Board board, ChessPiece kingPiece, Vector3Int position)
+    {
+        //var possibleMoves = GetCastleMoves(activeColour, board, kingPiece);
+        //if (!possibleMoves.Contains(position))
+        //{
+        //    return false;
+        //}
+        //kingPiece.SetTilePositionServerRpc(position);
+        return true;
     }
 }

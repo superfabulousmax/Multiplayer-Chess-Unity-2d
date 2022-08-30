@@ -5,6 +5,7 @@ using UnityEngine.Tilemaps;
 using System.Collections.Generic;
 using static ChessPiece;
 using System.Text;
+using System.Linq;
 
 [RequireComponent(typeof(Tilemap))]
 public class Board : NetworkBehaviour
@@ -121,17 +122,24 @@ public class Board : NetworkBehaviour
         return result;
     }
 
-    internal bool CheckSpaceAttacked(PlayerColour activeColour, Vector3Int position)
+    internal bool CheckSpaceAttacked(ulong id, PlayerColour activeColour, Vector3Int position)
     {
-        for (int i = 0; i < chessPiecesList.Count; i++)
+        for (var i = 0; i < chessPiecesList.Count; i++)
         {
             var piece = chessPiecesList[i];
-            if (piece != null && piece.PlayerColour != activeColour)
+            if (piece == null)
             {
-                if (piece.ChessRuleBehaviour.PossibleMove(piece.PlayerColour, this, piece, position, out var _, true))
-                {
-                    return true;
-                }
+                continue;
+            }
+
+            if(piece.NetworkObjectId == id || piece.PlayerColour == activeColour)
+            {
+                continue;
+            }
+            var possibleMoves = piece.MoveListGenerator.GetPossibleMoves(piece.PlayerColour, this, piece);
+            if (possibleMoves.Contains(position))
+            {
+                return true;
             }
         }
         return false;

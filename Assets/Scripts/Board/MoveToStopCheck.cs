@@ -24,10 +24,6 @@ public class MoveToStopCheck : IChessRule
         simulatedBoardState[y, x] = -1;
         simulatedBoardState[newPosition.y, newPosition.x] = (int)piece.NetworkObjectId;
 
-
-        //Debug.Log("SIMULATE MOVE TO STOP CHECK");
-        //board.PrintOutBoardState(simulatedBoardState);
-
         if (board.IsInCheck(out var king))
         {
             if (king.PlayerColour == piece.PlayerColour)
