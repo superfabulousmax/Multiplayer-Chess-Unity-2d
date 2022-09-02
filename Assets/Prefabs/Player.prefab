@@ -63,7 +63,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   GlobalObjectIdHash: 951099334
   AlwaysReplicateAsRoot: 0
-  DontDestroyWithOwner: 0
+  DontDestroyWithOwner: 1
   AutoObjectParentSync: 1
 --- !u!114 &8539001432084759059
 MonoBehaviour:
@@ -77,7 +77,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 773450d0b48207f4e81bb9c700d1c301, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  promotionCanvas: {fileID: 3337487584525867278, guid: f8b2df323f7015e4db6f0251feafdb35, type: 3}
 --- !u!114 &4189995017202886057
 MonoBehaviour:
   m_ObjectHideFlags: 0

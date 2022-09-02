@@ -13,6 +13,11 @@ public class GameView : NetworkBehaviour
         GameConnectionManager.Singleton.OnGameReady += OnGameReady;
     }
 
+    public override void OnNetworkDespawn()
+    {
+        GameConnectionManager.Singleton.OnGameReady -= OnGameReady;
+    }
+
     private void OnGameReady()
     {
         ChangeCameraViewClientRpc();
@@ -46,6 +51,5 @@ public class GameView : NetworkBehaviour
                 piece.transform.rotation = playerTwoRotation;
             }
         }
-
     }
 }

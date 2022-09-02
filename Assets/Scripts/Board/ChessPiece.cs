@@ -24,7 +24,7 @@ public class ChessPiece : NetworkBehaviour
     IMoveList moveList;
 
     public PlayerColour PlayerColour { get => playerColour.Value; private set => playerColour.Value = value; }
-    public SpriteRenderer SpriteRenderer { get => spriteRenderer;  }
+    public SpriteRenderer SpriteRenderer { get => GetComponent<SpriteRenderer>(); }
 
     public Vector3Int TilePosition { get => tilePosition.Value; set => tilePosition.Value = value; }
     public ChessPieceType PieceType { get => pieceType.Value; }
@@ -58,8 +58,7 @@ public class ChessPiece : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
-        networkTransform = GetComponent<NetworkTransform>();
-        spriteRenderer = GetComponent<SpriteRenderer>();
+        InitComponents();
         AssignChessRules(pieceType.Value);
     }
 
@@ -107,17 +106,17 @@ public class ChessPiece : NetworkBehaviour
 
     internal void Init(PlayerColour colour, Sprite sprite, ChessPieceType type, Vector3Int tilePosition = default)
     {
-        networkTransform = GetComponent<NetworkTransform>();
-        spriteRenderer = GetComponent<SpriteRenderer>();
+        InitComponents();
         playerColour.Value = colour;
         spriteRenderer.sprite = sprite;
         pieceType.Value = type;
         this.tilePosition.Value = tilePosition;
     }
 
-    internal bool IsActive()
+    internal void InitComponents()
     {
-        return pieceStatus.Value == ChessPieceStatus.Active;
+        networkTransform = GetComponent<NetworkTransform>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
     [ServerRpc(RequireOwnership =false)]

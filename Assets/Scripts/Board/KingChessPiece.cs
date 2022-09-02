@@ -5,7 +5,7 @@ using UnityEngine;
 public class KingChessPiece : IChessRule, ICastleEntity, IMoveList
 {
     IChessRule moveToStopCheckRule;
-    IMoveList castleRule;
+    IMoveList castleMoveGenerator;
 
     int moveCount;
     public int MoveCount { get => moveCount; set => moveCount = value; }
@@ -14,7 +14,7 @@ public class KingChessPiece : IChessRule, ICastleEntity, IMoveList
     public KingChessPiece(IChessRule moveToStopCheckRule, IMoveList castleRule)
     {
         this.moveToStopCheckRule = moveToStopCheckRule;
-        this.castleRule = castleRule;
+        this.castleMoveGenerator = castleRule;
     }
 
     public bool CanCastle(Board board, ChessPiece kingPiece)
@@ -131,7 +131,7 @@ public class KingChessPiece : IChessRule, ICastleEntity, IMoveList
 
     public IReadOnlyList<Vector3Int> GetCastleMoves(PlayerColour activeColour, Board board, ChessPiece kingPiece)
     {
-        return castleRule.GetPossibleMoves(activeColour, board, kingPiece);
+        return castleMoveGenerator.GetPossibleMoves(activeColour, board, kingPiece);
     }
 
     public bool CastleWithKing(PlayerColour activeColour, Board board, ChessPiece kingPiece, Vector3Int position)

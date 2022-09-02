@@ -1,4 +1,5 @@
 using System;
+using Unity.Multiplayer.Samples.BossRoom;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -35,9 +36,15 @@ public class GameConnectionManager : MonoBehaviour
     {
         NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnectedCallback;
         NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnectCallback;
+        NetworkManager.Singleton.OnServerStarted += OnServerStarted;
     }
 
-    private void OnDestroy()
+    private void OnServerStarted()
+    {
+        Debug.Log("Server started");
+    }
+
+    public void OnDestroy()
     {
         // Since the NetworkManager could potentially be destroyed before this component, only 
         // remove the subscriptions if the singleton still exists.
@@ -56,6 +63,10 @@ public class GameConnectionManager : MonoBehaviour
         if(IsGameReady())
         {
             Debug.Log($"{NumberAllowedConnections} clients are now connected, ready to start.");
+            if (NetworkManager.Singleton.IsServer)
+            {
+                SessionManager<PlayerData>.Instance.OnSessionStarted();
+            }
             OnGameReady?.Invoke();
         }
     }
@@ -70,9 +81,21 @@ public class GameConnectionManager : MonoBehaviour
 
     private void OnClientDisconnectCallback(ulong clientId)
     {
-        Debug.Log($"Client id {clientId} is disconnected");
         OnClientConnectionNotification?.Invoke(clientId, ConnectionStatus.Disconnected);
         connectedClients--;
+        if (NetworkManager.Singleton.IsServer)
+        {
+            // then a client disconnected
+            Debug.Log($"Client id {clientId} is disconnected");
+            SessionManager<PlayerData>.Instance.DisconnectClient(clientId);
+            return;
+        }
+        else
+        {
+            // then the server disconnected
+            Debug.Log($"Server id {clientId} is disconnected");
+        }
+
     }
 
     public bool IsGameReady()

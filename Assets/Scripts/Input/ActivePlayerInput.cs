@@ -41,7 +41,6 @@ public class ActivePlayerInput : IPlayerInput
 
         if (Input.GetMouseButtonDown(0))
         {
-            Debug.Log($"Handle input for {currentColour} active {activeColour}");
             if (GetChessPiece(out var chessPiece))
             {
                 if(chessPiece.PlayerColour == activeColour)
@@ -63,7 +62,7 @@ public class ActivePlayerInput : IPlayerInput
                     if (selectedChessPiece?.MoveListGenerator != null)
                     {
                         possibleMoves = selectedChessPiece.MoveListGenerator.GetPossibleMoves(activeColour, board, selectedChessPiece).ToList();
-                        if (selectedChessPiece.PieceType == ChessPiece.ChessPieceType.King && selectedChessPiece.ChessRuleBehaviour is ICastleEntity castleInfo)
+                        if (selectedChessPiece.ChessRuleBehaviour is ICastleEntity castleInfo)
                         {
                             var castleMoves = castleInfo.GetCastleMoves(activeColour, board, selectedChessPiece);
                             possibleMoves.AddRange(castleMoves);

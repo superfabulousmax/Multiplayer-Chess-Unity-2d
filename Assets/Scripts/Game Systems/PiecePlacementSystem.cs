@@ -2,6 +2,9 @@ using UnityEngine;
 using Unity.Netcode;
 using static ChessPiece;
 using System.Collections.Generic;
+using Unity.Multiplayer.Samples.BossRoom;
+using System;
+using Unity.Collections;
 
 public class PiecePlacementSystem : NetworkBehaviour
 {
@@ -30,6 +33,8 @@ public class PiecePlacementSystem : NetworkBehaviour
     public FENChessNotation StartingSetup { get => startingSetup; }
     public ChessPieces PlayerOnePieces { get => playerOnePieces; }
     public ChessPieces PlayerTwoPieces { get => playerTwoPieces; }
+
+    private ClientRpcParams clientRpcParams;
 
     public Sprite GetSpriteForPiece(PlayerColour playerColour, ChessPieceType chessPieceType)
     {
@@ -60,7 +65,37 @@ public class PiecePlacementSystem : NetworkBehaviour
     {
         // Only the server spawns, clients will disable this component on their side
         enabled = IsServer;
+
         if (!enabled || chessPiecePrefab == null)
+        {
+            return;
+        }
+
+        foreach (var client in NetworkManager.Singleton.ConnectedClientsList)
+        {
+            var clientNetworkObject = NetworkManager.Singleton.ConnectedClients[client.ClientId].PlayerObject;
+            var isServer = clientNetworkObject.GetComponent<Player>()?.IsOwnedByServer;
+            var checkIsServer = isServer.HasValue && isServer.Value == true;
+
+            if (!checkIsServer)
+            {
+                clientRpcParams = new ClientRpcParams
+                {
+                    Send = new ClientRpcSendParams
+                    {
+                        TargetClientIds = new ulong[] { client.ClientId }
+                    }
+                };
+                GetClientDataClientRpc(client.ClientId, clientRpcParams);
+            }
+        }
+
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    public void SetupPiecesServerRpc()
+    {
+        if(!IsOwner)
         {
             return;
         }
@@ -78,9 +113,66 @@ public class PiecePlacementSystem : NetworkBehaviour
         chessBoard.FinishBoardSetup();
     }
 
+    [ClientRpc]
+    public void GetClientDataClientRpc(ulong id, ClientRpcParams clientRpcParams)
+    {
+        const string IdKey = "PlayerGUID";
+        var savedID = PlayerPrefs.GetString(IdKey, default);
+        FindKeyServerRpc(id, savedID);
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    public void FindKeyServerRpc(ulong id, string clientId)
+    {
+        var playerData = SessionManager<PlayerData>.Instance.GetPlayerData(clientId);
+        if (playerData == null)
+        {
+            var guid = Guid.NewGuid().ToString();
+            SaveGuidClientRpc(guid, clientRpcParams);
+            SessionManager<PlayerData>.Instance.SetupConnectingPlayerSessionData(id, guid, new PlayerData());
+            SetupPiecesServerRpc();
+        }
+        else
+        {
+            ResumePlayClientRpc(clientRpcParams);
+        }
+    }
+
+    [ClientRpc]
+    private void SaveGuidClientRpc(string guid, ClientRpcParams clientRpcParams)
+    {
+        const string IdKey = "PlayerGUID";
+        PlayerPrefs.SetString(IdKey, guid);
+        PlayerPrefs.Save();
+    }
+
+    [ClientRpc]
+    private void ResumePlayClientRpc(ClientRpcParams clientRpcParams)
+    {
+        ResetBoard();
+        GetSprites();
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    public void SetupConnectingPlayerServerRpc(ulong id, string guid, PlayerData data)
+    {
+        SessionManager<PlayerData>.Instance.SetupConnectingPlayerSessionData(id, guid, data);
+    }
+
+    internal void ResetBoard()
+    {
+        chessBoard.ResetBoard();
+        foreach (var piece in FindObjectsOfType<ChessPiece>())
+        {
+            Debug.Log($"Reconnecting: adding: {piece}");
+            chessBoard.AddPieceToBoard(piece);
+        }
+    }
+
     public void ResetGame()
     {
         enabled = IsServer;
+
         if (!enabled || chessPiecePrefab == null)
         {
             return;
@@ -112,7 +204,7 @@ public class PiecePlacementSystem : NetworkBehaviour
     [ClientRpc]
     public void AssignBoardComponentClientRpc(NetworkBehaviourReference target)
     {
-        if(IsServer)
+        if (IsServer)
         {
             return;
         }
@@ -126,7 +218,12 @@ public class PiecePlacementSystem : NetworkBehaviour
     [ClientRpc]
     public void GetSpritesClientRpc()
     {
-        foreach(var piece in chessBoard.ChessPiecesList)
+        GetSprites();
+    }
+
+    private void GetSprites()
+    {
+        foreach (var piece in chessBoard.ChessPiecesList)
         {
             piece.SpriteRenderer.sprite = GetSpriteForPiece(piece.PlayerColour, piece.PieceType);
         }
@@ -208,7 +305,7 @@ public class PiecePlacementSystem : NetworkBehaviour
         var placements = startingSetup.piecePlacement.Split(FENChessNotation.delimeter);
         var currentBoardPosition = allPositions.Current;
 
-        for (int i = placements.Length - 1; i >= 0; --i)
+        for (var i = placements.Length - 1; i >= 0; --i)
         {
             var row = placements[i];
             foreach (var item in row)

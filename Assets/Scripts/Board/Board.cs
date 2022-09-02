@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using static ChessPiece;
 using System.Text;
 using System.Linq;
+using Unity.Multiplayer.Samples.BossRoom;
 
 [RequireComponent(typeof(Tilemap))]
 public class Board : NetworkBehaviour
@@ -94,6 +95,11 @@ public class Board : NetworkBehaviour
 
     [ClientRpc]
     private void ResetBoardClientRpc()
+    {
+        ResetBoard();
+    }
+
+    internal void ResetBoard()
     {
         chessPiecesList.Clear();
         chessPiecesMap.Clear();
@@ -390,6 +396,7 @@ public class Board : NetworkBehaviour
             if (IsCheckMate(king.PlayerColour))
             {
                 onCheckMate?.Invoke(GetOppositeKing(king.PlayerColour));
+                SessionManager<PlayerData>.Instance.OnSessionEnded();
             }
             else
             {

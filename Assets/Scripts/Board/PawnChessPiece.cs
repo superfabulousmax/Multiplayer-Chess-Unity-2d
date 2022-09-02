@@ -28,7 +28,8 @@ public class PawnChessPiece : IChessRule, IMoveList
     public bool FirstMoveTwo { get => firstMoveTwo; set => firstMoveTwo = value; }
     public uint LastMovedPawnID { get => lastMovedPawnId; set => lastMovedPawnId = value; }
 
-    public PawnChessPiece(IChessRule pawnPromotion, IChessRule moveToStopCheckRule, IChessRule takePieceRule, PlayerColour pawnColour, Vector3Int tilePosition, bool isFirstMove = true, bool firstMoveTwo = false)
+    public PawnChessPiece(IChessRule pawnPromotion, IChessRule moveToStopCheckRule, IChessRule takePieceRule, 
+        PlayerColour pawnColour, Vector3Int tilePosition, bool isFirstMove = true, bool firstMoveTwo = false)
     {
         if(pawnColour == PlayerColour.PlayerOne)
         {
