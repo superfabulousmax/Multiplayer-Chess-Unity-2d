@@ -4,24 +4,44 @@ using UnityEngine;
 public class GameView : NetworkBehaviour
 {
     Player player;
+    Board board;
     Quaternion playerTwoRotation;
 
     public override void OnNetworkSpawn()
     {
+        if (!IsOwner)
+        {
+            enabled = false;
+            return;
+        }
         player = GetComponent<Player>();
+        board = FindObjectOfType<Board>();
+        if (board != null)
+        {
+            board.onFinishedBoardSetup += OnFinishedBoardSetup;
+        }
         playerTwoRotation = Quaternion.Euler(0, 0, 180);
         GameConnectionManager.Singleton.OnGameReady += OnGameReady;
     }
 
     public override void OnNetworkDespawn()
     {
+        if (board != null)
+        {
+            board.onFinishedBoardSetup -= OnFinishedBoardSetup;
+        }
         GameConnectionManager.Singleton.OnGameReady -= OnGameReady;
     }
+
+    private void OnFinishedBoardSetup()
+    {
+        ChangePieceOrientationClientRpc();
+    }
+
 
     private void OnGameReady()
     {
         ChangeCameraViewClientRpc();
-        ChangePieceOrientationClientRpc();
     }
 
     [ClientRpc]
@@ -40,13 +60,15 @@ public class GameView : NetworkBehaviour
     [ClientRpc]
     void ChangePieceOrientationClientRpc()
     {
+        Debug.Log("ChangePieceOrientationClientRpc");
         if (!IsLocalPlayer)
         {
             return;
         }
         if (player.Colour == PlayerColour.PlayerTwo)
         {
-            foreach (var piece in FindObjectsOfType<ChessPiece>())
+            Debug.Log("Rotating pieces for player TWO");
+            foreach (var piece in board.ChessPiecesList)
             {
                 piece.transform.rotation = playerTwoRotation;
             }

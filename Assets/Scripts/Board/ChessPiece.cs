@@ -6,11 +6,9 @@ using Unity.Netcode.Components;
 public class ChessPiece : NetworkBehaviour
 {
     public enum ChessPieceType { Pawn, King, Queen, Knight, Rook, Bishop };
-    public enum ChessPieceStatus { Active, Captured };
 
     NetworkVariable<PlayerColour> playerColour = new(PlayerColour.Unassigned);
     NetworkVariable<ChessPieceType> pieceType = new(ChessPieceType.Pawn);
-    public NetworkVariable<ChessPieceStatus> pieceStatus = new(ChessPieceStatus.Active, writePerm: NetworkVariableWritePermission.Server);
     public NetworkVariable<Vector3Int> tilePosition = new(Vector3Int.zero, writePerm: NetworkVariableWritePermission.Owner);
 
     NetworkTransform networkTransform;
@@ -31,6 +29,7 @@ public class ChessPiece : NetworkBehaviour
     public IChessRule ChessRuleBehaviour { get => chessRuleBehaviour; set => chessRuleBehaviour = value; }
     public ICheckRule CheckRuleBehaviour { get => checkRuleBehaviour; set => checkRuleBehaviour = value; }
     public IMoveList MoveListGenerator { get => moveList; set => moveList = value; }
+    public NetworkTransform NetworkTransform { get => networkTransform; }
 
     [ServerRpc(RequireOwnership = false)]
     public void SetTilePositionServerRpc(Vector3Int newTilePosition)
@@ -64,7 +63,7 @@ public class ChessPiece : NetworkBehaviour
 
     public override string ToString()
     {
-        return $"{playerColour.Value} {pieceType.Value} {pieceStatus.Value} {tilePosition.Value}";
+        return $"{playerColour.Value} {pieceType.Value} {tilePosition.Value}";
     }
 
     internal void AssignChessRules(ChessPieceType chessPieceType)

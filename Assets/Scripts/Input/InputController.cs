@@ -76,6 +76,10 @@ public class InputController : NetworkBehaviour
     [ClientRpc]
     private void InputClientRpc()
     {
+        if(!IsOwner)
+        {
+            return;
+        }
         playerInput.HandleInput((int)NetworkObjectId, turnSystem.GetActiveColour(), Colour, IsOwner);
     }
 
