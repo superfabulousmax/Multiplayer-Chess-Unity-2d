@@ -50,7 +50,6 @@ public class UIDocumentController : NetworkBehaviour
     private void OnRetryClicked()
     {
         HideCheckMateServerRpc();
-        GameConnectionManager.Singleton.ResetGame();
         board.Reset();
     }
 
@@ -114,7 +113,7 @@ public class UIDocumentController : NetworkBehaviour
         }
     }
 
-    [ServerRpc]
+    [ServerRpc(RequireOwnership =false)]
     private void HideCheckMateServerRpc()
     {
         HideCheckMateClientRpc();

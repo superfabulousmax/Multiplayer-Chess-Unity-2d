@@ -51,26 +51,39 @@ public class TurnSystem : NetworkBehaviour
     }
 
     [ServerRpc(RequireOwnership = false)]
-    private void ChangeContextConfigurationServerRpc()
+    private void ChangeContextToBlackConfigurationServerRpc()
     {
-        ChangeContextConfigurationClientRpc();
+        ChangeContextToBlackConfigurationClientRpc();
     }
 
     [ClientRpc]
-    private void ChangeContextConfigurationClientRpc()
+    private void ChangeContextToBlackConfigurationClientRpc()
     {
         context = new Context(blackTurn, whiteTurn);
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void ChangeContextToWhiteConfigurationServerRpc()
+    {
+        context.CurrentIndex = 0;
+        ChangeContextToWhiteConfigurationClientRpc();
+    }
+
+    [ClientRpc]
+    private void ChangeContextToWhiteConfigurationClientRpc()
+    {
+        context = new Context(whiteTurn, blackTurn);
     }
 
     internal void SetTurn(char turn)
     {
         if (turn == 'w')
         {
-            return;
+            ChangeContextToWhiteConfigurationServerRpc();
         }
         else if (turn == 'b')
         {
-            ChangeContextConfigurationServerRpc();
+            ChangeContextToBlackConfigurationServerRpc();
         }
         else
         {
