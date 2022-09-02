@@ -413,30 +413,12 @@ public class Board : NetworkBehaviour
 
     private bool CheckPieceCanMove(ChessPiece targetPiece, int[,] boardState)
     {
-        for (int y = 0; y < GameConstants.BoardLengthDimension; y++)
+        var moveList = targetPiece.MoveListGenerator;
+        if (moveList != null)
         {
-            for (int x = 0; x < GameConstants.BoardLengthDimension; x++)
-            {
-                var id = boardState[y, x];
-                if (id >= 0)
-                {
-                    var piece = GetPieceFromId((uint)id);
-
-                    if (piece.PlayerColour == targetPiece.PlayerColour || id == (int)targetPiece.NetworkObjectId)
-                    {
-                        continue;
-                    }
-                }
-
-                // todo use possible moves instead to avoid checking every tile for every piece
-                if (targetPiece.ChessRuleBehaviour.PossibleMove(targetPiece.PlayerColour, this, targetPiece, new Vector3Int(x, y, 0), out var _, true))
-                {
-                    Debug.Log($"Possible for {targetPiece} to {new Vector3Int(x, y, 0)}");
-                    return true;
-                }
-            }
+            var possibleMoves = moveList.GetPossibleMoves(targetPiece.PlayerColour, this, targetPiece);
+            return possibleMoves.Count > 0;
         }
-
         return false;
     }
 
