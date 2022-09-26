@@ -8,7 +8,9 @@ public class BoardEditor : Editor
         base.OnInspectorGUI();
         var board = (Board)target;
         if (board.BoardState == null)
+        {
             return;
+        }
         board.GetBoardState();
         var boardString = board.GetBoardStateString();
         EditorGUILayout.TextArea(boardString);

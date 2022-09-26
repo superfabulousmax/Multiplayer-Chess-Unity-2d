@@ -9,11 +9,6 @@ public class GameView : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
-        if (!IsOwner)
-        {
-            enabled = false;
-            return;
-        }
         player = GetComponent<Player>();
         board = FindObjectOfType<Board>();
         if (board != null)
@@ -21,7 +16,6 @@ public class GameView : NetworkBehaviour
             board.onFinishedBoardSetup += OnFinishedBoardSetup;
         }
         playerTwoRotation = Quaternion.Euler(0, 0, 180);
-        GameConnectionManager.Singleton.OnGameReady += OnGameReady;
     }
 
     public override void OnNetworkDespawn()
@@ -30,18 +24,12 @@ public class GameView : NetworkBehaviour
         {
             board.onFinishedBoardSetup -= OnFinishedBoardSetup;
         }
-        GameConnectionManager.Singleton.OnGameReady -= OnGameReady;
     }
 
     private void OnFinishedBoardSetup()
     {
-        ChangePieceOrientationClientRpc();
-    }
-
-
-    private void OnGameReady()
-    {
         ChangeCameraViewClientRpc();
+        ChangePieceOrientationClientRpc();
     }
 
     [ClientRpc]

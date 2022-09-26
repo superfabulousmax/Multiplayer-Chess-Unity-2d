@@ -62,6 +62,7 @@ public class CastleMoves : IMoveList
             {
                 continue;
             }
+
             smallestX = Mathf.Min(position.x, x);
             biggestX = Mathf.Max(position.x, x);
             var attacked = false;

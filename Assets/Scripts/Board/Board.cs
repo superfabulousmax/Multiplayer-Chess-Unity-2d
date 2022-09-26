@@ -43,6 +43,52 @@ public class Board : NetworkBehaviour
     public event Action onFinishedBoardSetup;
     public event Action<ChessPiece> onPawnPromoted;
     public event Action<ChessPiece> onCheckMate;
+    public event Action onResetBoard;
+
+    void Awake()
+    {
+        tilemap = GetComponent<Tilemap>();
+        chessPiecesMap = new Dictionary<uint, ChessPiece>();
+        chessPiecesList = new List<ChessPiece>(GameConstants.MaxPieces);
+        boardState = new int[GameConstants.BoardLengthDimension, GameConstants.BoardLengthDimension];
+    }
+
+    public void Reset()
+    {
+        ResetBoardServerRpc();
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void ResetBoardServerRpc()
+    {
+        for (int i = 0; i < chessPiecesList.Count; i++)
+        {
+            var piece = chessPiecesList[i];
+            if (piece == null)
+            {
+                continue;
+            }
+            piece.GetComponent<NetworkObject>().Despawn();
+        }
+
+        checkedPos.Value = -Vector3Int.one;
+        ResetBoardClientRpc();
+        onResetBoard?.Invoke();
+    }
+
+    [ClientRpc]
+    private void ResetBoardClientRpc()
+    {
+        ResetBoard();
+    }
+
+    internal void ResetBoard()
+    {
+        chessPiecesList.Clear();
+        chessPiecesMap.Clear();
+        playerOneKing = null;
+        playerTwoKing = null;
+    }
 
     internal ChessPiece GetOppositeKing(PlayerColour activeColour)
     {
@@ -62,51 +108,6 @@ public class Board : NetworkBehaviour
         return playerTwoKing;
     }
 
-
-    void Awake()
-    {
-        tilemap = GetComponent<Tilemap>();
-        chessPiecesMap = new Dictionary<uint, ChessPiece>();
-        chessPiecesList = new List<ChessPiece>(GameConstants.MaxPieces);
-        boardState = new int[GameConstants.BoardLengthDimension, GameConstants.BoardLengthDimension];
-    }
-
-    public void Reset()
-    {
-        ResetBoardServerRpc();
-    }
-
-    [ServerRpc(RequireOwnership = false)]
-    private void ResetBoardServerRpc()
-    {
-        for(int i = 0; i < chessPiecesList.Count; i++)
-        {
-            var piece = chessPiecesList[i];
-            if (piece == null)
-            {
-                continue;
-            }
-            piece.GetComponent<NetworkObject>().Despawn();
-        }
-        ResetBoardClientRpc();
-        checkedPos.Value = -Vector3Int.one;
-        PlacementSystem.ResetGame();
-    }
-
-    [ClientRpc]
-    private void ResetBoardClientRpc()
-    {
-        ResetBoard();
-    }
-
-    internal void ResetBoard()
-    {
-        chessPiecesList.Clear();
-        chessPiecesMap.Clear();
-        playerOneKing = null;
-        playerTwoKing = null;
-    }
-
     public BoundsInt.PositionEnumerator GetAllPositions()
     {
         return tilemap.cellBounds.allPositionsWithin;
@@ -116,7 +117,7 @@ public class Board : NetworkBehaviour
     {
         var result = new List<ChessPiece>();
 
-        for (int i = 0; i < chessPiecesList.Count; i++)
+        for (var i = 0; i < chessPiecesList.Count; i++)
         {
             var piece = chessPiecesList[i];
             if (piece != null && piece.PlayerColour == playerColour && piece.PieceType == chessPieceType)
@@ -133,15 +134,11 @@ public class Board : NetworkBehaviour
         for (var i = 0; i < chessPiecesList.Count; i++)
         {
             var piece = chessPiecesList[i];
-            if (piece == null)
+            if (piece == null || piece.NetworkObjectId == id || piece.PlayerColour == activeColour)
             {
                 continue;
             }
 
-            if(piece.NetworkObjectId == id || piece.PlayerColour == activeColour)
-            {
-                continue;
-            }
             var possibleMoves = piece.MoveListGenerator.GetPossibleMoves(piece.PlayerColour, this, piece);
             if (possibleMoves.Contains(position))
             {
@@ -410,7 +407,6 @@ public class Board : NetworkBehaviour
         }
     }
 
-
     private bool CheckPieceCanMove(ChessPiece targetPiece, int[,] boardState)
     {
         var moveList = targetPiece.MoveListGenerator;
@@ -437,7 +433,6 @@ public class Board : NetworkBehaviour
 
         return -Vector3Int.one;
     }
-
 
     public override string ToString()
     {
@@ -486,38 +481,13 @@ public class Board : NetworkBehaviour
         }
     }
 
-    public string PrintOutBoardState(int[,] boardState)
-    {
-        var sbResult = new StringBuilder();
-        var padding = "     ";
-        for (int y = 0; y < GameConstants.BoardLengthDimension; y++)
-        {
-            for (int x = 0; x < GameConstants.BoardLengthDimension; x++)
-            {
-                if(boardState[y, x] == -1)
-                {
-                    var result = string.Format("{0,5:00}", 0);
-                    sbResult.Append($"{result}{padding}");
-                }
-                else
-                {
-                    var result = string.Format("{0,5:00}", boardState[y, x]);
-                    sbResult.Append($"{result}{padding}");
-                }
-            }
-            sbResult.Append($"\n");
-        }
-        Debug.Log(sbResult.ToString());
-        return sbResult.ToString();
-    }
-
     public string GetBoardStateString()
     {
         var sbResult = new StringBuilder();
         var padding = "     ";
-        for (int y = 0; y < GameConstants.BoardLengthDimension; y++)
+        for (var y = 0; y < GameConstants.BoardLengthDimension; y++)
         {
-            for (int x = 0; x < GameConstants.BoardLengthDimension; x++)
+            for (var x = 0; x < GameConstants.BoardLengthDimension; x++)
             {
                 var piece = GetPieceFromId((uint)boardState[y, x]);
                 if (piece)

@@ -71,6 +71,7 @@ public class PiecePlacementSystem : NetworkBehaviour
             return;
         }
 
+
         foreach (var client in NetworkManager.Singleton.ConnectedClientsList)
         {
             var clientNetworkObject = NetworkManager.Singleton.ConnectedClients[client.ClientId].PlayerObject;
@@ -111,6 +112,12 @@ public class PiecePlacementSystem : NetworkBehaviour
         PlacePiecesOnBoardServerRpc();
         GetSpritesClientRpc();
         chessBoard.FinishBoardSetup();
+        chessBoard.onResetBoard += OnResetBoard;
+    }
+
+    private void OnResetBoard()
+    {
+        ResetGame();
     }
 
     [ClientRpc]
