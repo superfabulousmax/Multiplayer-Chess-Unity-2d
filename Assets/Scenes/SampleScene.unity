@@ -449,6 +449,10 @@ PrefabInstance:
       value: Piece Placement System
       objectReference: {fileID: 0}
     - target: {fileID: 340879509110424983, guid: 26d191cc9129e2b469611256ae1131dd, type: 3}
+      propertyPath: fenString
+      value: r1b2rk1/pppq2pp/3b4/5nB1/2Q5/2N5/PPP2PPP/R3KB1R/ b KQkq - 0 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 340879509110424983, guid: 26d191cc9129e2b469611256ae1131dd, type: 3}
       propertyPath: playerOnePieces
       value: 
       objectReference: {fileID: 11400000, guid: ec15f297126003c44b70d4b91b25d27f, type: 2}

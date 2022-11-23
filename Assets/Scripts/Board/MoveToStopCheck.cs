@@ -12,7 +12,7 @@ public class MoveToStopCheck : IChessRule
         var x = piece.TilePosition.x;
         
         // simulate new move
-        var simulatedBoardState = new int[boardState.Length, boardState.Length];
+        var simulatedBoardState = new int[GameConstants.BoardLengthDimension, GameConstants.BoardLengthDimension];
         for (int j = 0; j < GameConstants.BoardLengthDimension; j++)
         {
             for (int i = 0; i < GameConstants.BoardLengthDimension; i++)
@@ -28,21 +28,24 @@ public class MoveToStopCheck : IChessRule
         {
             if (king.PlayerColour == piece.PlayerColour)
             {
-                if (board.IsInCheck(simulatedBoardState, out var _))
+                if (board.IsInCheck(simulatedBoardState, out var checkedKing))
                 {
-                    return false;
+                    if (checkedKing.PlayerColour == piece.PlayerColour)
+                    {
+                        return false;
+                    }
                 }
             }
         }
         else
         {
-            if (board.IsInCheck(simulatedBoardState, out var newKing))
+            if (board.IsInCheck(simulatedBoardState, out var checkedKing))
             {
                 if (piece.PieceType == ChessPiece.ChessPieceType.King)
                 {
                     return false;
                 }
-                if (newKing.PlayerColour == piece.PlayerColour)
+                if (checkedKing.PlayerColour == piece.PlayerColour)
                 {
                     return false;
                 }

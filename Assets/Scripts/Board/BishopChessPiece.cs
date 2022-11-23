@@ -29,23 +29,33 @@ public class BishopChessPiece : IChessRule, IMoveList
     public IReadOnlyList<Vector3Int> GetPossibleMoves(PlayerColour activeColour, Board board, ChessPiece piece)
     {
         var result = new List<Vector3Int>();
-        var y = piece.TilePosition.y;
         var x = piece.TilePosition.x;
+        var y = piece.TilePosition.y;
 
         var boardState = board.GetBoardState();
-        int i, j;
-        Vector3Int boardPosition;
 
         // left and down
-        i = x - 1;
-        j = y - 1;
-        boardPosition = new Vector3Int(i, j);
+        var i = x - 1;
+        var j = y - 1;
+        var boardPosition = new Vector3Int(i, j);
+
         while (board.IsValidPosition(boardPosition))
         {
+            if (boardState[j, i] >= 0)
+            {
+                var pieceAtIJ = board.GetPieceAtPosition(boardPosition);
+                if (pieceAtIJ.PlayerColour == piece.PlayerColour)
+                {
+                    break;
+                }
+            }
             var canMove = moveToStopCheckRule.PossibleMove(activeColour, board, piece, boardPosition, out var _);
             if (!canMove)
             {
-                break;
+                i--;
+                j--;
+                boardPosition = new Vector3Int(i, j);
+                continue;
             }
             if (boardState[j, i] >= 0)
             {
@@ -70,10 +80,21 @@ public class BishopChessPiece : IChessRule, IMoveList
         boardPosition = new Vector3Int(i, j);
         while (board.IsValidPosition(boardPosition))
         {
+            if (boardState[j, i] >= 0)
+            {
+                var pieceAtIJ = board.GetPieceAtPosition(boardPosition);
+                if (pieceAtIJ.PlayerColour == piece.PlayerColour)
+                {
+                    break;
+                }
+            }
             var canMove = moveToStopCheckRule.PossibleMove(activeColour, board, piece, boardPosition, out var _);
             if (!canMove)
             {
-                break;
+                i--;
+                j++;
+                boardPosition = new Vector3Int(i, j);
+                continue;
             }
             if (boardState[j, i] >= 0)
             {
@@ -98,10 +119,21 @@ public class BishopChessPiece : IChessRule, IMoveList
         boardPosition = new Vector3Int(i, j);
         while (board.IsValidPosition(boardPosition))
         {
+            if (boardState[j, i] >= 0)
+            {
+                var pieceAtIJ = board.GetPieceAtPosition(boardPosition);
+                if (pieceAtIJ.PlayerColour == piece.PlayerColour)
+                {
+                    break;
+                }
+            }
             var canMove = moveToStopCheckRule.PossibleMove(activeColour, board, piece, boardPosition, out var _);
             if (!canMove)
             {
-                break;
+                i++;
+                j--;
+                boardPosition = new Vector3Int(i, j);
+                continue;
             }
             if (boardState[j, i] >= 0)
             {
@@ -126,10 +158,21 @@ public class BishopChessPiece : IChessRule, IMoveList
         boardPosition = new Vector3Int(i, j);
         while (board.IsValidPosition(boardPosition))
         {
+            if (boardState[j, i] >= 0)
+            {
+                var pieceAtIJ = board.GetPieceAtPosition(boardPosition);
+                if (pieceAtIJ.PlayerColour == piece.PlayerColour)
+                {
+                    break;
+                }
+            }
             var canMove = moveToStopCheckRule.PossibleMove(activeColour, board, piece, boardPosition, out var _);
             if(!canMove)
             {
-                break;
+                i++;
+                j++;
+                boardPosition = new Vector3Int(i, j);
+                continue;
             }
             if (boardState[j, i] >= 0)
             {

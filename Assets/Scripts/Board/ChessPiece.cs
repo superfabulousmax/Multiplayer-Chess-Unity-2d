@@ -9,6 +9,7 @@ public class ChessPiece : NetworkBehaviour
 
     NetworkVariable<PlayerColour> playerColour = new(PlayerColour.Unassigned);
     NetworkVariable<ChessPieceType> pieceType = new(ChessPieceType.Pawn);
+    NetworkVariable<char> symbol = new('-');
     public NetworkVariable<Vector3Int> tilePosition = new(Vector3Int.zero, writePerm: NetworkVariableWritePermission.Owner);
 
     NetworkTransform networkTransform;
@@ -22,6 +23,7 @@ public class ChessPiece : NetworkBehaviour
     IMoveList moveList;
 
     public PlayerColour PlayerColour { get => playerColour.Value; private set => playerColour.Value = value; }
+    public char Symbol { get => symbol.Value; private set => symbol.Value = value; }
     public SpriteRenderer SpriteRenderer { get => GetComponent<SpriteRenderer>(); }
 
     public Vector3Int TilePosition { get => tilePosition.Value; set => tilePosition.Value = value; }
@@ -103,9 +105,10 @@ public class ChessPiece : NetworkBehaviour
         }
     }
 
-    internal void Init(PlayerColour colour, Sprite sprite, ChessPieceType type, Vector3Int tilePosition = default)
+    internal void Init(char piece, PlayerColour colour, Sprite sprite, ChessPieceType type, Vector3Int tilePosition = default)
     {
         InitComponents();
+        symbol.Value = piece;
         playerColour.Value = colour;
         spriteRenderer.sprite = sprite;
         pieceType.Value = type;

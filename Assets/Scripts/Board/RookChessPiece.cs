@@ -129,10 +129,22 @@ public class RookChessPiece : IChessRule, ICastleEntity, IMoveList
         boardPosition = new Vector3Int(i, j);
         while (board.IsValidPosition(boardPosition))
         {
+            if (boardState[j, i] >= 0)
+            {
+                var pieceAtIJ = board.GetPieceAtPosition(boardPosition);
+                if (pieceAtIJ.PlayerColour == piece.PlayerColour)
+                {
+                    break;
+                }
+            }
+
             var canMove = moveToStopCheckRule.PossibleMove(activeColour, board, piece, boardPosition, out var _);
+            
             if (!canMove)
             {
-                break;
+                i--;
+                boardPosition = new Vector3Int(i, j);
+                continue;
             }
             if (boardState[j, i] >= 0)
             {
@@ -156,10 +168,20 @@ public class RookChessPiece : IChessRule, ICastleEntity, IMoveList
         boardPosition = new Vector3Int(i, j);
         while (board.IsValidPosition(boardPosition))
         {
+            if (boardState[j, i] >= 0)
+            {
+                var pieceAtIJ = board.GetPieceAtPosition(boardPosition);
+                if (pieceAtIJ.PlayerColour == piece.PlayerColour)
+                {
+                    break;
+                }
+            }
             var canMove = moveToStopCheckRule.PossibleMove(activeColour, board, piece, boardPosition, out var _);
             if (!canMove)
             {
-                break;
+                i++;
+                boardPosition = new Vector3Int(i, j);
+                continue;
             }
             if (boardState[j, i] >= 0)
             {
@@ -183,10 +205,20 @@ public class RookChessPiece : IChessRule, ICastleEntity, IMoveList
         boardPosition = new Vector3Int(i, j);
         while (board.IsValidPosition(boardPosition))
         {
+            if (boardState[j, i] >= 0)
+            {
+                var pieceAtIJ = board.GetPieceAtPosition(boardPosition);
+                if (pieceAtIJ.PlayerColour == piece.PlayerColour)
+                {
+                    break;
+                }
+            }
             var canMove = moveToStopCheckRule.PossibleMove(activeColour, board, piece, boardPosition, out var _);
             if (!canMove)
             {
-                break;
+                j++;
+                boardPosition = new Vector3Int(i, j);
+                continue;
             }
             if (boardState[j, i] >= 0)
             {
@@ -210,10 +242,20 @@ public class RookChessPiece : IChessRule, ICastleEntity, IMoveList
         boardPosition = new Vector3Int(i, j);
         while (board.IsValidPosition(boardPosition))
         {
+            if (boardState[j, i] >= 0)
+            {
+                var pieceAtIJ = board.GetPieceAtPosition(boardPosition);
+                if (pieceAtIJ.PlayerColour == piece.PlayerColour)
+                {
+                    break;
+                }
+            }
             var canMove = moveToStopCheckRule.PossibleMove(activeColour, board, piece, boardPosition, out var _);
             if (!canMove)
             {
-                break;
+                j--;
+                boardPosition = new Vector3Int(i, j);
+                continue;
             }
             if (boardState[j, i] >= 0)
             {
