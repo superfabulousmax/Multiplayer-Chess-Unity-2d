@@ -290,6 +290,7 @@ public class Board : NetworkBehaviour
     {
         SetStartingEnPassantTarget();
         onFinishedBoardSetup?.Invoke();
+        DetectCheckServerRpc();
     }
 
     private void SetStartingEnPassantTarget()

@@ -45,6 +45,7 @@ public class ActivePlayerInput : IPlayerInput
             {
                 if(chessPiece.PlayerColour == activeColour)
                 {
+                    // clear previous selected
                     if (selectedChessPiece != null)
                     {
                         tileHighlighter.SetTileColour(selectedChessPiece.TilePosition, clearColour);
@@ -52,12 +53,11 @@ public class ActivePlayerInput : IPlayerInput
                     }
 
                     selectedChessPiece = chessPiece;
-                    tileHighlighter.SetTileColour(chessPiece.TilePosition, highlightColour);
+                    tileHighlighter.SetTileColour(selectedChessPiece.TilePosition, highlightColour);
                     if (selectedChessPiece.TilePosition != board.CheckedPos)
                     {
                         tileHighlighter.SetTileColour(board.CheckedPos, checkedColour);
                     }
-                    Debug.Log($"selected chess piece {selectedChessPiece}");
 
                     if (selectedChessPiece?.MoveListGenerator != null)
                     {
@@ -178,5 +178,15 @@ public class ActivePlayerInput : IPlayerInput
         }
         chessPiece = null;
         return false;
+    }
+
+    public void ClearHighlights(PlayerColour activeColour, PlayerColour currentColour, bool isOwner)
+    {
+        if (!isOwner || (activeColour != currentColour))
+        {
+            return;
+        }
+
+        tileHighlighter.SetTileColour(board.CheckedPos, clearColour);
     }
 }

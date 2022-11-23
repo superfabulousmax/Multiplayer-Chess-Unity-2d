@@ -87,6 +87,7 @@ public class InputController : NetworkBehaviour
     {
         Debug.Log($"{turnSystem.GetActiveColour()}" +
             $" Input Finished");
+        playerInput.ClearHighlights(turnSystem.GetActiveColour(), Colour, IsOwner);
         board.DetectCheckServerRpc();
         turnSystem.ChangeTurnServerRpc();
     }
