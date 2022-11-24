@@ -344,8 +344,9 @@ public class Board : NetworkBehaviour
         return false;
     }
 
-    internal bool IsInCheck(int [,] simulatedBoard, out ChessPiece king)
+    internal bool IsInCheck(int [,] simulatedBoard, out List<ChessPiece> kings)
     {
+        kings = new List<ChessPiece>();
         for (int y = 0; y < GameConstants.BoardLengthDimension; y++)
         {
             for (int x = 0; x < GameConstants.BoardLengthDimension; x++)
@@ -354,16 +355,15 @@ public class Board : NetworkBehaviour
                 var piece = GetPieceFromId((uint)id);
                 if (piece && piece.CheckRuleBehaviour != null)
                 {
-                    if (piece.CheckRuleBehaviour.PossibleCheck(this, simulatedBoard, piece, new Vector3Int(x, y, 0), out king))
+                    if (piece.CheckRuleBehaviour.PossibleCheck(this, simulatedBoard, piece, new Vector3Int(x, y, 0), out var king))
                     {
-                        return true;
+                        kings.Add(king);
                     }
                 }
             }
         }
 
-        king = null;
-        return false;
+        return kings.Count > 0;
     }
 
     internal bool IsCheckMate(PlayerColour activeColour)

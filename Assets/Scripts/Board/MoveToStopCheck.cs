@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Linq;
 
 public class MoveToStopCheck : IChessRule
 {
@@ -28,9 +29,9 @@ public class MoveToStopCheck : IChessRule
         {
             if (king.PlayerColour == piece.PlayerColour)
             {
-                if (board.IsInCheck(simulatedBoardState, out var checkedKing))
+                if (board.IsInCheck(simulatedBoardState, out var checkedKings))
                 {
-                    if (checkedKing.PlayerColour == piece.PlayerColour)
+                    if (checkedKings.Any(obj => obj.PlayerColour == piece.PlayerColour))
                     {
                         return false;
                     }
@@ -39,13 +40,13 @@ public class MoveToStopCheck : IChessRule
         }
         else
         {
-            if (board.IsInCheck(simulatedBoardState, out var checkedKing))
+            if (board.IsInCheck(simulatedBoardState, out var checkedKings))
             {
                 if (piece.PieceType == ChessPiece.ChessPieceType.King)
                 {
                     return false;
                 }
-                if (checkedKing.PlayerColour == piece.PlayerColour)
+                if (checkedKings.Any(obj => obj.PlayerColour == piece.PlayerColour))
                 {
                     return false;
                 }
