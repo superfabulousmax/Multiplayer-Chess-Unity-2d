@@ -31,13 +31,19 @@ public class CastleMoves : IMoveList
         possiblePositions.Add(new Vector3Int(x - 2, y));
         // castle right
         possiblePositions.Add(new Vector3Int(x + 2, y));
-
-        if (!CanCastleAnyRook(board, kingPiece, possiblePositions[0]))
+        // TODO
+        var positionsToValidate = new List<Vector3Int>();
+        foreach (var position in possiblePositions)
         {
-            return result;
+            if (CanCastleAnyRook(board, kingPiece, position))
+            {
+                positionsToValidate.Add(position);
+            }
         }
+       
+
         var boardState = board.GetBoardState();
-        foreach(var position in possiblePositions)
+        foreach(var position in positionsToValidate)
         {
             var smallestX = Mathf.Min(position.x, x);
             var biggestX = Mathf.Max(position.x, x);

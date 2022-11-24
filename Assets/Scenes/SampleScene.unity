@@ -450,7 +450,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 340879509110424983, guid: 26d191cc9129e2b469611256ae1131dd, type: 3}
       propertyPath: fenString
-      value: rnk1qbnr/pppppppp/8/4Pb2/2NP4/2P5/PP3PPP/RKBQ1BNR w KQkq - 0 1
+      value: r3k2r/3b4/5n1p/4np2/3NBPp1/8/1R4PP/4K2R w Kkq - 0 1
       objectReference: {fileID: 0}
     - target: {fileID: 340879509110424983, guid: 26d191cc9129e2b469611256ae1131dd, type: 3}
       propertyPath: playerOnePieces

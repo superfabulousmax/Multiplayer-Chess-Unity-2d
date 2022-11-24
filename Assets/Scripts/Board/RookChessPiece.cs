@@ -39,6 +39,26 @@ public class RookChessPiece : IChessRule, ICastleEntity, IMoveList
 
         var distToKing = Mathf.Abs(king.TilePosition.x - rook.TilePosition.x);
 
+        if (rook.TilePosition.x != 0 && rook.TilePosition.x != 7)
+        {
+            return false;
+        }
+
+        if (rook.PlayerColour == PlayerColour.PlayerOne)
+        {
+            if (rook.TilePosition.y != 0)
+            {
+                return false;
+            }
+        }
+        else
+        {
+            if (rook.TilePosition.y != 7)
+            {
+                return false;
+            }
+        }
+
         foreach(var letter in castlingRights)
         {
             if (rook.PlayerColour == PlayerColour.PlayerOne)
