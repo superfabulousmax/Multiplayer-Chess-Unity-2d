@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.UIElements;
-using static ChessPiece;
+using static chess.enums.ChessEnums;
 
 public class PawnPromotionButton : Button
 {

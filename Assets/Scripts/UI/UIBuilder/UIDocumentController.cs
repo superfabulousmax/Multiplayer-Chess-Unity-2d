@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using Unity.Netcode;
 using UnityEngine.UIElements;
+using static chess.enums.ChessEnums;
 
 public class UIDocumentController : NetworkBehaviour
 {
@@ -70,11 +71,11 @@ public class UIDocumentController : NetworkBehaviour
         {
             if(piece.PlayerColour == PlayerColour.PlayerOne)
             {
-                button.SetSprite(board.PlacementSystem.PlayerOnePieces);
+                button.SetSprite(ChessPiecesContainer.Singleton.PlayerOnePieces);
             }
             else
             {
-                button.SetSprite(board.PlacementSystem.PlayerTwoPieces);
+                button.SetSprite(ChessPiecesContainer.Singleton.PlayerTwoPieces);
             }
         }
 
@@ -83,7 +84,7 @@ public class UIDocumentController : NetworkBehaviour
     }
 
 
-    private void OnFinishPromotion(ChessPiece.ChessPieceType chessPieceType)
+    private void OnFinishPromotion(ChessPieceType chessPieceType)
     {
         board.HandlePawnPromotionServerRpc(cachedPiece, chessPieceType);
         pawnPromotionContainer.style.display = DisplayStyle.None;

@@ -1,7 +1,6 @@
 using Unity.Netcode;
 using UnityEngine;
-
-public enum PlayerColour { PlayerOne = 0, PlayerTwo = 1, Unassigned  = 3,  Assigned = 4}
+using static chess.enums.ChessEnums;
 
 public class PlayerNetworkColour: NetworkBehaviour
 {

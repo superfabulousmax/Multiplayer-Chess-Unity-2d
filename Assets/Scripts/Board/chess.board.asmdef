@@ -1,0 +1,18 @@
+{
+    "name": "ChessBoard",
+    "rootNamespace": "",
+    "references": [
+        "GUID:eb9b709aa20331846bdfece09b506348",
+        "GUID:be0f28e9edce7ce41b1b7de9280f5857",
+        "GUID:e9e5562f77c754b2ca364915385b3d43"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

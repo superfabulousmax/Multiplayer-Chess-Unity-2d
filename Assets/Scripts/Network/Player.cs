@@ -1,35 +1,7 @@
 using UnityEngine;
 using Unity.Netcode;
+using static chess.enums.ChessEnums;
 using Unity.Multiplayer.Samples.BossRoom;
-
-public struct PlayerData : ISessionPlayerData, INetworkSerializable
-{
-    private bool isConnected;
-    private ulong clientID;
-    public bool IsConnected { get => isConnected; set => IsConnected = value; }
-    public ulong ClientID { get => clientID; set => clientID = value; }
-
-    public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
-    {
-        if (serializer.IsReader)
-        {
-            var reader = serializer.GetFastBufferReader();
-            reader.ReadValueSafe(out isConnected);
-            reader.ReadValueSafe(out clientID);
-        }
-        else
-        {
-            var writer = serializer.GetFastBufferWriter();
-            writer.WriteValueSafe(isConnected);
-            writer.WriteValueSafe(clientID);
-        }
-    }
-
-    public void Reinitialize()
-    {
-    }
-
-}
 
 [RequireComponent(typeof(InputController))]
 public class Player : NetworkBehaviour
@@ -42,27 +14,28 @@ public class Player : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         var playerNetworkColour = FindObjectOfType<PlayerNetworkColour>();
-#if TestingBlack
-        if (IsOwnedByServer)
-        {
-            AssignColourClientRPC(PlayerColour.PlayerTwo);
-        }
-        else
-        {
-            AssignColourClientRPC(PlayerColour.PlayerOne);
-        }
-#elif TestingWhite
-        if (IsOwnedByServer)
-        {
-            AssignColourClientRPC(PlayerColour.PlayerOne);
-        }
-        else
-        {
-            AssignColourClientRPC(PlayerColour.PlayerTwo);
-        }
-#else
+//#if TestingBlack
+//        if (IsOwnedByServer)
+//        {
+//            AssignColourClientRPC(PlayerColour.PlayerTwo);
+//        }
+//        else
+//        {
+//            AssignColourClientRPC(PlayerColour.PlayerOne);
+//        }
+//#elif TestingWhite
+//        if (IsOwnedByServer)
+//        {
+//            AssignColourClientRPC(PlayerColour.PlayerOne);
+//        }
+//        else
+//        {
+//            AssignColourClientRPC(PlayerColour.PlayerTwo);
+//        }
+//#else
+//        AssignColourClientRPC(playerNetworkColour.GetColour());
+//#endif
         AssignColourClientRPC(playerNetworkColour.GetColour());
-#endif
     }
 
     public override void OnNetworkDespawn()

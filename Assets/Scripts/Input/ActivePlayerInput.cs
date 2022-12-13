@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static chess.enums.ChessEnums;
 
 public class ActivePlayerInput : IPlayerInput
 {
@@ -144,7 +145,7 @@ public class ActivePlayerInput : IPlayerInput
 
     private bool ValidateCastle(PlayerColour activeColour, ChessPiece selectedChessPiece, Vector3Int tilePosition)
     {
-        if (selectedChessPiece.PieceType == ChessPiece.ChessPieceType.King && selectedChessPiece.ChessRuleBehaviour is ICastleEntity castleInfo)
+        if (selectedChessPiece.PieceType == ChessPieceType.King && selectedChessPiece.ChessRuleBehaviour is ICastleEntity castleInfo)
         {
             var castleMoves = castleInfo.GetCastleMoves(activeColour, board, selectedChessPiece);
             if (castleMoves.Contains(tilePosition))

@@ -1,0 +1,25 @@
+{
+    "name": "chess.systems",
+    "rootNamespace": "",
+    "references": [
+        "GUID:876f002db8afe6d4689a98541224c3e9",
+        "GUID:2dbf96128bc8fed44b96c1b2314fa7f2",
+        "GUID:be0f28e9edce7ce41b1b7de9280f5857",
+        "GUID:01c913d43287f8f45bfc70c130f2c6a9",
+        "GUID:c7bc31eb62f9d6d4494cb612766fd155",
+        "GUID:eb9b709aa20331846bdfece09b506348",
+        "GUID:137a869602554c24bb228a9770ff0656",
+        "GUID:1491147abca9d7d4bb7105af628b223e",
+        "GUID:444abab260b470b4ca0bdd4538f2a13f",
+        "GUID:e9e5562f77c754b2ca364915385b3d43"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

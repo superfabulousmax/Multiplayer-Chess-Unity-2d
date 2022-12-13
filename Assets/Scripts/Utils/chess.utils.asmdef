@@ -1,0 +1,17 @@
+{
+    "name": "chess.utils",
+    "rootNamespace": "",
+    "references": [
+        "GUID:c7bc31eb62f9d6d4494cb612766fd155",
+        "GUID:01c913d43287f8f45bfc70c130f2c6a9"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

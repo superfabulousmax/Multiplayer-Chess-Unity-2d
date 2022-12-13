@@ -1,0 +1,157 @@
+using UnityEngine;
+using Unity.Netcode;
+using Unity.Netcode.Components;
+using static chess.enums.ChessEnums;
+
+[SelectionBase, RequireComponent(typeof(SpriteRenderer))]
+public class ChessPiece : NetworkBehaviour
+{
+    public NetworkVariable<Vector3Int> tilePosition = new(Vector3Int.zero, writePerm: NetworkVariableWritePermission.Owner);
+
+    public PlayerColour PlayerColour { get => playerColour.Value; private set => playerColour.Value = value; }
+    public char Symbol { get => symbol.Value; private set => symbol.Value = value; }
+    public SpriteRenderer SpriteRenderer { get => GetComponent<SpriteRenderer>(); }
+
+    public Vector3Int TilePosition { get => tilePosition.Value; set => tilePosition.Value = value; }
+    public ChessPieceType PieceType { get => pieceType.Value; }
+    public IChessRule ChessRuleBehaviour { get => chessRuleBehaviour; set => chessRuleBehaviour = value; }
+    public ICheckRule CheckRuleBehaviour { get => checkRuleBehaviour; set => checkRuleBehaviour = value; }
+    public IMoveList MoveListGenerator { get => moveList; set => moveList = value; }
+    public NetworkTransform NetworkTransform { get => networkTransform; }
+
+    NetworkVariable<PlayerColour> playerColour = new(PlayerColour.Unassigned);
+    NetworkVariable<ChessPieceType> pieceType = new(ChessPieceType.Pawn);
+    NetworkVariable<char> symbol = new('-');
+
+    NetworkTransform networkTransform;
+
+    SpriteRenderer spriteRenderer;
+
+    IChessRule chessRuleBehaviour;
+
+    ICheckRule checkRuleBehaviour;
+
+    IMoveList moveList;
+
+    [ServerRpc(RequireOwnership = false)]
+    public void SetTilePositionServerRpc(Vector3Int newTilePosition)
+    {
+        if (!IsServer)
+        {
+            return;
+        }
+
+        SetTilePositionClientRpc(newTilePosition);
+    }
+
+    [ClientRpc]
+    private void SetTilePositionClientRpc(Vector3Int newTilePosition)
+    {
+        if (!IsOwner)
+        {
+            return;
+        }
+
+        tilePosition.Value = newTilePosition;
+        // todo
+        var position = new Vector3(tilePosition.Value.x + 0.5f, tilePosition.Value.y + 0.5f, 0);
+        networkTransform.transform.position = position;
+    }
+
+    public override void OnNetworkSpawn()
+    {
+        InitComponents();
+        AssignChessRules(pieceType.Value);
+    }
+
+    public override string ToString()
+    {
+        return $"{playerColour.Value} {pieceType.Value} {tilePosition.Value}";
+    }
+
+    internal void AssignChessRules(ChessPieceType chessPieceType)
+    {
+        switch (chessPieceType)
+        {
+            case ChessPieceType.Pawn:
+                chessRuleBehaviour = new PawnChessPiece(new PawnPromotionRule(), new MoveToStopCheck(), new TakePieceRule(ChessPieceType.Pawn), PlayerColour, tilePosition.Value);
+                moveList = chessRuleBehaviour as IMoveList;
+                checkRuleBehaviour = new PawnCheckRule();
+                break;
+            case ChessPieceType.King:
+                chessRuleBehaviour = new KingChessPiece(new MoveToStopCheck(), new CastleMoves());
+                moveList = chessRuleBehaviour as IMoveList;
+                checkRuleBehaviour = new KingCheckRule();
+                break;
+            case ChessPieceType.Queen:
+                chessRuleBehaviour = new QueenChessPiece(new TakePieceRule(ChessPieceType.Queen));
+                moveList = chessRuleBehaviour as IMoveList;
+                checkRuleBehaviour = new QueenCheckRule(new RookCheckRule(), new BishopCheckRule());
+                break;
+            case ChessPieceType.Rook:
+                chessRuleBehaviour = new RookChessPiece(new TakePieceRule(ChessPieceType.Rook), new MoveToStopCheck());
+                moveList = chessRuleBehaviour as IMoveList;
+                checkRuleBehaviour = new RookCheckRule();
+                break;
+            case ChessPieceType.Knight:
+                chessRuleBehaviour = new KnightChessPiece(new TakePieceRule(ChessPieceType.Knight), new MoveToStopCheck());
+                moveList = chessRuleBehaviour as IMoveList;
+                checkRuleBehaviour = new KnightCheckRule();
+                break;
+            case ChessPieceType.Bishop:
+                chessRuleBehaviour = new BishopChessPiece(new TakePieceRule(ChessPieceType.Bishop), new MoveToStopCheck());
+                moveList = chessRuleBehaviour as IMoveList;
+                checkRuleBehaviour = new BishopCheckRule();
+                break;
+        }
+    }
+
+    public void Init(char piece, PlayerColour colour, Sprite sprite, ChessPieceType type, Vector3Int tilePosition = default)
+    {
+        InitComponents();
+        symbol.Value = piece;
+        playerColour.Value = colour;
+        spriteRenderer.sprite = sprite;
+        pieceType.Value = type;
+        this.tilePosition.Value = tilePosition;
+    }
+
+    internal void InitComponents()
+    {
+        networkTransform = GetComponent<NetworkTransform>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
+    }
+
+    [ServerRpc(RequireOwnership =false)]
+    internal void SyncDataServerRpc(int moveCount, bool isFirstMove, bool firstMoveTwo, uint lastMovedPawnId)
+    {
+        SyncDataClientRpc(moveCount, isFirstMove, firstMoveTwo, lastMovedPawnId);
+    }
+
+    [ClientRpc]
+    private void SyncDataClientRpc(int moveCount, bool isFirstMove, bool firstMoveTwo, uint lastMovedPawnId)
+    {
+        if (chessRuleBehaviour is PawnChessPiece pawnChessPiece)
+        {
+            pawnChessPiece.MoveCount = moveCount;
+            pawnChessPiece.IsFirstMove = isFirstMove;
+            pawnChessPiece.FirstMoveTwo = firstMoveTwo;
+            pawnChessPiece.LastMovedPawnID = lastMovedPawnId;
+        }
+        else if (chessRuleBehaviour is RookChessPiece rookChessPiece)
+        {
+            rookChessPiece.MoveCount = moveCount;
+        }
+        else if (chessRuleBehaviour is KingChessPiece kingChessPiece)
+        {
+            kingChessPiece.MoveCount = moveCount;
+        }
+    }
+
+    internal void ChangePieceTo(ChessPieceType chessPieceType)
+    {
+        AssignChessRules(chessPieceType);
+
+        spriteRenderer.sprite = ChessPiecesContainer.Singleton.GetSpriteForPiece(PlayerColour, chessPieceType);
+    }
+}

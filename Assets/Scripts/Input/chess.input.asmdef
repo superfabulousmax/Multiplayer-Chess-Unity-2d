@@ -1,0 +1,20 @@
+{
+    "name": "chess.input",
+    "rootNamespace": "",
+    "references": [
+        "GUID:876f002db8afe6d4689a98541224c3e9",
+        "GUID:be0f28e9edce7ce41b1b7de9280f5857",
+        "GUID:2dbf96128bc8fed44b96c1b2314fa7f2",
+        "GUID:c7bc31eb62f9d6d4494cb612766fd155",
+        "GUID:1491147abca9d7d4bb7105af628b223e"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -45,10 +45,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 899dfdc87465a3a4ea72d530ef0aa3d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  fenString: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
-  playerOnePieces: {fileID: 11400000, guid: 67d5aad29c1fd4c4c9a32cde193c66b4, type: 2}
-  playerTwoPieces: {fileID: 11400000, guid: 8d3ab110ea489114a80a734722749398, type: 2}
   chessPiecePrefab: {fileID: 2336836518130984228, guid: 5f3ffe256588ebe4a87d13e57589b47c, type: 3}
+  boardCreator: {fileID: 0}
 --- !u!114 &335649653
 MonoBehaviour:
   m_ObjectHideFlags: 0

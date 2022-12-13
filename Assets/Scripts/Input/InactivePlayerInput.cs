@@ -1,4 +1,5 @@
 using System;
+using static chess.enums.ChessEnums;
 
 public class InactivePlayerInput : IPlayerInput
 {
