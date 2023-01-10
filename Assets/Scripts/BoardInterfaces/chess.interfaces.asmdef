@@ -1,13 +1,9 @@
 {
-    "name": "ChessBoard",
+    "name": "chess.interfaces",
     "rootNamespace": "",
     "references": [
-        "GUID:eb9b709aa20331846bdfece09b506348",
-        "GUID:be0f28e9edce7ce41b1b7de9280f5857",
-        "GUID:e9e5562f77c754b2ca364915385b3d43",
         "GUID:c7bc31eb62f9d6d4494cb612766fd155",
-        "GUID:01c913d43287f8f45bfc70c130f2c6a9",
-        "GUID:2cc5c6db91f7e3e4f934c80c29225324"
+        "GUID:01c913d43287f8f45bfc70c130f2c6a9"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -1,28 +1,29 @@
+using System.Linq;
 using UnityEngine;
+using static chess.enums.ChessEnums;
 
 public class BishopCheckRule : ICheckRule
 {
-    public bool PossibleCheck(Board board, int [,] boardState, ChessPiece bishop, Vector3Int position, out ChessPiece king)
+    public bool PossibleCheck(IBoard board, int [,] boardState, IChessPiece bishop, Vector3Int position, out IChessPiece king)
     {
         var y = position.y;
         var x = position.x;
-
-        king = board.GetOppositeKing(bishop.PlayerColour);
-        var kingId = (uint)king.NetworkObjectId;
-        var kingPosition = board.GetIdPosition(kingId, boardState);
+        king = board.GetPiecesWith(GetOppositeColour(bishop.PlayerColour), ChessPieceType.King).First();
+        var kingId = (uint)king.PieceId;
+        var kingPosition = board.GetIdPosition(kingId);
 
         if (kingPosition.y == y)
             return false;
         if (kingPosition.x == x)
             return false;
 
-        int xDiff = Mathf.Abs(kingPosition.x - x);
-        int yDiff = Mathf.Abs(kingPosition.y - y);
+        var xDiff = Mathf.Abs(kingPosition.x - x);
+        var yDiff = Mathf.Abs(kingPosition.y - y);
 
         if (xDiff != yDiff)
             return false;
 
-        var bishopId = (int)bishop.NetworkObjectId;
+        var bishopId = bishop.PieceId;
 
         if (kingPosition.x < x)
         {

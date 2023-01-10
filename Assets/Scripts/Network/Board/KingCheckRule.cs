@@ -1,15 +1,17 @@
+using System.Linq;
 using UnityEngine;
+using static chess.enums.ChessEnums;
 
 public class KingCheckRule : ICheckRule
 {
-    public bool PossibleCheck(Board board, int[,] boardState, ChessPiece kingPiece, Vector3Int position, out ChessPiece otherKing)
+    public bool PossibleCheck(IBoard board, int[,] boardState, IChessPiece kingPiece, Vector3Int position, out IChessPiece otherKing)
     {
-        position = board.GetIdPosition((uint)kingPiece.NetworkObjectId, boardState);
+        position = board.GetIdPosition((uint)kingPiece.PieceId);
         var y = position.y;
         var x = position.x;
-        otherKing = board.GetOppositeKing(kingPiece.PlayerColour);
-        var kingId = (uint)otherKing.NetworkObjectId;
-        var kingPosition = board.GetIdPosition(kingId, boardState);
+        otherKing = board.GetPiecesWith(GetOppositeColour(kingPiece.PlayerColour), ChessPieceType.King).First();
+        var kingId = (uint)otherKing.PieceId;
+        var kingPosition = board.GetIdPosition(kingId);
 
         var xDiff = Mathf.Abs(kingPosition.x - x);
         var yDiff = Mathf.Abs(kingPosition.y - y);
@@ -23,7 +25,8 @@ public class KingCheckRule : ICheckRule
             return false;
         }
 
-        if (xDiff == 1 || yDiff == 1)
+        if (xDiff == 1 ||
+            yDiff == 1)
         {
             return true;
         }

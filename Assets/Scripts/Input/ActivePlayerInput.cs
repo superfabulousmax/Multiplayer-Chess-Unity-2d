@@ -2,34 +2,26 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 using static chess.enums.ChessEnums;
 
 public class ActivePlayerInput : IPlayerInput
 {
-    Board board;
-    BoardTileHighlighter tileHighlighter;
-    ChessPiece selectedChessPiece;
-    ChessPiece lastMovedPiece;
-    Action onFinish;
+    IBoard board;
+    IChessPiece selectedChessPiece;
+    IChessPiece lastMovedPiece;
 
-    private Color highlightColour;
-    private Color clearColour;
-    private Color checkedColour;
-    private Color possibleMoveColour;
+    BoardTileHighlighter tileHighlighter;
+
+    Action onFinish;
 
     List<Vector3Int> possibleMoves;
 
-    public ActivePlayerInput(Board board, Action onFinish)
+    public ActivePlayerInput(BoardNetworked board, Action onFinish)
     {
         this.board = board;
         this.tileHighlighter = board.TileHighlighter;
         this.onFinish = onFinish;
-        // perwinkle
-        this.highlightColour = new Color(204 / 255.0f, 204 / 255.0f, 255 / 255.0f, 200 / 255.0f);
-        // mint
-        this.possibleMoveColour = new Color(152 / 255.0f, 251 / 255.0f, 152 / 255.0f, 200 / 255.0f);
-        this.clearColour = Color.clear;
-        this.checkedColour = Color.red;
         possibleMoves = new List<Vector3Int>();
     }
 
@@ -49,26 +41,26 @@ public class ActivePlayerInput : IPlayerInput
                     // clear previous selected
                     if (selectedChessPiece != null)
                     {
-                        tileHighlighter.SetTileColour(selectedChessPiece.TilePosition, clearColour);
-                        TogglePossibleMoves(clearColour);
+                        tileHighlighter.SetTileColour(selectedChessPiece.Position, tileHighlighter.ClearColour);
+                        TogglePossibleMoves(tileHighlighter.ClearColour);
                     }
 
                     selectedChessPiece = chessPiece;
-                    tileHighlighter.SetTileColour(selectedChessPiece.TilePosition, highlightColour);
-                    if (selectedChessPiece.TilePosition != board.CheckedPos)
+                    tileHighlighter.SetTileColour(selectedChessPiece.Position, tileHighlighter.HighlightColour);
+                    if (selectedChessPiece.Position != board.CheckedPos)
                     {
-                        tileHighlighter.SetTileColour(board.CheckedPos, checkedColour);
+                        tileHighlighter.SetTileColour(board.CheckedPos, tileHighlighter.CheckedColour);
                     }
 
-                    if (selectedChessPiece?.MoveListGenerator != null)
+                    if (selectedChessPiece?.MoveList != null)
                     {
-                        possibleMoves = selectedChessPiece.MoveListGenerator.GetPossibleMoves(activeColour, board, selectedChessPiece).ToList();
-                        if (selectedChessPiece.ChessRuleBehaviour is ICastleEntity castleInfo)
+                        possibleMoves = selectedChessPiece.MoveList.GetPossibleMoves(activeColour, board, selectedChessPiece).ToList();
+                        if (selectedChessPiece.PieceRuleBehaviour is ICastleEntity castleInfo)
                         {
                             var castleMoves = castleInfo.GetCastleMoves(activeColour, board, selectedChessPiece);
                             possibleMoves.AddRange(castleMoves);
                         }
-                        TogglePossibleMoves(possibleMoveColour);
+                        TogglePossibleMoves(tileHighlighter.PossibleMoveColour);
                     }
 
                     return;
@@ -79,8 +71,8 @@ public class ActivePlayerInput : IPlayerInput
                 return;
             }
 
-            var tilePosition = board.GetTileAtMousePosition(Input.mousePosition);
-            if(selectedChessPiece.TilePosition == tilePosition)
+            var tilePosition = GetTileAtMousePosition(Input.mousePosition, board.BoardTileMap);
+            if(selectedChessPiece.Position == tilePosition)
             {
                 return;
             }
@@ -89,22 +81,22 @@ public class ActivePlayerInput : IPlayerInput
             var validateCastle = ValidateCastle(activeColour, selectedChessPiece, tilePosition);
             if (validateMove || validateCastle)
             {
-                tileHighlighter.SetTileColour(tilePosition, highlightColour);
-                tileHighlighter.StartWaitThenSetColour(tilePosition, clearColour);
-                tileHighlighter.StartWaitThenSetColour(selectedChessPiece.TilePosition, clearColour);
+                tileHighlighter.SetTileColour(tilePosition, tileHighlighter.HighlightColour);
+                tileHighlighter.StartWaitThenSetColour(tilePosition, tileHighlighter.ClearColour);
+                tileHighlighter.StartWaitThenSetColour(selectedChessPiece.Position, tileHighlighter.ClearColour);
 
                 if (isPieceTaken)
                 {
-                    board.TakePieceServerRpc(selectedChessPiece, tilePosition);
+                    board.TakePiece(selectedChessPiece, tilePosition);
                 }
                 else
                 {
-                    var oldX = selectedChessPiece.TilePosition.x;
-                    selectedChessPiece.SetTilePositionServerRpc(tilePosition);
+                    var oldX = selectedChessPiece.Position.x;
+                    selectedChessPiece.SetPosition(tilePosition);
                     if (validateCastle)
                     {
                         // move rook too
-                        ChessPiece rook;
+                        IChessPiece rook;
                         if (tilePosition.x > oldX)
                         { 
                             rook = board.GetPieceAtPosition(new Vector3Int(tilePosition.x + 1, tilePosition.y));
@@ -113,7 +105,7 @@ public class ActivePlayerInput : IPlayerInput
                         {
                             rook = board.GetPieceAtPosition(new Vector3Int(tilePosition.x - 2, tilePosition.y));
                         }
-                        if (rook && rook.ChessRuleBehaviour is ICastleEntity rookCastleInfo)
+                        if (rook != null && rook.PieceRuleBehaviour is ICastleEntity rookCastleInfo)
                         {
                             rookCastleInfo.CastleWithKing(activeColour, board, rook, tilePosition);
                         }
@@ -122,30 +114,39 @@ public class ActivePlayerInput : IPlayerInput
 
                 if (lastMovedPiece != null)
                 {
-                    tileHighlighter.SetTileColour(lastMovedPiece.TilePosition, clearColour);
+                    tileHighlighter.SetTileColour(lastMovedPiece.Position, tileHighlighter.ClearColour);
                 }
 
                 lastMovedPiece = selectedChessPiece;
                 selectedChessPiece = null;
-                TogglePossibleMoves(clearColour);
+                TogglePossibleMoves(tileHighlighter.ClearColour);
                 onFinish.Invoke();
 
             }
             else
             {
-                tileHighlighter.SetTileColour(tilePosition, clearColour);
-                tileHighlighter.SetTileColour(selectedChessPiece.TilePosition, clearColour);
-                tileHighlighter.SetTileColour(board.CheckedPos, checkedColour);
-                TogglePossibleMoves(clearColour);
+                tileHighlighter.SetTileColour(tilePosition, tileHighlighter.ClearColour);
+                tileHighlighter.SetTileColour(selectedChessPiece.Position, tileHighlighter.ClearColour);
+                tileHighlighter.SetTileColour(board.CheckedPos, tileHighlighter.CheckedColour);
+                TogglePossibleMoves(tileHighlighter.ClearColour);
                 selectedChessPiece = null;
                 Debug.Log("Invalid move");
             }
         }
     }
 
-    private bool ValidateCastle(PlayerColour activeColour, ChessPiece selectedChessPiece, Vector3Int tilePosition)
+    public Vector3Int GetTileAtMousePosition(Vector3 mousePosition, Tilemap tilemap)
     {
-        if (selectedChessPiece.PieceType == ChessPieceType.King && selectedChessPiece.ChessRuleBehaviour is ICastleEntity castleInfo)
+        var ray = Camera.main.ScreenPointToRay(mousePosition);
+        var plane = new Plane(Vector3.back, Vector3.zero);
+        plane.Raycast(ray, out var hitDist);
+        var point = ray.GetPoint(hitDist);
+        return tilemap.WorldToCell(point);
+    }
+
+    private bool ValidateCastle(PlayerColour activeColour, IChessPiece selectedChessPiece, Vector3Int tilePosition)
+    {
+        if (selectedChessPiece.PieceType == ChessPieceType.King && selectedChessPiece.PieceRuleBehaviour is ICastleEntity castleInfo)
         {
             var castleMoves = castleInfo.GetCastleMoves(activeColour, board, selectedChessPiece);
             if (castleMoves.Contains(tilePosition))
@@ -164,7 +165,7 @@ public class ActivePlayerInput : IPlayerInput
         }
     }
 
-    public bool GetChessPiece(out ChessPiece chessPiece)
+    public bool GetChessPiece(out ChessPieceNetworked chessPiece)
     {
         var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         var hit = Physics2D.GetRayIntersection(ray, Mathf.Infinity);
@@ -188,6 +189,6 @@ public class ActivePlayerInput : IPlayerInput
             return;
         }
 
-        tileHighlighter.SetTileColour(board.CheckedPos, clearColour);
+        tileHighlighter.SetTileColour(board.CheckedPos, tileHighlighter.ClearColour);
     }
 }

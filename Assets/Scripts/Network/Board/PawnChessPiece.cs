@@ -67,7 +67,7 @@ public class PawnChessPiece : IChessRule, IMoveList
         this.takePieceRule = takePieceRule;
     }
 
-    public bool PossibleMove(PlayerColour activeColour, Board board, ChessPiece piece, Vector3Int newPosition, out bool takenPiece, bool isSimulation = false)
+    public bool PossibleMove(PlayerColour activeColour, IBoard board, IChessPiece piece, Vector3Int newPosition, out bool takenPiece, bool isSimulation = false)
     {
         takenPiece = false;
         var possibleMoves = GetPossibleMoves(activeColour, board, piece);
@@ -86,7 +86,7 @@ public class PawnChessPiece : IChessRule, IMoveList
         // check taking a piece
         if (!isSimulation && lastMovedPawn != null && enPassant.CheckEnPassant(direction, pawnColour, board, piece, lastMovedPawn, newPosition, out var takenPiecePosition))
         {
-            board.TakePieceServerRpc(piece, takenPiecePosition);
+            board.TakePiece(piece, takenPiecePosition);
             takenWithEnPassant = true;
         }
         else
@@ -94,20 +94,20 @@ public class PawnChessPiece : IChessRule, IMoveList
             takePieceRule.PossibleMove(activeColour, board, piece, newPosition, out takenPiece);
         }
 
-        if (!isSimulation && !takenWithEnPassant && lastMovedPawn != null && lastMovedPawn.ChessRuleBehaviour is PawnChessPiece lastPawn)
+        if (!isSimulation && !takenWithEnPassant && lastMovedPawn != null && lastMovedPawn.PieceRuleBehaviour is PawnChessPiece lastPawn)
         {
             lastPawn.FirstMoveTwo = false;
-            lastMovedPawn.SyncDataServerRpc(lastPawn.moveCount, lastPawn.isFirstMove, lastPawn.firstMoveTwo, lastMovedPawnId);
+            lastMovedPawn.SyncData(lastPawn.moveCount, lastPawn.isFirstMove, lastPawn.firstMoveTwo, lastMovedPawnId);
         }
 
         if (!isSimulation && pawnPromotion.PossibleMove(activeColour, board, piece, newPosition, out var _))
         {
-            board.AskPawnPromotionServerRpc(piece);
+            board.OnPawnPromoted(piece);
         }
 
         if(!isSimulation)
         {
-            var y = piece.TilePosition.y;
+            var y = piece.Position.y;
             var dy = Mathf.Abs(newPosition.y - y);
             if (isFirstMove && dy == 2)
             {
@@ -117,20 +117,20 @@ public class PawnChessPiece : IChessRule, IMoveList
             {
                 isFirstMove = false;
             }
-            lastMovedPawnId = (uint)piece.NetworkObjectId;
+            lastMovedPawnId = (uint)piece.PieceId;
             moveCount++;
-            piece.SyncDataServerRpc(moveCount, isFirstMove, firstMoveTwo, lastMovedPawnId);
+            piece.SyncData(moveCount, isFirstMove, firstMoveTwo, lastMovedPawnId);
         }
 
         return true;
     }
 
-    public IReadOnlyList<Vector3Int> GetPossibleMoves(PlayerColour activeColour, Board board, ChessPiece piece)
+    public IReadOnlyList<Vector3Int> GetPossibleMoves(PlayerColour activeColour, IBoard board, IChessPiece piece)
     {
         var result = new List<Vector3Int>();
 
-        var y = piece.TilePosition.y;
-        var x = piece.TilePosition.x;
+        var y = piece.Position.y;
+        var x = piece.Position.x;
 
         var boardState = board.GetBoardState();
 

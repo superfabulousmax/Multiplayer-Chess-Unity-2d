@@ -18,12 +18,12 @@ public class KingChessPiece : IChessRule, ICastleEntity, IMoveList
         this.castleMoveGenerator = castleRule;
     }
 
-    public bool CanCastle(Board board, ChessPiece kingPiece)
+    public bool CanCastle(IBoard board, IChessPiece kingPiece)
     {
         return moveCount == 0;
     }
 
-    public bool PossibleMove(PlayerColour activeColour, Board board, ChessPiece piece, Vector3Int newPosition, out bool takenPiece, bool isSimulation = false)
+    public bool PossibleMove(PlayerColour activeColour, IBoard board, IChessPiece piece, Vector3Int newPosition, out bool takenPiece, bool isSimulation = false)
     {
         takenPiece = false;
 
@@ -51,13 +51,13 @@ public class KingChessPiece : IChessRule, ICastleEntity, IMoveList
         if (!isSimulation)
         {
             moveCount++;
-            piece.SyncDataServerRpc(moveCount, default, default, default);
+            piece.SyncData(moveCount, default, default, default);
         }
 
         return true;
     }
 
-    bool TakePiece(PlayerColour activeColour, Board board, int [,] boardState, Vector3Int newPosition)
+    bool TakePiece(PlayerColour activeColour, IBoard board, int [,] boardState, Vector3Int newPosition)
     {
         if (board.CheckPiece(boardState[newPosition.y, newPosition.x], ChessPieceType.King))
         {
@@ -74,12 +74,12 @@ public class KingChessPiece : IChessRule, ICastleEntity, IMoveList
         return true;
     }
 
-    public IReadOnlyList<Vector3Int> GetPossibleMoves(PlayerColour activeColour, Board board, ChessPiece piece)
+    public IReadOnlyList<Vector3Int> GetPossibleMoves(PlayerColour activeColour, IBoard board, IChessPiece piece)
     {
         var result = new List<Vector3Int>();
 
-        var y = piece.TilePosition.y;
-        var x = piece.TilePosition.x;
+        var y = piece.Position.y;
+        var x = piece.Position.x;
 
         var possiblePositions = new List<Vector3Int>();
         // left 1 up 1
@@ -130,12 +130,12 @@ public class KingChessPiece : IChessRule, ICastleEntity, IMoveList
         return result;
     }
 
-    public IReadOnlyList<Vector3Int> GetCastleMoves(PlayerColour activeColour, Board board, ChessPiece kingPiece)
+    public IReadOnlyList<Vector3Int> GetCastleMoves(PlayerColour activeColour, IBoard board, IChessPiece kingPiece)
     {
         return castleMoveGenerator.GetPossibleMoves(activeColour, board, kingPiece);
     }
 
-    public bool CastleWithKing(PlayerColour activeColour, Board board, ChessPiece kingPiece, Vector3Int position)
+    public bool CastleWithKing(PlayerColour activeColour, IBoard board, IChessPiece kingPiece, Vector3Int position)
     {
         return false;
     }

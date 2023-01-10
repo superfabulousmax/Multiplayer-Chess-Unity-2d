@@ -4,14 +4,14 @@ using static chess.enums.ChessEnums;
 
 public class MoveToStopCheck : IChessRule
 {
-    public bool PossibleMove(PlayerColour activeColour, Board board, ChessPiece piece, Vector3Int newPosition, out bool takenPiece, bool isSimulation = false)
+    public bool PossibleMove(PlayerColour activeColour, IBoard board, IChessPiece piece, Vector3Int newPosition, out bool takenPiece, bool isSimulation = false)
     {
         takenPiece = false;
 
         var boardState = board.GetBoardState();
 
-        var y = piece.TilePosition.y;
-        var x = piece.TilePosition.x;
+        var y = piece.Position.y;
+        var x = piece.Position.x;
         
         // simulate new move
         var simulatedBoardState = new int[GameConstants.BoardLengthDimension, GameConstants.BoardLengthDimension];
@@ -24,7 +24,7 @@ public class MoveToStopCheck : IChessRule
         }
 
         simulatedBoardState[y, x] = -1;
-        simulatedBoardState[newPosition.y, newPosition.x] = (int)piece.NetworkObjectId;
+        simulatedBoardState[newPosition.y, newPosition.x] = (int)piece.PieceId;
 
         if (board.IsInCheck(out var king))
         {

@@ -1,10 +1,11 @@
 {
-    "name": "Tests",
+    "name": "Runtime",
     "rootNamespace": "",
     "references": [
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
-        "Scripts"
+        "Unity.Netcode.Runtime",
+        "Unity.Netcode.TestHelpers.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

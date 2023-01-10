@@ -1,7 +1,8 @@
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
+using System.Linq;
+using System.Collections.Generic;
 using static chess.enums.ChessEnums;
+
 public class QueenChessPiece : IChessRule, IMoveList
 {
     IChessRule bishopChessRule;
@@ -17,14 +18,13 @@ public class QueenChessPiece : IChessRule, IMoveList
         rookMoves = rookChessRule as IMoveList;
     }
 
-    public bool PossibleMove(PlayerColour activeColour, Board board, ChessPiece piece, Vector3Int newPosition, out bool takenPiece, bool isSimulation = false)
+    public bool PossibleMove(PlayerColour activeColour, IBoard board, IChessPiece piece, Vector3Int newPosition, out bool takenPiece, bool isSimulation = false)
     {
         return bishopChessRule.PossibleMove(activeColour, board, piece, newPosition, out takenPiece, isSimulation) || rookChessRule.PossibleMove(activeColour, board, piece, newPosition, out takenPiece, isSimulation);
     }
 
-    public IReadOnlyList<Vector3Int> GetPossibleMoves(PlayerColour activeColour, Board board, ChessPiece piece)
+    public IReadOnlyList<Vector3Int> GetPossibleMoves(PlayerColour activeColour, IBoard board, IChessPiece piece)
     {
         return bishopMoves.GetPossibleMoves(activeColour, board, piece).Concat(rookMoves.GetPossibleMoves(activeColour, board, piece)).ToList();
     }
-
 }

@@ -1,7 +1,7 @@
-using System.Collections;
-using Unity.Netcode;
 using UnityEngine;
+using Unity.Netcode;
 using UnityEngine.Tilemaps;
+using System.Collections;
 
 [RequireComponent(typeof(Tilemap))]
 public class BoardTileHighlighter : NetworkBehaviour
@@ -9,7 +9,21 @@ public class BoardTileHighlighter : NetworkBehaviour
     [SerializeField]
     Sprite whiteSquare;
 
+    [SerializeField]
+    private Color highlightColour = new Color(204 / 255.0f, 204 / 255.0f, 255 / 255.0f, 200 / 255.0f); // periwinkle
+    [SerializeField]
+    private Color clearColour = Color.clear;
+    [SerializeField]
+    private Color checkedColour = Color.red;
+    [SerializeField]
+    private Color possibleMoveColour = new Color(152 / 255.0f, 251 / 255.0f, 152 / 255.0f, 200 / 255.0f); // mint
+
     Tilemap tilemap;
+
+    public Color HighlightColour { get => highlightColour; }
+    public Color ClearColour { get => clearColour; }
+    public Color CheckedColour { get => checkedColour; }
+    public Color PossibleMoveColour { get => possibleMoveColour; }
 
     void Start()
     {

@@ -8,7 +8,7 @@ public class EnPassant : IEnPassantChessRule
     {
     }
 
-    public bool CheckEnPassant(int direction, PlayerColour activeColour, Board board, ChessPiece piece, ChessPiece lastMovedPawn, Vector3Int newPosition, out Vector3Int takenPiecePosition)
+    public bool CheckEnPassant(int direction, PlayerColour activeColour, IBoard board, IChessPiece piece, IChessPiece lastMovedPawn, Vector3Int newPosition, out Vector3Int takenPiecePosition)
     {
         // check taking a piece
         takenPiecePosition = Vector3Int.zero;
@@ -23,14 +23,14 @@ public class EnPassant : IEnPassantChessRule
         return false;
     }
 
-    public (bool isEnPassant, Vector3Int takenPosition) CheckEnPassantCapture(int direction, ChessPiece piece, ChessPiece lastMovedPawn, Vector3Int newPosition, Board board)
+    public (bool isEnPassant, Vector3Int takenPosition) CheckEnPassantCapture(int direction, IChessPiece piece, IChessPiece lastMovedPawn, Vector3Int newPosition, IBoard board)
     {
         if (lastMovedPawn == piece)
         {
             return (false, -Vector3Int.one);
         } 
 
-        if (lastMovedPawn.ChessRuleBehaviour is PawnChessPiece pawn)
+        if (lastMovedPawn.PieceRuleBehaviour is PawnChessPiece pawn)
         {
             if(pawn.FirstMoveTwo != true && pawn.MoveCount != 1)
             {
@@ -41,8 +41,8 @@ public class EnPassant : IEnPassantChessRule
         // check empty square
         if (boardState[newPosition.y, newPosition.x] >= 0)
             return (false, -Vector3Int.one);
-        var y = piece.TilePosition.y;
-        var x = piece.TilePosition.x;
+        var y = piece.Position.y;
+        var x = piece.Position.x;
         if (Mathf.Abs(y - newPosition.y) != 1)
         {
             return (false, -Vector3Int.one);
@@ -51,7 +51,7 @@ public class EnPassant : IEnPassantChessRule
         {
             return (false, -Vector3Int.one);
         }
-        var targetPos = lastMovedPawn.TilePosition;
+        var targetPos = lastMovedPawn.Position;
         if (newPosition.x != targetPos.x)
         {
             return (false, -Vector3Int.one);

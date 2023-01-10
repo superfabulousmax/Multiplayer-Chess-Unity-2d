@@ -4,11 +4,11 @@ using static chess.enums.ChessEnums;
 
 public class CastleMoves : IMoveList
 {
-    public IReadOnlyList<Vector3Int> GetPossibleMoves(PlayerColour activeColour, Board board, ChessPiece kingPiece)
+    public IReadOnlyList<Vector3Int> GetPossibleMoves(PlayerColour activeColour, IBoard board, IChessPiece kingPiece)
     {
         var result = new List<Vector3Int>();
 
-        if (kingPiece.ChessRuleBehaviour is ICastleEntity castleRule)
+        if (kingPiece.PieceRuleBehaviour is ICastleEntity castleRule)
         {
             if (!castleRule.CanCastle(board, kingPiece))
             {
@@ -23,8 +23,8 @@ public class CastleMoves : IMoveList
             }
         }
 
-        var y = kingPiece.TilePosition.y;
-        var x = kingPiece.TilePosition.x;
+        var y = kingPiece.Position.y;
+        var x = kingPiece.Position.x;
 
         var possiblePositions = new List<Vector3Int>();
         // castle left
@@ -78,7 +78,7 @@ public class CastleMoves : IMoveList
                 {
                     continue;
                 }
-                attacked = board.CheckSpaceAttacked(kingPiece.NetworkObjectId, activeColour, new Vector3Int(i, y, 0));
+                attacked = board.CheckSpaceAttacked(kingPiece.PieceId, activeColour, new Vector3Int(i, y, 0));
                 if (attacked)
                 {
                     break;
@@ -94,12 +94,12 @@ public class CastleMoves : IMoveList
 
         return result;
     }
-    public bool CanCastleAnyRook(Board board, ChessPiece piece, Vector3Int newPosition)
+    public bool CanCastleAnyRook(IBoard board, IChessPiece piece, Vector3Int newPosition)
     {
-        var rooks = board.GetPieceWith(piece.PlayerColour, ChessPieceType.Rook);
+        var rooks = board.GetPiecesWith(piece.PlayerColour, ChessPieceType.Rook);
         foreach (var rook in rooks)
         {
-            if (rook.ChessRuleBehaviour is RookChessPiece rookPiece)
+            if (rook.PieceRuleBehaviour is RookChessPiece rookPiece)
             {
                 if(rookPiece.CanCastleWithKing(board, rook, piece, newPosition) == false)
                 {

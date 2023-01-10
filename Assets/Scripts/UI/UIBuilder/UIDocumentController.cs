@@ -6,8 +6,8 @@ using static chess.enums.ChessEnums;
 
 public class UIDocumentController : NetworkBehaviour
 {
-    Board board;
-    ChessPiece cachedPiece;
+    BoardNetworked board;
+    ChessPieceNetworked cachedPiece;
 
     UIDocument document;
     VisualElement root;
@@ -43,7 +43,7 @@ public class UIDocumentController : NetworkBehaviour
         checkMateContainer.style.display = DisplayStyle.None;
         pawnPromotionContainer.style.display = DisplayStyle.None;
 
-        board = FindObjectOfType<Board>();
+        board = FindObjectOfType<BoardNetworked>();
         board.onPawnPromoted += OnPawnPromoted;
         board.onCheckMate += OnCheckMate;
     }
@@ -65,7 +65,7 @@ public class UIDocumentController : NetworkBehaviour
         board.onCheckMate -= OnCheckMate;
     }
 
-    private void OnPawnPromoted(ChessPiece piece)
+    private void OnPawnPromoted(ChessPieceNetworked piece)
     {
         foreach (var button in pawnPromotionButtons)
         {
@@ -90,7 +90,7 @@ public class UIDocumentController : NetworkBehaviour
         pawnPromotionContainer.style.display = DisplayStyle.None;
     }
 
-    private void OnCheckMate(ChessPiece piece)
+    private void OnCheckMate(ChessPieceNetworked piece)
     {
         ShowCheckMateServerRpc(piece);
 
@@ -105,7 +105,7 @@ public class UIDocumentController : NetworkBehaviour
     [ClientRpc]
     private void ShowCheckMateClientRpc(NetworkBehaviourReference target)
     {
-        if(target.TryGet<ChessPiece>(out var piece))
+        if(target.TryGet<ChessPieceNetworked>(out var piece))
         {
             pawnPromotionContainer.style.display = DisplayStyle.None;
             checkMateContainer.style.display = DisplayStyle.Flex;

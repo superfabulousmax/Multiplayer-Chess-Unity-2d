@@ -6,7 +6,7 @@ using static chess.enums.ChessEnums;
 public class InputController : NetworkBehaviour
 {
     private Player player;
-    private Board board;
+    private BoardNetworked board;
     private TurnSystem turnSystem;
     private IPlayerInput playerInput;
     private bool isWaiting;
@@ -24,7 +24,7 @@ public class InputController : NetworkBehaviour
         }
 
         player = GetComponent<Player>();
-        board = FindObjectOfType<Board>();
+        board = FindObjectOfType<BoardNetworked>();
         turnSystem = FindObjectOfType<TurnSystem>();
         playerInput = new ActivePlayerInput(board, OnInputFinished);
         turnSystem.onNextTurn += OnNextPlayerTurn;

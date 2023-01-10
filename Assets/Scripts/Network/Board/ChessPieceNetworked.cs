@@ -4,34 +4,48 @@ using Unity.Netcode.Components;
 using static chess.enums.ChessEnums;
 
 [SelectionBase, RequireComponent(typeof(SpriteRenderer))]
-public class ChessPiece : NetworkBehaviour
+public class ChessPieceNetworked : NetworkBehaviour, IChessPiece
 {
-    public NetworkVariable<Vector3Int> tilePosition = new(Vector3Int.zero, writePerm: NetworkVariableWritePermission.Owner);
-
     public PlayerColour PlayerColour { get => playerColour.Value; private set => playerColour.Value = value; }
     public char Symbol { get => symbol.Value; private set => symbol.Value = value; }
     public SpriteRenderer SpriteRenderer { get => GetComponent<SpriteRenderer>(); }
 
-    public Vector3Int TilePosition { get => tilePosition.Value; set => tilePosition.Value = value; }
+    public Vector3Int Position { get => tilePosition.Value; set => tilePosition.Value = value; }
     public ChessPieceType PieceType { get => pieceType.Value; }
-    public IChessRule ChessRuleBehaviour { get => chessRuleBehaviour; set => chessRuleBehaviour = value; }
+    public IChessRule PieceRuleBehaviour { get => chessRuleBehaviour; set => chessRuleBehaviour = value; }
     public ICheckRule CheckRuleBehaviour { get => checkRuleBehaviour; set => checkRuleBehaviour = value; }
-    public IMoveList MoveListGenerator { get => moveList; set => moveList = value; }
-    public NetworkTransform NetworkTransform { get => networkTransform; }
+    public IMoveList MoveList { get => moveList; set => moveList = value; }
 
+    public int PieceId 
+    { 
+        get 
+        { 
+            if (NetworkObject != null && NetworkObject.IsSpawned)
+            {
+                return (int)NetworkObjectId;
+            }
+            return pieceId; 
+        } 
+        set => pieceId = value; 
+    }
+
+    public Transform PieceTransform => transform;
+
+    // Network variables
+    NetworkVariable<Vector3Int> tilePosition = new(Vector3Int.zero, writePerm: NetworkVariableWritePermission.Owner);
     NetworkVariable<PlayerColour> playerColour = new(PlayerColour.Unassigned);
     NetworkVariable<ChessPieceType> pieceType = new(ChessPieceType.Pawn);
     NetworkVariable<char> symbol = new('-');
-
     NetworkTransform networkTransform;
 
+    // Non-network variables
     SpriteRenderer spriteRenderer;
 
     IChessRule chessRuleBehaviour;
-
     ICheckRule checkRuleBehaviour;
-
     IMoveList moveList;
+
+    int pieceId;
 
     [ServerRpc(RequireOwnership = false)]
     public void SetTilePositionServerRpc(Vector3Int newTilePosition)
@@ -74,7 +88,8 @@ public class ChessPiece : NetworkBehaviour
         switch (chessPieceType)
         {
             case ChessPieceType.Pawn:
-                chessRuleBehaviour = new PawnChessPiece(new PawnPromotionRule(), new MoveToStopCheck(), new TakePieceRule(ChessPieceType.Pawn), PlayerColour, tilePosition.Value);
+                chessRuleBehaviour = new PawnChessPiece(new PawnPromotionRule(), new MoveToStopCheck(), 
+                                                        new TakePieceRule(ChessPieceType.Pawn), PlayerColour, tilePosition.Value);
                 moveList = chessRuleBehaviour as IMoveList;
                 checkRuleBehaviour = new PawnCheckRule();
                 break;
@@ -123,6 +138,7 @@ public class ChessPiece : NetworkBehaviour
     }
 
     [ServerRpc(RequireOwnership =false)]
+    // TODO make this better but how? eeee
     internal void SyncDataServerRpc(int moveCount, bool isFirstMove, bool firstMoveTwo, uint lastMovedPawnId)
     {
         SyncDataClientRpc(moveCount, isFirstMove, firstMoveTwo, lastMovedPawnId);
@@ -148,10 +164,20 @@ public class ChessPiece : NetworkBehaviour
         }
     }
 
-    internal void ChangePieceTo(ChessPieceType chessPieceType)
+    public void SyncData(int moveCount, bool isFirstMove, bool firstMoveTwo, uint lastMovedPawnId)
+    {
+        SyncDataServerRpc(moveCount, isFirstMove, firstMoveTwo, lastMovedPawnId);
+    }
+
+    void IChessPiece.ChangePieceTo(ChessPieceType chessPieceType)
     {
         AssignChessRules(chessPieceType);
 
         spriteRenderer.sprite = ChessPiecesContainer.Singleton.GetSpriteForPiece(PlayerColour, chessPieceType);
+    }
+
+    public void SetPosition(Vector3Int position)
+    {
+        SetTilePositionServerRpc(position);
     }
 }

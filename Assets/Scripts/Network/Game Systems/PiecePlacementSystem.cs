@@ -11,24 +11,15 @@ public class PiecePlacementSystem : NetworkBehaviour
     [SerializeField]
     GameObject chessPiecePrefab;
 
-    Board chessBoard;
+    BoardNetworked chessBoard;
 
     ChessPiecesContainer chessPieces;
 
-    Dictionary<char, ChessPiece> chessPiecesMapping;
+    Dictionary<char, ChessPieceNetworked> chessPiecesMapping;
 
     private ClientRpcParams clientRpcParams;
 
     private const string AllChessPieces = "rnbkqp";
-
-    public Sprite GetSpriteForPiece(PlayerColour playerColour, ChessPieceType chessPieceType)
-    {
-        if(playerColour == PlayerColour.PlayerOne)
-        {
-            return chessPieces.PlayerOnePieces.GetSprite(chessPieceType);
-        }
-        return chessPieces.PlayerTwoPieces.GetSprite(chessPieceType);
-    }
 
     void OnEnable()
     {
@@ -79,9 +70,17 @@ public class PiecePlacementSystem : NetworkBehaviour
                 GetClientDataClientRpc(client.ClientId, clientRpcParams);
             }
         }
-
     }
 
+    public Sprite GetSpriteForPiece(PlayerColour playerColour, ChessPieceType chessPieceType)
+    {
+        if (playerColour == PlayerColour.PlayerOne)
+        {
+            return chessPieces.PlayerOnePieces.GetSprite(chessPieceType);
+        }
+        return chessPieces.PlayerTwoPieces.GetSprite(chessPieceType);
+    }
+  
     [ServerRpc(RequireOwnership = false)]
     public void SetupPiecesServerRpc()
     {
@@ -90,9 +89,9 @@ public class PiecePlacementSystem : NetworkBehaviour
             return;
         }
 
-        chessBoard = FindObjectOfType<Board>();
+        chessBoard = FindObjectOfType<BoardNetworked>();
         AssignBoardComponentClientRpc(chessBoard);
-        chessPiecesMapping = new Dictionary<char, ChessPiece>();
+        chessPiecesMapping = new Dictionary<char, ChessPieceNetworked>();
         // Create black chess pieces with lower case
         CreateChessPieces(AllChessPieces);
         // Create white chess pieces with upper case
@@ -101,6 +100,21 @@ public class PiecePlacementSystem : NetworkBehaviour
         GetSpritesClientRpc();
         chessBoard.FinishBoardSetup();
         chessBoard.onResetBoard += OnResetBoard;
+    }
+
+    // todo setup pieces for single player
+    // for testing purposes
+    public void SetupTestBoard()
+    {
+        chessBoard = FindObjectOfType<BoardNetworked>();
+        chessPiecesMapping = new Dictionary<char, ChessPieceNetworked>();
+        // Create black chess pieces with lower case
+        CreateChessPieces(AllChessPieces);
+        // Create white chess pieces with upper case
+        CreateChessPieces(AllChessPieces.ToUpper());
+        PlacePiecesOnBoard();
+        chessBoard.onResetBoard += OnResetBoard;
+        chessBoard.FinishBoardSetup();
     }
 
     private void OnResetBoard()
@@ -158,10 +172,10 @@ public class PiecePlacementSystem : NetworkBehaviour
     {
         if(!chessBoard)
         {
-            chessBoard = FindObjectOfType<Board>();
+            chessBoard = FindObjectOfType<BoardNetworked>();
         }
         chessBoard.ResetBoard();
-        foreach (var piece in FindObjectsOfType<ChessPiece>())
+        foreach (var piece in FindObjectsOfType<ChessPieceNetworked>())
         {
             Debug.Log($"Reconnecting... adding: {piece}");
             chessBoard.AddPieceToBoard(piece);
@@ -176,9 +190,9 @@ public class PiecePlacementSystem : NetworkBehaviour
             return;
         }
 
-        chessBoard = FindObjectOfType<Board>();
+        chessBoard = FindObjectOfType<BoardNetworked>();
         AssignBoardComponentClientRpc(chessBoard);
-        chessPiecesMapping = new Dictionary<char, ChessPiece>();
+        chessPiecesMapping = new Dictionary<char, ChessPieceNetworked>();
         // Create black chess pieces with lower case
         CreateChessPieces(AllChessPieces);
         // Create white chess pieces with upper case
@@ -196,7 +210,7 @@ public class PiecePlacementSystem : NetworkBehaviour
             return;
         }
 
-        if (target.TryGet(out Board boardComponent))
+        if (target.TryGet(out BoardNetworked boardComponent))
         {
             chessBoard = boardComponent;
         }
@@ -212,7 +226,7 @@ public class PiecePlacementSystem : NetworkBehaviour
     {
         foreach (var piece in chessBoard.ChessPiecesList)
         {
-            piece.SpriteRenderer.sprite = GetSpriteForPiece(piece.PlayerColour, piece.PieceType);
+            (piece as ChessPieceNetworked).SpriteRenderer.sprite = GetSpriteForPiece(piece.PlayerColour, piece.PieceType);
         }
     }
 
@@ -220,7 +234,7 @@ public class PiecePlacementSystem : NetworkBehaviour
     {
         foreach (var piece in pieces)
         {
-            var chessPiece = Instantiate(chessPiecePrefab, transform).GetComponent<ChessPiece>();
+            var chessPiece = Instantiate(chessPiecePrefab, transform).GetComponent<ChessPieceNetworked>();
 
             if (char.IsUpper(piece))
             {
@@ -236,7 +250,7 @@ public class PiecePlacementSystem : NetworkBehaviour
         }
     }
 
-    private void InitChessPiece(char piece, ChessPiece chessPiece, ChessPieces pieces)
+    private void InitChessPiece(char piece, ChessPieceNetworked chessPiece, ChessPieces pieces)
     {
         switch (char.ToUpper(piece))
         {
@@ -324,7 +338,11 @@ public class PiecePlacementSystem : NetworkBehaviour
         {
             return;
         }
+        PlacePiecesOnBoard();
+    }
 
+    private void PlacePiecesOnBoard()
+    {
         var allPositions = chessBoard.GetAllPositions();
         allPositions.MoveNext();
         var placements = chessPieces.StartingSetup.piecePlacement.Split(FENChessNotation.delimeter);
@@ -337,10 +355,10 @@ public class PiecePlacementSystem : NetworkBehaviour
                 if (chessPiecesMapping.ContainsKey(item))
                 {
                     var position = new Vector3(
-                        currentBoardPosition.x + BoardCreator.tileWidth * 0.5f, 
-                        currentBoardPosition.y + BoardCreator.tileHeight * 0.5f, 
+                        currentBoardPosition.x + BoardCreator.tileWidth * 0.5f,
+                        currentBoardPosition.y + BoardCreator.tileHeight * 0.5f,
                         0);
-                    var chessPiece = Instantiate(chessPiecePrefab, position, Quaternion.identity).GetComponent<ChessPiece>();
+                    var chessPiece = Instantiate(chessPiecePrefab, position, Quaternion.identity).GetComponent<ChessPieceNetworked>();
                     var sprite = chessPiecesMapping[item].SpriteRenderer.sprite;
                     chessPiece.SetTilePositionServerRpc(currentBoardPosition);
                     chessPiece.Init(chessPiecesMapping[item].Symbol, chessPiecesMapping[item].PlayerColour, chessPiecesMapping[item].SpriteRenderer.sprite, chessPiecesMapping[item].PieceType, currentBoardPosition);
@@ -353,12 +371,15 @@ public class PiecePlacementSystem : NetworkBehaviour
                 {
                     // handle number
                     var emptySpaces = item - '0';
-                    for (int j = 0; j < emptySpaces; ++j)
+                    for (var j = 0; j < emptySpaces; ++j)
                     {
                         allPositions.MoveNext();
                         currentBoardPosition = allPositions.Current;
+                        Debug.Log($"{currentBoardPosition} current board position");
                     }
                 }
+
+                Debug.Log($"{currentBoardPosition} current board position");
             }
         }
     }

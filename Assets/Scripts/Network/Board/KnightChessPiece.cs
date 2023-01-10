@@ -13,7 +13,7 @@ public class KnightChessPiece : IChessRule, IMoveList
         this.moveToStopCheckRule = moveToStopCheckRule;
     }
 
-    public bool PossibleMove(PlayerColour activeColour, Board board, ChessPiece piece, Vector3Int newPosition, out bool takenPiece, bool isSimulation = false)
+    public bool PossibleMove(PlayerColour activeColour, IBoard board, IChessPiece piece, Vector3Int newPosition, out bool takenPiece, bool isSimulation = false)
     {
         var possibleMoves = GetPossibleMoves(activeColour, board, piece);
         if (!possibleMoves.Contains(newPosition))
@@ -25,12 +25,12 @@ public class KnightChessPiece : IChessRule, IMoveList
         return true;
     }
 
-    public IReadOnlyList<Vector3Int> GetPossibleMoves(PlayerColour activeColour, Board board, ChessPiece piece)
+    public IReadOnlyList<Vector3Int> GetPossibleMoves(PlayerColour activeColour, IBoard board, IChessPiece piece)
     {
         var result = new List<Vector3Int>();
 
-        var y = piece.TilePosition.y;
-        var x = piece.TilePosition.x;
+        var y = piece.Position.y;
+        var x = piece.Position.x;
 
         var boardState = board.GetBoardState();
 

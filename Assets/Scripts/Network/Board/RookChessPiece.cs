@@ -16,7 +16,7 @@ public class RookChessPiece : IChessRule, ICastleEntity, IMoveList
         this.moveToStopCheckRule = moveToStopCheckRule;
     }
 
-    public bool CanCastle(Board board, ChessPiece rook)
+    public bool CanCastle(IBoard board, IChessPiece rook)
     {
         if (moveCount > 0)
         {
@@ -24,8 +24,8 @@ public class RookChessPiece : IChessRule, ICastleEntity, IMoveList
         }
 
         var castlingRights = board.StartingSetup.castlingRights;
-        var king = board.GetKingForColour(rook.PlayerColour);
-        var kingCastleEntity = king.ChessRuleBehaviour as ICastleEntity;
+        var king = board.GetPiecesWith(rook.PlayerColour, ChessPieceType.King).First();
+        var kingCastleEntity = king.PieceRuleBehaviour as ICastleEntity;
 
         if (kingCastleEntity == null)
         {
@@ -37,23 +37,23 @@ public class RookChessPiece : IChessRule, ICastleEntity, IMoveList
             return false;
         }
 
-        var distToKing = Mathf.Abs(king.TilePosition.x - rook.TilePosition.x);
+        var distToKing = Mathf.Abs(king.Position.x - rook.Position.x);
 
-        if (rook.TilePosition.x != 0 && rook.TilePosition.x != 7)
+        if (rook.Position.x != 0 && rook.Position.x != 7)
         {
             return false;
         }
 
         if (rook.PlayerColour == PlayerColour.PlayerOne)
         {
-            if (rook.TilePosition.y != 0)
+            if (rook.Position.y != 0)
             {
                 return false;
             }
         }
         else
         {
-            if (rook.TilePosition.y != 7)
+            if (rook.Position.y != 7)
             {
                 return false;
             }
@@ -94,14 +94,14 @@ public class RookChessPiece : IChessRule, ICastleEntity, IMoveList
         return false;
     }
 
-    public bool CanCastleWithKing(Board board, ChessPiece rook, ChessPiece king, Vector3Int newPosition)
+    public bool CanCastleWithKing(IBoard board, IChessPiece rook, IChessPiece king, Vector3Int newPosition)
     {
         if(!CanCastle(board, rook))
         {
             return false;
         }
-        var rookDeltaX = Mathf.Abs(newPosition.x - rook.TilePosition.x);
-        var distToKing = Mathf.Abs(king.TilePosition.x - rook.TilePosition.x);
+        var rookDeltaX = Mathf.Abs(newPosition.x - rook.Position.x);
+        var distToKing = Mathf.Abs(king.Position.x - rook.Position.x);
 
         if (rookDeltaX == 1 && distToKing == 3)
         {
@@ -115,7 +115,7 @@ public class RookChessPiece : IChessRule, ICastleEntity, IMoveList
     }
 
 
-    public bool PossibleMove(PlayerColour activeColour, Board board, ChessPiece piece, Vector3Int newPosition, out bool takenPiece, bool isSimulation = false)
+    public bool PossibleMove(PlayerColour activeColour, IBoard board, IChessPiece piece, Vector3Int newPosition, out bool takenPiece, bool isSimulation = false)
     {
         var possibleMoves = GetPossibleMoves(activeColour, board, piece);
         if (!possibleMoves.Contains(newPosition))
@@ -127,17 +127,17 @@ public class RookChessPiece : IChessRule, ICastleEntity, IMoveList
         if (!isSimulation)
         {
             moveCount++;
-            piece.SyncDataServerRpc(moveCount, default, default, default);
+            piece.SyncData(moveCount, default, default, default);
         }
 
         return true;
     }
 
-    public IReadOnlyList<Vector3Int> GetPossibleMoves(PlayerColour activeColour, Board board, ChessPiece piece)
+    public IReadOnlyList<Vector3Int> GetPossibleMoves(PlayerColour activeColour, IBoard board, IChessPiece piece)
     {
         var result = new List<Vector3Int>();
-        var y = piece.TilePosition.y;
-        var x = piece.TilePosition.x;
+        var y = piece.Position.y;
+        var x = piece.Position.x;
 
         var boardState = board.GetBoardState();
         int i, j;
@@ -296,25 +296,25 @@ public class RookChessPiece : IChessRule, ICastleEntity, IMoveList
         return result;
     }
 
-    IReadOnlyList<Vector3Int> ICastleEntity.GetCastleMoves(PlayerColour activeColour, Board board, ChessPiece kingPiece)
+    IReadOnlyList<Vector3Int> ICastleEntity.GetCastleMoves(PlayerColour activeColour, IBoard board, IChessPiece kingPiece)
     {
         return new List<Vector3Int>();
     }
 
-    public bool CastleWithKing(PlayerColour activeColour, Board board, ChessPiece rook, Vector3Int newKingPosition)
+    public bool CastleWithKing(PlayerColour activeColour, IBoard board, IChessPiece rook, Vector3Int newKingPosition)
     {
-        var rookDeltaX = Mathf.Abs(newKingPosition.x - rook.TilePosition.x);
+        var rookDeltaX = Mathf.Abs(newKingPosition.x - rook.Position.x);
         if(rookDeltaX == 1)
         {
-            rook.SyncDataServerRpc(MoveCount + 1, default, default, default);
+            rook.SyncData(MoveCount + 1, default, default, default);
             var newRookPosition = new Vector3Int(newKingPosition.x - 1, newKingPosition.y, 0);
-            rook.SetTilePositionServerRpc(newRookPosition);
+            rook.SetPosition(newRookPosition);
         }
         else if (rookDeltaX == 2)
         {
-            rook.SyncDataServerRpc(MoveCount + 1, default, default, default);
+            rook.SyncData(MoveCount + 1, default, default, default);
             var newRookPosition = new Vector3Int(newKingPosition.x + 1, newKingPosition.y, 0);
-            rook.SetTilePositionServerRpc(newRookPosition);
+            rook.SetPosition(newRookPosition);
         }
         return false;
     }

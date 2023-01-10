@@ -5,14 +5,14 @@ using static chess.enums.ChessEnums;
 public class GameView : NetworkBehaviour
 {
     [SerializeField]
-    Board board;
+    BoardNetworked board;
     Player player;
     Quaternion playerTwoRotation;
 
     public override void OnNetworkSpawn()
     {
         player = GetComponent<Player>();
-        board = FindObjectOfType<Board>();
+        board = FindObjectOfType<BoardNetworked>();
         if (board != null)
         {
             board.onFinishedBoardSetup += OnFinishedBoardSetup;
@@ -58,7 +58,7 @@ public class GameView : NetworkBehaviour
         {
             foreach (var piece in board.ChessPiecesList)
             {
-                piece.transform.rotation = playerTwoRotation;
+                piece.PieceTransform.rotation = playerTwoRotation;
             }
         }
     }

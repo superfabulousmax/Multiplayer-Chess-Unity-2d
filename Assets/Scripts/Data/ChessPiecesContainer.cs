@@ -3,6 +3,8 @@ using static chess.enums.ChessEnums;
 
 public class ChessPiecesContainer : MonoBehaviour
 {
+    const string StartingFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
     [SerializeField]
     ChessPieces playerOnePieces;
 
@@ -10,11 +12,9 @@ public class ChessPiecesContainer : MonoBehaviour
     ChessPieces playerTwoPieces;
 
     [SerializeField]
-    string fenString = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    string fenString = StartingFen;
 
     FENChessNotation startingSetup;
-
-    const string StartingFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
     public FENChessNotation StartingSetup { get => startingSetup; }
     public ChessPieces PlayerOnePieces { get => playerOnePieces; }
@@ -32,7 +32,12 @@ public class ChessPiecesContainer : MonoBehaviour
 
     private void Start()
     {
-        startingSetup = FENReader.ReadFENInput(fenString);
+        SetStartingPositions(fenString);
+    }
+
+    public void SetStartingPositions(string fen)
+    {
+        startingSetup = FENReader.ReadFENInput(fen);
     }
 
     public Sprite GetSpriteForPiece(PlayerColour playerColour, ChessPieceType chessPieceType)

@@ -1,12 +1,12 @@
 using UnityEditor;
 
-[CustomEditor(typeof(Board))]
+[CustomEditor(typeof(BoardNetworked))]
 public class BoardEditor : Editor
 {
     public override void OnInspectorGUI()
     {
         base.OnInspectorGUI();
-        var board = (Board)target;
+        var board = (BoardNetworked)target;
         if (board.BoardState == null)
         {
             return;
