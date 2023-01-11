@@ -176,7 +176,6 @@ public class ActivePlayerInput : IPlayerInput
             {
                 return true;
             }
-
         }
         chessPiece = null;
         return false;

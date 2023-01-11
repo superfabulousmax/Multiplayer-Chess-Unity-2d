@@ -13,9 +13,6 @@ public class Board : IBoard
     Tilemap tilemap;
     ChessPiecesContainer chessPiecesContainer;
 
-    IChessPiece playerOneKing;
-    IChessPiece playerTwoKing;
-
     Dictionary<uint, IChessPiece> chessPiecesMap;
 
     int[,] boardState;
@@ -26,8 +23,6 @@ public class Board : IBoard
     public IReadOnlyDictionary<uint, IChessPiece> ChessPiecesMap { get => chessPiecesMap; }
     public IReadOnlyList<IChessPiece> ChessPiecesList { get => chessPiecesMap.Values.ToList(); }
     public FENChessNotation StartingSetup { get => chessPiecesContainer.StartingSetup; }
-    public IChessPiece PlayerOneKing { get => playerOneKing; }
-    public IChessPiece PlayerTwoKing { get => playerTwoKing; }
     public int[,] BoardState { get => boardState; }
     public Vector3Int CheckedPos { get => checkedPos; }
 
@@ -180,14 +175,12 @@ public class Board : IBoard
             var piece = ChessPiecesList[i];
             if (piece != null && piece.PlayerColour == activeColour)
             {
-                var result = CheckPieceCanMove(piece);
-                if (result)
+                if (CheckPieceCanMove(piece))
                 {
                     return false;
                 }
             }
         }
-
         return true;
     }
 
@@ -196,7 +189,7 @@ public class Board : IBoard
         var moveList = targetPiece.MoveList;
         if (moveList != null)
         {
-            var possibleMoves = moveList.GetPossibleMoves(targetPiece.PlayerColour, this as IBoard, targetPiece);
+            var possibleMoves = moveList.GetPossibleMoves(targetPiece.PlayerColour, this, targetPiece);
             return possibleMoves.Count > 0;
         }
         return false;
@@ -206,6 +199,7 @@ public class Board : IBoard
     public bool IsInCheck(out IChessPiece checkedKing)
     {
         var boardState = GetBoardState();
+        // todo refactor this 
         for (var y = 0; y < GameConstants.BoardLengthDimension; y++)
         {
             for (var x = 0; x < GameConstants.BoardLengthDimension; x++)
@@ -231,10 +225,11 @@ public class Board : IBoard
         return false;
     }
 
+    //rnbqkbn1/pppppp1r/6pp/8/2B1P3/5Q2/PPPP1PPP/RNB1K1NR/ FEN STRING TEST
     public bool IsInCheck(int[,] simulatedBoard, out List<IChessPiece> kings)
     {
         kings = new List<IChessPiece>();
-
+        // todo refactor this
         for (var y = 0; y < GameConstants.BoardLengthDimension; y++)
         {
             for (var x = 0; x < GameConstants.BoardLengthDimension; x++)
@@ -243,7 +238,7 @@ public class Board : IBoard
                 var piece = GetPieceFromId((uint)id);
                 if (piece != null && piece.CheckRuleBehaviour != null)
                 {
-                    if (piece.CheckRuleBehaviour.PossibleCheck(this as IBoard, simulatedBoard, piece, new Vector3Int(x, y, 0), out var king))
+                    if (piece.CheckRuleBehaviour.PossibleCheck(this, simulatedBoard, piece, new Vector3Int(x, y, 0), out var king))
                     {
                         kings.Add(king);
                     }
@@ -262,8 +257,6 @@ public class Board : IBoard
     public void ResetBoard()
     {
         chessPiecesMap.Clear();
-        playerOneKing = null;
-        playerTwoKing = null;
     }
 
     public IReadOnlyList<IChessPiece> GetPiecesWith(PlayerColour playerColour, ChessPieceType chessPieceType)
@@ -311,6 +304,7 @@ public class Board : IBoard
         }
     }
 
+    // TODO
     public void OnPawnPromoted(IChessPiece piece)
     {
         throw new NotImplementedException();

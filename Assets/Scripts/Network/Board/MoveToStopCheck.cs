@@ -15,16 +15,16 @@ public class MoveToStopCheck : IChessRule
         
         // simulate new move
         var simulatedBoardState = new int[GameConstants.BoardLengthDimension, GameConstants.BoardLengthDimension];
-        for (int j = 0; j < GameConstants.BoardLengthDimension; j++)
+        for (var j = 0; j < GameConstants.BoardLengthDimension; j++)
         {
-            for (int i = 0; i < GameConstants.BoardLengthDimension; i++)
+            for (var i = 0; i < GameConstants.BoardLengthDimension; i++)
             {
                 simulatedBoardState[j, i] = boardState[j, i];
             }
         }
 
         simulatedBoardState[y, x] = -1;
-        simulatedBoardState[newPosition.y, newPosition.x] = (int)piece.PieceId;
+        simulatedBoardState[newPosition.y, newPosition.x] = piece.PieceId;
 
         if (board.IsInCheck(out var king))
         {

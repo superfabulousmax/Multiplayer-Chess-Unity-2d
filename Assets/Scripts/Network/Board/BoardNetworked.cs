@@ -24,13 +24,14 @@ public class BoardNetworked : NetworkBehaviour, IBoard
     public Tilemap BoardTileMap { get => tilemap; }
     public FENChessNotation StartingSetup { get => chessPiecesContainer.StartingSetup; }
     public BoardTileHighlighter TileHighlighter { get => tileHighlighter; }
-    public int [,] BoardState { get => board.GetBoardState(); }
+    public int [,] BoardState { get => board?.GetBoardState(); }
     public Vector3Int CheckedPos { get => checkedPos.Value; }
 
     public IReadOnlyDictionary<uint, IChessPiece> ChessPiecesMap => board.ChessPiecesMap;
 
     public IReadOnlyList<IChessPiece> ChessPiecesList => board.ChessPiecesList;
 
+    //Events
     public event Action onFinishedBoardSetup;
     public event Action<ChessPieceNetworked> onPawnPromoted;
     public event Action<ChessPieceNetworked> onCheckMate;
@@ -43,14 +44,19 @@ public class BoardNetworked : NetworkBehaviour, IBoard
         board = new Board(tilemap, chessPiecesContainer);
     }
 
+    public override string ToString()
+    {
+        return board.ToString();
+    }
+
     public void Reset()
     {
-        ResetBoardServerRpc();
+        ResetBoard();
     }
 
     public void ResetBoard()
     {
-        board.ResetBoard();
+        ResetBoardServerRpc();
     }
 
     public BoundsInt.PositionEnumerator GetAllPositions()
@@ -136,12 +142,12 @@ public class BoardNetworked : NetworkBehaviour, IBoard
 
     public void AddPieceToBoard(IChessPiece piece)
     {
-        board.AddPieceToBoard(piece);
+        AddChessPieceToBoardServerRpc(piece as ChessPieceNetworked);
     }
 
     public void RemovePieceFromBoard(IChessPiece piece)
     {
-        board.RemovePieceFromBoard(piece);
+        RemoveChessPieceToBoardServerRpc(piece as ChessPieceNetworked);
     }
 
     public IChessPiece GetPieceAtPosition(Vector3Int position)
@@ -231,11 +237,11 @@ public class BoardNetworked : NetworkBehaviour, IBoard
     [ClientRpc]
     private void ResetBoardClientRpc()
     {
-        ResetBoard();
+        board.ResetBoard();
     }
 
     [ServerRpc(RequireOwnership = false)]
-    public void TakePieceServerRpc(NetworkBehaviourReference target, Vector3Int tilePosition)
+    private void TakePieceServerRpc(NetworkBehaviourReference target, Vector3Int tilePosition)
     {
         if (!target.TryGet(out ChessPieceNetworked chessPieceComponent))
         {
@@ -252,32 +258,32 @@ public class BoardNetworked : NetworkBehaviour, IBoard
     }
 
     [ServerRpc]
-    public void AddChessPieceToBoardServerRpc(NetworkBehaviourReference target)
+    private void AddChessPieceToBoardServerRpc(NetworkBehaviourReference target)
     {
         AddChessPieceToBoardClientRpc(target);
     }
 
     [ClientRpc]
-    public void AddChessPieceToBoardClientRpc(NetworkBehaviourReference target)
+    private void AddChessPieceToBoardClientRpc(NetworkBehaviourReference target)
     {
         if (target.TryGet(out ChessPieceNetworked chessPieceComponent))
         {
-            AddPieceToBoard(chessPieceComponent);
+            board.AddPieceToBoard(chessPieceComponent);
         }
     }
 
     [ServerRpc]
-    public void RemoveChessPieceToBoardServerRpc(NetworkBehaviourReference target)
+    private void RemoveChessPieceToBoardServerRpc(NetworkBehaviourReference target)
     {
         RemoveChessPieceToBoardClientRpc(target);
     }
 
     [ClientRpc]
-    public void RemoveChessPieceToBoardClientRpc(NetworkBehaviourReference target)
+    private void RemoveChessPieceToBoardClientRpc(NetworkBehaviourReference target)
     {
         if (target.TryGet(out ChessPieceNetworked chessPieceComponent))
         {
-            RemovePieceFromBoard(chessPieceComponent);
+            board.RemovePieceFromBoard(chessPieceComponent);
         }
     }
 
@@ -305,6 +311,7 @@ public class BoardNetworked : NetworkBehaviour, IBoard
     }
 
     [ServerRpc(RequireOwnership = false)]
+    //TODO CALL this
     public void AskPawnPromotionServerRpc(NetworkBehaviourReference target, ServerRpcParams serverRpcParams = default)
     {
         // TODO cache this to avoid unnecessary memory alloc
@@ -321,7 +328,7 @@ public class BoardNetworked : NetworkBehaviour, IBoard
     }
 
     [ClientRpc]
-    public void AskPawnProtionClientRpc(NetworkBehaviourReference target, ClientRpcParams clientRpcParams)
+    private void AskPawnProtionClientRpc(NetworkBehaviourReference target, ClientRpcParams clientRpcParams)
     {
         if (target.TryGet(out ChessPieceNetworked chessPiece))
         {

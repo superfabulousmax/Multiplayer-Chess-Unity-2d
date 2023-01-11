@@ -14,28 +14,28 @@ public class Player : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         var playerNetworkColour = FindObjectOfType<PlayerNetworkColour>();
-//#if TestingBlack
-//        if (IsOwnedByServer)
-//        {
-//            AssignColourClientRPC(PlayerColour.PlayerTwo);
-//        }
-//        else
-//        {
-//            AssignColourClientRPC(PlayerColour.PlayerOne);
-//        }
-//#elif TestingWhite
-//        if (IsOwnedByServer)
-//        {
-//            AssignColourClientRPC(PlayerColour.PlayerOne);
-//        }
-//        else
-//        {
-//            AssignColourClientRPC(PlayerColour.PlayerTwo);
-//        }
-//#else
-//        AssignColourClientRPC(playerNetworkColour.GetColour());
-//#endif
+#if TestingBlack
+        if (IsOwnedByServer)
+        {
+            AssignColourClientRPC(PlayerColour.PlayerTwo);
+        }
+        else
+        {
+            AssignColourClientRPC(PlayerColour.PlayerOne);
+        }
+#elif TestingWhite
+        if (IsOwnedByServer)
+        {
+            AssignColourClientRPC(PlayerColour.PlayerOne);
+        }
+        else
+        {
+            AssignColourClientRPC(PlayerColour.PlayerTwo);
+        }
+#else
         AssignColourClientRPC(playerNetworkColour.GetColour());
+#endif
+        //AssignColourClientRPC(playerNetworkColour.GetColour());
     }
 
     public override void OnNetworkDespawn()

@@ -8,9 +8,23 @@ public class RookCheckRule : ICheckRule
         var y = position.y;
         var x = position.x;
         // opposite king
+        // should get king from the board state not the board
         king = board.GetPiecesWith(GetOppositeColour(rook.PlayerColour), ChessPieceType.King).First();
         var kingId = (uint)king.PieceId;
-        var kingPosition = board.GetIdPosition(kingId);
+        var kingPosition = Vector3Int.zero;
+
+        for (var j = 0; j < GameConstants.BoardLengthDimension; j++)
+        {
+            for (var i = 0; i < GameConstants.BoardLengthDimension; i++)
+            {
+                if (boardState[j, i] == kingId)
+                {
+                    kingPosition.y = j;
+                    kingPosition.x = i;
+                    break;
+                }
+            }
+        }
 
         if (kingPosition.y > y && kingPosition.x > x)
             return false;

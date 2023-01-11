@@ -360,10 +360,10 @@ public class PiecePlacementSystem : NetworkBehaviour
                         0);
                     var chessPiece = Instantiate(chessPiecePrefab, position, Quaternion.identity).GetComponent<ChessPieceNetworked>();
                     var sprite = chessPiecesMapping[item].SpriteRenderer.sprite;
-                    chessPiece.SetTilePositionServerRpc(currentBoardPosition);
+                    chessPiece.SetPosition(currentBoardPosition);
                     chessPiece.Init(chessPiecesMapping[item].Symbol, chessPiecesMapping[item].PlayerColour, chessPiecesMapping[item].SpriteRenderer.sprite, chessPiecesMapping[item].PieceType, currentBoardPosition);
                     chessPiece.gameObject.GetComponent<NetworkObject>().Spawn();
-                    chessBoard.AddChessPieceToBoardServerRpc(chessPiece);
+                    chessBoard.AddPieceToBoard(chessPiece);
                     allPositions.MoveNext();
                     currentBoardPosition = allPositions.Current;
                 }
