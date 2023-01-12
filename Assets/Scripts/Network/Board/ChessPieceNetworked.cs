@@ -58,7 +58,7 @@ public class ChessPieceNetworked : NetworkBehaviour, IChessPiece
         return $"{playerColour.Value} {pieceType.Value} {tilePosition.Value}";
     }
 
-    internal void AssignChessRules(ChessPieceType chessPieceType)
+    private void AssignChessRules(ChessPieceType chessPieceType)
     {
         var moveToStopCheck = new MoveToStopCheck();
         switch (chessPieceType)
@@ -107,7 +107,7 @@ public class ChessPieceNetworked : NetworkBehaviour, IChessPiece
         this.tilePosition.Value = tilePosition;
     }
 
-    internal void InitComponents()
+    private void InitComponents()
     {
         networkTransform = GetComponent<NetworkTransform>();
         spriteRenderer = GetComponent<SpriteRenderer>();

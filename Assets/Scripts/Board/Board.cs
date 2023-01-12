@@ -54,17 +54,16 @@ public class Board : IBoard
         chessPiecesMap.Remove((uint)piece.PieceId);
     }
 
-    public bool CheckPiece(int id, ChessPieceType chessPieceType)
-    {
-        var piece = GetPieceFromId((uint)id);
-        return piece != null && piece.PieceType == chessPieceType;
-    }
-
     public void FinishBoardSetup()
     {
         SetEnPassantTarget();
         onFinishedBoardSetup?.Invoke();
         DetectCheck();
+    }
+
+    public void ResetBoard()
+    {
+        chessPiecesMap.Clear();
     }
 
     private void SetEnPassantTarget()
@@ -90,29 +89,41 @@ public class Board : IBoard
         }
     }
 
-    public void DetectCheck()
+    public bool CheckPiece(int id, ChessPieceType chessPieceType)
     {
-        if (IsInCheck(out var king))
-        {
-            checkedPos = king.Position;
-            if (IsCheckMate(king.PlayerColour))
-            {
-                onCheckMate?.Invoke(GetPiecesWith(GetOppositeColour(king.PlayerColour), ChessPieceType.King).First());
-            }
-            else
-            {
-                // TODO
-                //TileHighlighter?.SetTileColourServerRpc(king.Position, Color.red);
-            }
-        }
-        else
-        {
-            // TODO
-            //tileHighlighter?.SetTileColourServerRpc(checkedPos, Color.clear);
-            checkedPos = -Vector3Int.one;
-        }
+        var piece = GetPieceFromId((uint)id);
+        return piece != null && piece.PieceType == chessPieceType;
     }
 
+    public bool CheckSpaceAttacked(int id, PlayerColour activeColour, Vector3Int position)
+    {
+        for (var i = 0; i < ChessPiecesList.Count; i++)
+        {
+            var piece = ChessPiecesList[i];
+            if (piece == null || piece.PieceId == id || piece.PlayerColour == activeColour)
+            {
+                continue;
+            }
+
+            var possibleMoves = piece.MoveList.GetPossibleMoves(piece.PlayerColour, this, piece);
+            if (possibleMoves.Contains(position))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private bool CheckPieceCanMove(IChessPiece targetPiece)
+    {
+        var moveList = targetPiece.MoveList;
+        if (moveList != null)
+        {
+            var possibleMoves = moveList.GetPossibleMoves(targetPiece.PlayerColour, this, targetPiece);
+            return possibleMoves.Count > 0;
+        }
+        return false;
+    }
 
     public int[,] GetBoardState()
     {
@@ -162,40 +173,56 @@ public class Board : IBoard
         return value;
     }
 
+    public IReadOnlyList<IChessPiece> GetPiecesWith(PlayerColour playerColour, ChessPieceType chessPieceType)
+    {
+        var result = new List<IChessPiece>();
+
+        for (var i = 0; i < ChessPiecesList.Count; i++)
+        {
+            var piece = ChessPiecesList[i];
+            if (piece != null && piece.PlayerColour == playerColour && piece.PieceType == chessPieceType)
+            {
+                result.Add(piece);
+            }
+        }
+
+        return result;
+    }
+
     public void HandlePawnPromotion(IChessPiece piece, ChessPieceType chessPieceType)
     {
         piece.ChangePieceTo(chessPieceType);
         DetectCheck();
     }
 
-    public bool IsCheckMate(PlayerColour activeColour)
+    // TODO
+    public void OnPawnPromoted(IChessPiece piece)
     {
-        for (var i = 0; i < ChessPiecesList.Count; i++)
+        onPawnPromoted?.Invoke(piece);
+    }
+
+    public void DetectCheck()
+    {
+        if (IsInCheck(out var king))
         {
-            var piece = ChessPiecesList[i];
-            if (piece != null && piece.PlayerColour == activeColour)
+            checkedPos = king.Position;
+            if (IsCheckMate(king.PlayerColour))
             {
-                if (CheckPieceCanMove(piece))
-                {
-                    return false;
-                }
+                onCheckMate?.Invoke(GetPiecesWith(GetOppositeColour(king.PlayerColour), ChessPieceType.King).First());
+            }
+            else
+            {
+                // TODO
+                //TileHighlighter?.SetTileColourServerRpc(king.Position, Color.red);
             }
         }
-        return true;
-    }
-
-    private bool CheckPieceCanMove(IChessPiece targetPiece)
-    {
-        var moveList = targetPiece.MoveList;
-        if (moveList != null)
+        else
         {
-            var possibleMoves = moveList.GetPossibleMoves(targetPiece.PlayerColour, this, targetPiece);
-            return possibleMoves.Count > 0;
+            // TODO
+            //tileHighlighter?.SetTileColourServerRpc(checkedPos, Color.clear);
+            checkedPos = -Vector3Int.one;
         }
-        return false;
     }
-
-
     public bool IsInCheck(out IChessPiece checkedKing)
     {
         var boardState = GetBoardState();
@@ -247,49 +274,28 @@ public class Board : IBoard
         return kings.Count > 0;
     }
 
+    public bool IsCheckMate(PlayerColour activeColour)
+    {
+        for (var i = 0; i < ChessPiecesList.Count; i++)
+        {
+            var piece = ChessPiecesList[i];
+            if (piece != null && piece.PlayerColour == activeColour)
+            {
+                if (CheckPieceCanMove(piece))
+                {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
     public bool IsValidPosition(Vector3Int position)
     {
         return tilemap.GetTile(position) != null;
     }
-
-    public void ResetBoard()
+    public bool ValidateMove(PlayerColour activePlayer, IChessPiece selectedChessPiece, Vector3Int tilePosition, out bool takenPiece)
     {
-        chessPiecesMap.Clear();
-    }
-
-    public IReadOnlyList<IChessPiece> GetPiecesWith(PlayerColour playerColour, ChessPieceType chessPieceType)
-    {
-        var result = new List<IChessPiece>();
-
-        for (var i = 0; i < ChessPiecesList.Count; i++)
-        {
-            var piece = ChessPiecesList[i];
-            if (piece != null && piece.PlayerColour == playerColour && piece.PieceType == chessPieceType)
-            {
-                result.Add(piece);
-            }
-        }
-
-        return result;
-    }
-
-    public bool CheckSpaceAttacked(int id, PlayerColour activeColour, Vector3Int position)
-    {
-        for (var i = 0; i < ChessPiecesList.Count; i++)
-        {
-            var piece = ChessPiecesList[i];
-            if (piece == null || piece.PieceId == id || piece.PlayerColour == activeColour)
-            {
-                continue;
-            }
-
-            var possibleMoves = piece.MoveList.GetPossibleMoves(piece.PlayerColour, this, piece);
-            if (possibleMoves.Contains(position))
-            {
-                return true;
-            }
-        }
-        return false;
+        return selectedChessPiece.PieceRuleBehaviour.PossibleMove(activePlayer, this, selectedChessPiece, tilePosition, out takenPiece);
     }
 
     public void TakePiece(IChessPiece piece, Vector3Int position)
@@ -302,14 +308,4 @@ public class Board : IBoard
         }
     }
 
-    // TODO
-    public void OnPawnPromoted(IChessPiece piece)
-    {
-        onPawnPromoted?.Invoke(piece);
-    }
-
-    public bool ValidateMove(PlayerColour activePlayer, IChessPiece selectedChessPiece, Vector3Int tilePosition, out bool takenPiece)
-    {
-        return selectedChessPiece.PieceRuleBehaviour.PossibleMove(activePlayer, this, selectedChessPiece, tilePosition, out takenPiece);
-    }
 }

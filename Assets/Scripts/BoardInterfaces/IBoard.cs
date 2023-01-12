@@ -22,7 +22,6 @@ public interface IBoard
     public IReadOnlyList<IChessPiece> GetPiecesWith(PlayerColour playerColour, ChessPieceType chessPieceType);
 
     public bool IsValidPosition(Vector3Int position);
-    // TODO have only one IsInCheck for interface?
     public bool IsInCheck(out IChessPiece checkedKing);
     public bool IsInCheck(int[,] simulatedBoard, out List<IChessPiece> kings);
     public bool IsCheckMate(PlayerColour activeColour);
