@@ -307,7 +307,7 @@ public class Board : IBoard
     // TODO
     public void OnPawnPromoted(IChessPiece piece)
     {
-        throw new NotImplementedException();
+        onPawnPromoted?.Invoke(piece);
     }
 
     public bool ValidateMove(PlayerColour activePlayer, IChessPiece selectedChessPiece, Vector3Int tilePosition, out bool takenPiece)

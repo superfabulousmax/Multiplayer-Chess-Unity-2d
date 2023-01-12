@@ -77,7 +77,7 @@ public class ActivePlayerInput : IPlayerInput
                 return;
             }
 
-            var validateMove = board.ValidateMove(activeColour, selectedChessPiece, tilePosition, out bool isPieceTaken);
+            var validateMove = board.ValidateMove(activeColour, selectedChessPiece, tilePosition, out var isPieceTaken);
             var validateCastle = ValidateCastle(activeColour, selectedChessPiece, tilePosition);
             if (validateMove || validateCastle)
             {

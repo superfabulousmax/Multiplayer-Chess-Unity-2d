@@ -105,7 +105,7 @@ public class PawnChessPiece : IChessRule, IMoveList
             board.OnPawnPromoted(piece);
         }
 
-        if(!isSimulation)
+        if (!isSimulation)
         {
             var y = piece.Position.y;
             var dy = Mathf.Abs(newPosition.y - y);

@@ -8,26 +8,14 @@ public class PawnPromotionRule : IChessRule
         takenPiece = false;
 
         var y = newPosition.y;
-
         if (activeColour == PlayerColour.PlayerOne)
         {
-            if (y != GameConstants.PawnPromotionEndOfBoardPlayerOne)
-            {
-                return false;
-            }
+            return y == GameConstants.PawnPromotionEndOfBoardPlayerOne;
         }
         else if (activeColour == PlayerColour.PlayerTwo)
         {
-            if (y != GameConstants.PawnPromotionEndOfBoardPlayerTwo)
-            {
-                return false;
-            }
+            return y == GameConstants.PawnPromotionEndOfBoardPlayerTwo;
         }
-        else
-        {
-            return false;
-        }
-
-        return true;
+        return false;
     }
 }

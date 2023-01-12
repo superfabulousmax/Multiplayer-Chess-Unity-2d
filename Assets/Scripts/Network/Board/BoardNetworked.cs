@@ -76,7 +76,7 @@ public class BoardNetworked : NetworkBehaviour, IBoard
 
     public bool ValidateMove(PlayerColour activePlayer, IChessPiece selectedChessPiece, Vector3Int tilePosition, out bool takenPiece)
     {
-        return board.ValidateMove(activePlayer, selectedChessPiece, tilePosition, out takenPiece);
+        return selectedChessPiece.PieceRuleBehaviour.PossibleMove(activePlayer, this, selectedChessPiece, tilePosition, out takenPiece);
     }
 
     internal bool IsValidPosition(Vector3Int position)
@@ -182,7 +182,7 @@ public class BoardNetworked : NetworkBehaviour, IBoard
 
     public void OnPawnPromoted(IChessPiece piece)
     {
-        onPawnPromoted?.Invoke(piece as ChessPieceNetworked);
+        AskPawnPromotionServerRpc(piece as ChessPieceNetworked);
     }
 
     public void TakePiece(IChessPiece piece, Vector3Int position)
@@ -311,7 +311,6 @@ public class BoardNetworked : NetworkBehaviour, IBoard
     }
 
     [ServerRpc(RequireOwnership = false)]
-    //TODO CALL this
     public void AskPawnPromotionServerRpc(NetworkBehaviourReference target, ServerRpcParams serverRpcParams = default)
     {
         // TODO cache this to avoid unnecessary memory alloc
@@ -332,6 +331,7 @@ public class BoardNetworked : NetworkBehaviour, IBoard
     {
         if (target.TryGet(out ChessPieceNetworked chessPiece))
         {
+            Debug.Log("Pawn Promoted");
             onPawnPromoted?.Invoke(chessPiece);
         }
     }

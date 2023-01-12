@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using Unity.Netcode;
 using UnityEngine.UIElements;
+using UnityEngine;
 using static chess.enums.ChessEnums;
 
 public class UIDocumentController : NetworkBehaviour
@@ -67,6 +68,7 @@ public class UIDocumentController : NetworkBehaviour
 
     private void OnPawnPromoted(ChessPieceNetworked piece)
     {
+        Debug.Log("OnPawnPromoted");
         foreach (var button in pawnPromotionButtons)
         {
             if(piece.PlayerColour == PlayerColour.PlayerOne)
