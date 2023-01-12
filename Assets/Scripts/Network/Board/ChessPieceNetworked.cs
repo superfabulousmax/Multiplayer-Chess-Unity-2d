@@ -130,6 +130,7 @@ public class ChessPieceNetworked : NetworkBehaviour, IChessPiece
         SetTilePositionServerRpc(position);
     }
 
+    // RPCS
     [ServerRpc(RequireOwnership = false)]
     public void SetTilePositionServerRpc(Vector3Int newTilePosition)
     {
