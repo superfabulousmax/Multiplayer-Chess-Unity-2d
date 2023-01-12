@@ -714,7 +714,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6640704730021879519, guid: 8e53896f92347b0479c039578a48ff0d, type: 3}
       propertyPath: fenString
-      value: rnbqkbnr/ppppppPp/8/8/8/8/P1PPPPpP/RNBQKBNR w KQkq - 0 1
+      value: rnb1kbnr/ppp1pppp/8/1B1q4/8/8/PPPP1PPP/RNBQK1NR/ b KQkq - 0 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 8e53896f92347b0479c039578a48ff0d, type: 3}

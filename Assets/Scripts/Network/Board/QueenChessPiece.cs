@@ -12,9 +12,10 @@ public class QueenChessPiece : IChessRule, IMoveList
 
     public QueenChessPiece(IChessRule takePieceRule)
     {
-        bishopChessRule = new BishopChessPiece(takePieceRule, new MoveToStopCheck());
+        var moveToStopCheck = new MoveToStopCheck();
+        bishopChessRule = new BishopChessPiece(takePieceRule, moveToStopCheck);
         bishopMoves = bishopChessRule as IMoveList;
-        rookChessRule = new RookChessPiece(takePieceRule, new MoveToStopCheck());
+        rookChessRule = new RookChessPiece(takePieceRule, moveToStopCheck);
         rookMoves = rookChessRule as IMoveList;
     }
 

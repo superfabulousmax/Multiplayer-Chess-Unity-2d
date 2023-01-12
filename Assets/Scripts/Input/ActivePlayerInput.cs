@@ -130,7 +130,6 @@ public class ActivePlayerInput : IPlayerInput
                 tileHighlighter.SetTileColour(board.CheckedPos, tileHighlighter.CheckedColour);
                 TogglePossibleMoves(tileHighlighter.ClearColour);
                 selectedChessPiece = null;
-                Debug.Log("Invalid move");
             }
         }
     }

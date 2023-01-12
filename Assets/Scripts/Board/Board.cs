@@ -199,7 +199,6 @@ public class Board : IBoard
     public bool IsInCheck(out IChessPiece checkedKing)
     {
         var boardState = GetBoardState();
-        // todo refactor this 
         for (var y = 0; y < GameConstants.BoardLengthDimension; y++)
         {
             for (var x = 0; x < GameConstants.BoardLengthDimension; x++)
@@ -214,7 +213,6 @@ public class Board : IBoard
                 {
                     if (piece.CheckRuleBehaviour.PossibleCheck(this, boardState, piece, piece.Position, out checkedKing))
                     {
-                        Debug.Log($"{checkedKing} is in Check");
                         return true;
                     }
                 }
@@ -225,11 +223,11 @@ public class Board : IBoard
         return false;
     }
 
-    //rnbqkbn1/pppppp1r/6pp/8/2B1P3/5Q2/PPPP1PPP/RNB1K1NR/ FEN STRING TEST
     public bool IsInCheck(int[,] simulatedBoard, out List<IChessPiece> kings)
     {
         kings = new List<IChessPiece>();
-        // todo refactor this
+        // Note: need to use the simulatedBoard to get pieces 
+        // as ChessPieceList does not have same piece set as the simulated board array
         for (var y = 0; y < GameConstants.BoardLengthDimension; y++)
         {
             for (var x = 0; x < GameConstants.BoardLengthDimension; x++)

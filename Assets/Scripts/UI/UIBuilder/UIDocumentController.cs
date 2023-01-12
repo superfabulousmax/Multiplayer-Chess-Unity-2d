@@ -68,7 +68,6 @@ public class UIDocumentController : NetworkBehaviour
 
     private void OnPawnPromoted(ChessPieceNetworked piece)
     {
-        Debug.Log("OnPawnPromoted");
         foreach (var button in pawnPromotionButtons)
         {
             if(piece.PlayerColour == PlayerColour.PlayerOne)
